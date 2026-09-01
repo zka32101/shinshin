@@ -8,6 +8,13 @@ import 'screens/subscription/subscription_screen.dart';
 import 'screens/settings/avatar_selection_screen.dart';
 import 'screens/settings/avatar_shop_screen.dart';
 import 'screens/ranking/ranking_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/child_registration_screen.dart';
+import 'screens/learning/piano_learning_screen.dart';
+import 'screens/learning/drawing_screen.dart';
+import 'screens/learning/physical_education_screen.dart';
+import 'screens/learning/color_learning_screen.dart';
 import 'services/logger_service.dart';
 
 void main() async {
@@ -158,13 +165,20 @@ class ShougakuKoreDoutokuApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
       routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/child-registration': (context) => const ChildRegistrationScreen(),
         '/trial_status': (context) => const TrialStatusScreen(),
         '/subscription': (context) => const SubscriptionScreen(),
         '/avatar_selection': (context) => const AvatarSelectionScreen(),
         '/avatar_shop': (context) => const AvatarShopScreen(),
         '/ranking': (context) => const RankingScreen(),
+        '/piano': (context) => const PianoLearningScreen(),
+        '/drawing': (context) => const DrawingScreen(),
+        '/physical_education': (context) => const PhysicalEducationScreen(),
+        '/color_learning': (context) => const ColorLearningScreen(),
       },
     );
   }
