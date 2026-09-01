@@ -89,8 +89,6 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
-    - .env
-    - .env.local
 
   # fonts:
   #   - family: NotoSansJP
