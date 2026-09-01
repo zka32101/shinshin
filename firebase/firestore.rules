@@ -1,0 +1,297 @@
+// ========================================================
+// Firebase Firestore セキュリティルール
+// 小学コレ！道徳アプリ
+//
+// ルールの説明:
+// - ユーザーは自分のデータのみアクセス可能
+// - 親は子どものデータにアクセス可能
+// - 管理者は全データにアクセス可能
+// ========================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================================
+    // Helper Functions
+    // ========================================================
+
+    // ユーザーが認証されているか
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // ユーザーが本人のドキュメントにアクセスしているか
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // ユーザーが親親コントローラーか
+    function isParent(userId) {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'parent'
+        && userId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.childrenIds;
+    }
+
+    // ユーザーが管理者か
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ========================================================
+    // ユーザードキュメント規則
+    // ========================================================
+    match /users/{userId} {
+      // 読み取り: 本人、または親、または管理者
+      allow read: if isOwner(userId) || isParent(userId) || isAdmin();
+
+      // 書き込み: 本人のみ（初期登録時）
+      allow create: if isAuthenticated() && isOwner(userId);
+
+      // 更新: 本人のみ
+      allow update: if isOwner(userId) && validateUserUpdate(userId);
+
+      // 削除: 本人またはアカウント削除時の管理者処理
+      allow delete: if isOwner(userId) || isAdmin();
+
+      // サブコレクション: ユーザーの子ども
+      match /children/{childId} {
+        allow read: if isOwner(userId) || isParent(userId) || isAdmin();
+        allow create: if isOwner(userId) && validateChildData();
+        allow update: if isOwner(userId) && validateChildData();
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // サブコレクション: ユーザーの選択履歴
+      match /selections/{selectionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && validateSelection();
+        allow delete: if isOwner(userId) || isAdmin();
+        // 選択履歴の更新は許可しない（履歴の完全性保証）
+        allow update: if false;
+      }
+    }
+
+    // ========================================================
+    // 子どもデータルール
+    // ========================================================
+    match /children/{childId} {
+      // 読み取り: 親または管理者のみ
+      allow read: if request.auth.uid in
+        get(/databases/$(database)/documents/children/$(childId)).data.parentIds
+        || isAdmin();
+
+      // 作成・更新・削除: 関連する親のみ
+      allow create, update, delete: if request.auth.uid in
+        get(/databases/$(database)/documents/children/$(childId)).data.parentIds
+        || isAdmin();
+
+      // サブコレクション: 学習進捗
+      match /learning_progress/{progressId} {
+        allow read: if request.auth.uid in
+          get(/databases/$(database)/documents/children/$(childId)).data.parentIds
+          || isAdmin();
+        allow create, update: if request.auth.uid in
+          get(/databases/$(database)/documents/children/$(childId)).data.parentIds
+          || isAdmin();
+      }
+
+      // サブコレクション: 月次レポート
+      match /reports/{reportId} {
+        allow read: if request.auth.uid in
+          get(/databases/$(database)/documents/children/$(childId)).data.parentIds
+          || isAdmin();
+        allow create, update: if isAdmin(); // レポート生成は管理者のみ
+      }
+    }
+
+    // ========================================================
+    // ストーリーデータルール
+    // ========================================================
+    match /stories/{storyId} {
+      // 読み取り: すべてのユーザー（公開コンテンツ）
+      allow read: if isAuthenticated();
+
+      // 作成・更新・削除: 管理者のみ
+      allow create, update, delete: if isAdmin();
+
+      // サブコレクション: 選択肢
+      match /choices/{choiceId} {
+        allow read: if isAuthenticated();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    // ========================================================
+    // 学習記録ルール（子ども向け）
+    // ========================================================
+    match /learning_records/{recordId} {
+      // 本人の学習記録を読み取り・作成
+      allow read: if resource.data.userId == request.auth.uid;
+      allow create: if request.auth.uid != null &&
+        validateLearningRecord(request.auth.uid);
+
+      // 親は子どもの学習記録を読み取り
+      allow read: if isAdmin() ||
+        request.auth.uid in
+        get(/databases/$(database)/documents/children/{childId}).data.parentIds;
+
+      // 更新・削除は許可しない（記録の完全性保証）
+      allow update, delete: if false;
+    }
+
+    // ========================================================
+    // 月次レポートルール（親向け）
+    // ========================================================
+    match /monthly_reports/{reportId} {
+      // 読み取り: 該当する親のみ
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.parentIds ||
+        isAdmin()
+      );
+
+      // 作成・更新: 管理者のみ（自動生成）
+      allow create, update: if isAdmin();
+
+      // 削除: 管理者のみ
+      allow delete: if isAdmin();
+    }
+
+    // ========================================================
+    // バッジルール
+    // ========================================================
+    match /badges/{badgeId} {
+      // 読み取り: すべてのユーザー（公開情報）
+      allow read: if isAuthenticated();
+
+      // 作成・更新・削除: 管理者のみ
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================================
+    // ユーザーバッジ獲得記録
+    // ========================================================
+    match /user_badges/{userBadgeId} {
+      // 読み取り: 本人、親、管理者
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isParent(resource.data.userId) ||
+        isAdmin()
+      );
+
+      // 作成・更新・削除: 管理者のみ（システム自動付与）
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================================
+    // 親の同意記録ルール（COPPA準拠）
+    // ========================================================
+    match /parental_consents/{consentId} {
+      // 読み取り: 本人（親）のみ
+      allow read: if resource.data.parentUid == request.auth.uid || isAdmin();
+
+      // 作成: 初期同意時
+      allow create: if isAuthenticated() && validateParentalConsent();
+
+      // 更新: 同意の取り下げ時のみ許可
+      allow update: if resource.data.parentUid == request.auth.uid &&
+        validateParentalConsentUpdate();
+
+      // 削除: 管理者のみ（GDPR・個人情報削除時）
+      allow delete: if isAdmin();
+    }
+
+    // ========================================================
+    // システム管理ドキュメント
+    // ========================================================
+    match /system/{docId} {
+      // 読み取り: 管理者のみ
+      allow read: if isAdmin();
+
+      // 作成・更新・削除: 管理者のみ
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================================
+    // Validation Functions
+    // ========================================================
+
+    // ユーザー更新の検証
+    function validateUserUpdate(userId) {
+      let incomingData = request.resource.data;
+      let existingData = resource.data;
+
+      // 許可するフィールド：名前、プロフィール画像、言語設定のみ
+      return incomingData.keys().hasAll(['name']) &&
+        incomingData.name is string &&
+        incomingData.name.size() > 0 &&
+        incomingData.name.size() <= 100 &&
+        // ロールは変更不可
+        incomingData.role == existingData.role &&
+        // UID は変更不可
+        incomingData.uid == existingData.uid;
+    }
+
+    // 子どもデータの検証
+    function validateChildData() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll(['name', 'grade', 'parentIds']) &&
+        data.name is string &&
+        data.name.size() > 0 &&
+        data.name.size() <= 50 &&
+        // 生年月日は保存しない（COPPA準拠）
+        !('birthDate' in data) &&
+        // 学年は1-6の範囲
+        data.grade is number &&
+        data.grade >= 1 &&
+        data.grade <= 6 &&
+        data.parentIds is list &&
+        data.parentIds.size() > 0;
+    }
+
+    // 選択データの検証
+    function validateSelection() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll(['userId', 'storyId', 'selectedChoiceId', 'createdAt']) &&
+        data.userId == request.auth.uid &&
+        data.storyId is string &&
+        data.selectedChoiceId is string &&
+        data.createdAt == request.time;
+    }
+
+    // 学習記録の検証
+    function validateLearningRecord(userId) {
+      let data = request.resource.data;
+
+      return data.keys().hasAll(['userId', 'storyId', 'selectedChoiceId', 'timestamp']) &&
+        data.userId == userId &&
+        data.storyId is string &&
+        data.selectedChoiceId is string &&
+        data.timestamp == request.time;
+    }
+
+    // 親の同意データの検証（COPPA）
+    function validateParentalConsent() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll(['parentUid', 'childEmail', 'consentedAt', 'privacyPolicyVersion']) &&
+        data.parentUid == request.auth.uid &&
+        data.childEmail is string &&
+        data.consentedAt == request.time &&
+        data.privacyPolicyVersion is string &&
+        data.consentTo is map &&
+        data.consentTo.keys().hasAll(['dataProcessing', 'thirdPartySharing', 'analyticsTracking']);
+    }
+
+    // 親の同意更新の検証
+    function validateParentalConsentUpdate() {
+      let data = request.resource.data;
+      let newData = request.resource.data;
+
+      // 同意の取り下げのみを許可
+      return newData.revokedAt == request.time &&
+        !('consentedAt' in newData) == false;
+    }
+  }
+}
