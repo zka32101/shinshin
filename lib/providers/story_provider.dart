@@ -25,7 +25,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
             if (jwt != null) {
               service.setAuthToken(jwt);
               // FCM トークンをバックグラウンドで登録
-              _tryRegisterFcmToken(service);
+              _tryRegisterFcmToken(service, ref);
             }
           }
         } catch (_) {
@@ -41,8 +41,9 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   return service;
 });
 
-/// FCM トークンを取得してバックエンドに登録する (fire-and-forget)
-void _tryRegisterFcmToken(ApiService service) {
+/// FCM トークンを取得してバックエンドに登録する
+/// Properly manages subscription lifecycle to prevent memory leaks
+void _tryRegisterFcmToken(ApiService service, Ref ref) {
   FirebaseMessaging.instance.getToken().then((token) {
     if (token != null) {
       service.updateUser(fcmToken: token).catchError((_) => <String, dynamic>{});
@@ -50,8 +51,14 @@ void _tryRegisterFcmToken(ApiService service) {
   }).catchError((_) {});
 
   // トークンがローテートされたときも再登録
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+  // Store subscription so we can cancel it on disposal
+  final subscription = FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
     service.updateUser(fcmToken: newToken).catchError((_) => <String, dynamic>{});
+  });
+
+  // Cancel subscription when provider is disposed to prevent memory leak
+  ref.onDispose(() {
+    subscription.cancel();
   });
 }
 

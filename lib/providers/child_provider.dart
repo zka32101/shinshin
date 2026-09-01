@@ -8,29 +8,55 @@ import 'firestore_provider.dart';
 // ── 選択中の子どもID を Hive に永続化するノティファイアー ──────────────
 class _ChildIdNotifier extends StateNotifier<String?> {
   _ChildIdNotifier() : super(null) {
-    _loadFromHive();
+    // Don't call async operations in constructor
+    // State updates will happen immediately when mount is complete
   }
 
   static const _key = 'selected_child_id';
   final _hive = HiveService();
 
-  Future<void> _loadFromHive() async {
-    final id = await _hive.getSetting<String>(_key);
-    if (id != null && mounted) state = id;
+  /// Load the selected child ID from persistent storage
+  /// This should be called after the notifier is mounted
+  Future<void> loadFromPersistentStorage() async {
+    try {
+      final id = await _hive.getSetting<String>(_key);
+      if (id != null && mounted) {
+        state = id;
+      }
+    } catch (e) {
+      // Log but don't crash if persistence fails
+      debugPrint('[ChildIdNotifier] Failed to load from persistent storage: $e');
+    }
   }
 
   @override
   set state(String? value) {
     super.state = value;
-    // 永続化 (null で消去)
-    _hive.saveSetting(_key, value);
+    // 永続化 (null で消去) — non-blocking
+    _hive.saveSetting(_key, value).catchError((e) {
+      debugPrint('[ChildIdNotifier] Failed to persist state: $e');
+    });
   }
 }
+
+/// Initializes persistent child ID storage (fire-and-forget)
+final _childIdInitProvider = FutureProvider<void>((ref) async {
+  final notifier = ref.watch(currentChildIdProvider.notifier);
+  await notifier.loadFromPersistentStorage();
+});
 
 /// 現在選択されている子ども ID プロバイダー（アプリ再起動後も復元）
 final currentChildIdProvider =
     StateNotifierProvider<_ChildIdNotifier, String?>(
-  (ref) => _ChildIdNotifier(),
+  (ref) {
+    final notifier = _ChildIdNotifier();
+    // Initialize persistence loading in the background
+    // This won't block the UI but will restore state after mount
+    ref.watch(_childIdInitProvider).whenData((_) {
+      // Initialization complete, state is now restored
+    });
+    return notifier;
+  },
 );
 
 /// 親の全子どもプロフィール取得（バックエンド API）

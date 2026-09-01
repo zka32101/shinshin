@@ -286,12 +286,16 @@ service cloud.firestore {
 
     // 親の同意更新の検証
     function validateParentalConsentUpdate() {
-      let data = request.resource.data;
       let newData = request.resource.data;
+      let existingData = resource.data;
 
       // 同意の取り下げのみを許可
+      // 新しい revokedAt フィールドが追加され、元のデータは変更されていないことを確認
       return newData.revokedAt == request.time &&
-        !('consentedAt' in newData) == false;
+        'consentedAt' in newData &&
+        newData.consentedAt == existingData.consentedAt &&
+        newData.parentUid == existingData.parentUid &&
+        newData.childEmail == existingData.childEmail;
     }
   }
 }
