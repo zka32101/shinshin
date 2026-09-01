@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/offline_sync_provider.dart';
 import '../profile/profile_management_screen.dart';
+import '../ranking/ranking_settings_screen.dart';
 import 'help_screen.dart';
 import 'privacy_policy_screen.dart';
 
@@ -76,6 +77,30 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const ProfileManagementScreen(),
+                ),
+              );
+            },
+          ),
+
+          // ─── ランキング設定セクション ───
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'ランキング',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFF9B59B6)),
+            title: const Text('ランキング設定'),
+            subtitle: const Text('プライバシー設定'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const RankingSettingsScreen(),
                 ),
               );
             },
