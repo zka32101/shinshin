@@ -2,6 +2,8 @@
 import '../../widgets/avatar_display_widget.dart';
 import '../ranking/ranking_screen.dart';
 import '../settings/settings_screen.dart';
+import '../library/library_screen.dart';
+import '../report/report_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -39,7 +41,11 @@ class HomeScreen extends StatelessWidget {
                     title: 'ストーリー',
                     subtitle: '道徳の学習',
                     onTap: () {
-                      // TODO: Navigate to story selection screen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const LibraryScreen(),
+                        ),
+                      );
                     },
                   ),
                   _MenuCard(
@@ -59,7 +65,11 @@ class HomeScreen extends StatelessWidget {
                     title: 'レポート',
                     subtitle: '成長を分析',
                     onTap: () {
-                      // TODO: Navigate to report screen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ReportScreen(),
+                        ),
+                      );
                     },
                   ),
                   _MenuCard(
