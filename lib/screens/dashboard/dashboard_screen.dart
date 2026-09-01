@@ -5,11 +5,10 @@ import '../../providers/child_provider.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/badge_provider.dart';
 import '../../providers/ranking_provider.dart';
-
-const _primaryColor = Color(0xFF9B59B6);
-const _bgColor = Color(0xFFFAF9FF);
-const _textPrimary = Color(0xFF2C2C2C);
-const _textSecondary = Color(0xFF888888);
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
+import '../../widgets/common_states.dart';
+import '../../utils/logging_utils.dart';
 
 /// ダッシュボード画面 — 子どもの学習進捗を視覚的に表示
 /// 統計情報、バッジ、アクティビティ、成長トレンドを表示
@@ -23,31 +22,32 @@ class DashboardScreen extends ConsumerWidget {
 
     if (childId == null) {
       return Scaffold(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.bgPrimary,
         appBar: AppBar(
           title: const Text('ダッシュボード'),
-          backgroundColor: Colors.white,
-          foregroundColor: _textPrimary,
+          backgroundColor: AppColors.bgSecondary,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
-        body: const Center(
-          child: Text('子どもを選択してください'),
+        body: CommonEmptyState(
+          message: '子どもを選択してください',
+          icon: Icons.person_outline,
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         title: const Text('ダッシュボード'),
-        backgroundColor: Colors.white,
-        foregroundColor: _textPrimary,
+        backgroundColor: AppColors.bgSecondary,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: childProfile.when(
         data: (profile) => SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppStyles.paddingMedium),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -74,8 +74,8 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('エラー: $error')),
+        loading: () => const CommonLoadingState(),
+        error: (error, _) => CommonErrorState(error: error.toString()),
       ),
     );
   }
