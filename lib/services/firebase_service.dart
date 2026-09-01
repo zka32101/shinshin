@@ -32,6 +32,7 @@ class ValidationException implements Exception {
 class FirebaseService {
   late final FirebaseAuth _auth;
   late final FirebaseFirestore _firestore;
+  final LoggerService _logger = LoggerService();
 
   FirebaseService() {
     _auth = FirebaseAuth.instance;
@@ -61,16 +62,16 @@ class FirebaseService {
         email: email,
         password: password,
       );
-      LoggerService().log('User signed in: $email');
+      _logger.log('User signed in: $email');
       return credential.user;
     } on FirebaseAuthException catch (e) {
-      LoggerService().logError('Sign in failed for email: $email', e);
+      _logger.logError('Sign in failed for email: $email', e);
       throw AuthException(
         'Sign in failed: ${e.message}',
         e.code,
       );
     } catch (e) {
-      LoggerService().logError('Unexpected error during sign in', e);
+      _logger.logError('Unexpected error during sign in', e);
       rethrow;
     }
   }
@@ -107,16 +108,16 @@ class FirebaseService {
       }
 
       await credential.user!.updateDisplayName(displayName);
-      LoggerService().log('User registered successfully: $email');
+      _logger.log('User registered successfully: $email');
       return credential.user;
     } on FirebaseAuthException catch (e) {
-      LoggerService().logError('Registration failed for email: $email', e);
+      _logger.logError('Registration failed for email: $email', e);
       throw AuthException(
         'Registration failed: ${e.message}',
         e.code,
       );
     } catch (e) {
-      LoggerService().logError('Unexpected error during registration', e);
+      _logger.logError('Unexpected error during registration', e);
       rethrow;
     }
   }
@@ -163,9 +164,9 @@ class FirebaseService {
       final subscriptionService = SubscriptionService();
       await subscriptionService.initializeTrialForNewUser(uid);
 
-      LoggerService().log('User profile created and trial initialized: $uid');
+      _logger.log('User profile created and trial initialized: $uid');
     } catch (e) {
-      LoggerService().logError('Failed to save user profile', e);
+      _logger.logError('Failed to save user profile', e);
       rethrow;
     }
   }
@@ -174,13 +175,13 @@ class FirebaseService {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (!doc.exists) {
-        LoggerService().log('User profile not found: $uid');
+        _logger.log('User profile not found: $uid');
         return null;
       }
 
       final data = doc.data();
       if (data == null) {
-        LoggerService().logError('User document exists but has no data: $uid', null);
+        _logger.logError('User document exists but has no data: $uid', null);
         return null;
       }
 
@@ -210,7 +211,7 @@ class FirebaseService {
             : DateTime.now(),
       );
     } catch (e) {
-      LoggerService().logError('Failed to get user profile: $uid', e);
+      _logger.logError('Failed to get user profile: $uid', e);
       rethrow;
     }
   }
@@ -285,7 +286,7 @@ class FirebaseService {
 
       return Story.fromJson({...data, 'id': doc.id});
     } catch (e) {
-      LoggerService().logError('Failed to fetch story: $storyId', e);
+      _logger.logError('Failed to fetch story: $storyId', e);
       rethrow;
     }
   }
@@ -334,7 +335,7 @@ class FirebaseService {
 
       return QuizSession.fromJson({...data, 'id': doc.id});
     } catch (e) {
-      LoggerService().logError('Failed to fetch quiz session: $sessionId', e);
+      _logger.logError('Failed to fetch quiz session: $sessionId', e);
       rethrow;
     }
   }
@@ -401,7 +402,7 @@ class FirebaseService {
 
       return ChildProfile.fromJson({...data, 'id': doc.id});
     } catch (e) {
-      LoggerService().logError('Failed to fetch child profile: $childId', e);
+      _logger.logError('Failed to fetch child profile: $childId', e);
       rethrow;
     }
   }
@@ -497,11 +498,11 @@ class FirebaseService {
         },
       });
 
-      LoggerService().log(
+      _logger.log(
         'Parental consent saved successfully for parent: $parentUid, child: $childEmail',
       );
     } catch (e) {
-      LoggerService().logError('Failed to save parental consent', e);
+      _logger.logError('Failed to save parental consent', e);
       rethrow;
     }
   }
@@ -516,9 +517,9 @@ class FirebaseService {
         'revokedAt': FieldValue.serverTimestamp(),
       });
 
-      LoggerService().log('Parental consent revoked: $consentId');
+      _logger.log('Parental consent revoked: $consentId');
     } catch (e) {
-      LoggerService().logError('Failed to revoke parental consent', e);
+      _logger.logError('Failed to revoke parental consent', e);
       rethrow;
     }
   }
@@ -533,11 +534,11 @@ class FirebaseService {
           .where('revokedAt', isNull: true)
           .get();
 
-      LoggerService()
+      _logger
           .log('Fetched ${snapshot.docs.length} active consents for parent');
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      LoggerService().logError('Failed to fetch parental consents', e);
+      _logger.logError('Failed to fetch parental consents', e);
       rethrow;
     }
   }
