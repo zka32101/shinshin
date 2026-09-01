@@ -1,0 +1,132 @@
+name: Build APK & Upload to Google Drive
+
+on:
+  workflow_dispatch:
+    inputs:
+      google_drive_folder_id:
+        description: 'Google Drive folder ID (or leave empty to use default)'
+        required: false
+        type: string
+
+jobs:
+  build-and-upload:
+    name: Build APK and Upload to Google Drive
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ========================================
+      # Java & Build Tools セットアップ
+      # ========================================
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # ========================================
+      # Flutter セットアップ
+      # ========================================
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      # ========================================
+      # キーストアファイルを復元
+      # ========================================
+      - name: Prepare Keystore File
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "Setting up Android keystore..."
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release-keystore.jks
+          ls -lh android/app/release-keystore.jks
+
+      # ========================================
+      # 環境変数をエクスポート（署名設定用）
+      # ========================================
+      - name: Setup Signing Environment Variables
+        run: |
+          echo "KEYSTORE_PATH=${{ github.workspace }}/android/app/release-keystore.jks" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEYSTORE_ALIAS=${{ secrets.KEYSTORE_ALIAS }}" >> $GITHUB_ENV
+          echo "KEYSTORE_KEY_PASSWORD=${{ secrets.KEYSTORE_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+      # ========================================
+      # Flutter 依存関係とコード生成
+      # ========================================
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Clean build directory
+        run: flutter clean
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      # ========================================
+      # Android リリースビルド
+      # ========================================
+      - name: Build APK Release
+        run: flutter build apk --release
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/android/app/release-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+
+      # ========================================
+      # ビルド成功ログを出力
+      # ========================================
+      - name: Build Success Summary
+        run: |
+          echo "=================================================="
+          echo "✅ APK Build Complete"
+          echo "=================================================="
+          echo ""
+          echo "📦 Build Artifact:"
+          echo "  APK: build/app/outputs/apk/release/app-release.apk"
+          echo ""
+          echo "📊 File Info:"
+          ls -lh build/app/outputs/apk/release/app-release.apk
+          echo "=================================================="
+
+      # ========================================
+      # Google Drive へアップロード
+      # ========================================
+      - name: Upload APK to Google Drive
+        uses: adityak2211/google-drive-github-action@main
+        with:
+          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          folder_id: ${{ inputs.google_drive_folder_id || secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          files_to_upload: 'build/app/outputs/apk/release/app-release.apk'
+          skip_subdirectories: 'true'
+          cleanup: 'false'
+          overwrite: 'false'
+
+      # ========================================
+      # Upload to GitHub Artifacts
+      # ========================================
+      - name: Upload APK as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/apk/release/app-release.apk
+          retention-days: 30
+
+      # ========================================
+      # Completion notification
+      # ========================================
+      - name: Upload Complete
+        run: |
+          echo "✅ APK has been built and uploaded to Google Drive!"
+          echo ""
+          echo "📱 APK Location: build/app/outputs/apk/release/app-release.apk"
+          echo "📁 Google Drive Upload: Completed"
+          echo ""
+          echo "🔗 Download from: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
