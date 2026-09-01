@@ -16,7 +16,11 @@ except ImportError:
     print("WARNING: Pillow not found. Icons will be copied without resizing.")
 
 # Configuration
-SOURCE_ICON = r"G:\マイドライブ\images\小学コレ！\アプリアイコン\512\アプリアイコン (道徳).jpg"
+# Get icon source from environment variable, or use a default relative path
+SOURCE_ICON = os.getenv(
+    'APP_ICON_SOURCE',
+    'assets/app_icon/icon.png'  # Default relative path within project
+)
 PROJECT_ROOT = Path(__file__).parent
 
 # Android density to size mapping
