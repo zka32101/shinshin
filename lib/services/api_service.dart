@@ -4,10 +4,31 @@ import '../models/revisit_schedule.dart';
 import '../models/parent_child_comparison.dart';
 import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
+import 'logger_service.dart';
+
+/// Custom exception for API errors
+class ApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final dynamic originalError;
+
+  ApiException(
+    this.message, {
+    this.statusCode,
+    this.originalError,
+  });
+
+  @override
+  String toString() => message;
+}
 
 class ApiService {
   final Dio _dio;
   static const String _baseUrl = 'https://api.shougaku-kore.jp/api/v1';
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(milliseconds: 500);
+
+  final _logger = LoggerService();
 
   ApiService({Dio? dio})
       : _dio = dio ??
@@ -19,22 +40,133 @@ class ApiService {
               ),
             );
 
+  /// Validates that a string parameter is not empty
+  String _validateParam(String value, String paramName) {
+    if (value.isEmpty) {
+      throw ApiException('Parameter $paramName cannot be empty');
+    }
+    return value;
+  }
+
+  /// Validates response data structure
+  bool _isValidResponse(dynamic data) {
+    return data != null && data is Map<String, dynamic>;
+  }
+
+  /// Retries a request with exponential backoff
+  Future<Response<dynamic>> _retryRequest(
+    Future<Response<dynamic>> Function() request,
+  ) async {
+    int attempt = 0;
+    late DioException lastError;
+
+    while (attempt < _maxRetries) {
+      try {
+        return await request();
+      } on DioException catch (e) {
+        lastError = e;
+        // Only retry on transient errors (timeout, connection errors)
+        if (!_isTransientError(e)) {
+          rethrow;
+        }
+
+        attempt++;
+        if (attempt < _maxRetries) {
+          final delay = _retryDelay * (1 << (attempt - 1)); // exponential backoff
+          _logger.log('Retrying request (attempt $attempt/$_maxRetries) after $delay');
+          await Future.delayed(delay);
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  /// Determines if an error is transient (should be retried)
+  bool _isTransientError(DioException e) {
+    // Timeout errors
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      return true;
+    }
+
+    // Network errors
+    if (e.type == DioExceptionType.unknown) {
+      final error = e.error;
+      // Check for connection reset, no route to host, etc.
+      if (error is Exception) {
+        return error.toString().contains('SocketException') ||
+            error.toString().contains('Connection refused') ||
+            error.toString().contains('Connection reset');
+      }
+      return true;
+    }
+
+    // Server errors (5xx) are transient
+    if (e.response?.statusCode != null &&
+        e.response!.statusCode! >= 500 &&
+        e.response!.statusCode! < 600) {
+      return true;
+    }
+
+    return false;
+  }
+
   Future<DistributionResponse> getDistribution(String storyId) async {
     try {
-      final response = await _dio.get('/stories/$storyId/distribution');
+      _validateParam(storyId, 'storyId');
+
+      final response = await _retryRequest(
+        () => _dio.get('/stories/$storyId/distribution'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for distribution');
+      }
+
+      _logger.log('Distribution fetched for story: $storyId');
       return DistributionResponse.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to fetch distribution: ${e.message}');
+      _logger.logError('Failed to fetch distribution for $storyId', e);
+      throw ApiException(
+        'Failed to fetch distribution: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
   Future<List<RevisitStory>> getRevisitStories(String userId) async {
     try {
-      final response = await _dio.get('/users/$userId/revisit-stories');
+      _validateParam(userId, 'userId');
+
+      final response = await _retryRequest(
+        () => _dio.get('/users/$userId/revisit-stories'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for revisit stories');
+      }
+
       final List<dynamic> data = response.data['revisits'] ?? [];
+      if (data is! List) {
+        throw ApiException('Expected revisits to be a list');
+      }
+
+      _logger.log('Revisit stories fetched for user: $userId (count: ${data.length})');
       return data.map((item) => RevisitStory.fromJson(item)).toList();
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to fetch revisit stories: ${e.message}');
+      _logger.logError('Failed to fetch revisit stories for $userId', e);
+      throw ApiException(
+        'Failed to fetch revisit stories: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -43,13 +175,31 @@ class ApiService {
     String answerChoice,
   ) async {
     try {
-      final response = await _dio.post(
-        '/revisit-stories/$revisitId/answer',
-        data: {'answer_choice': answerChoice},
+      _validateParam(revisitId, 'revisitId');
+      _validateParam(answerChoice, 'answerChoice');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/revisit-stories/$revisitId/answer',
+          data: {'answer_choice': answerChoice},
+        ),
       );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for revisit answer');
+      }
+
+      _logger.log('Revisit story answered: $revisitId with choice: $answerChoice');
       return RevisitResult.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to answer revisit story: ${e.message}');
+      _logger.logError('Failed to answer revisit story: $revisitId', e);
+      throw ApiException(
+        'Failed to answer revisit story: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -60,16 +210,36 @@ class ApiService {
     String answerChoice,
   ) async {
     try {
-      final response = await _dio.post(
-        '/parent-child/$parentId/$childId/answer',
-        data: {
-          'story_id': storyId,
-          'answer_choice': answerChoice,
-        },
+      _validateParam(parentId, 'parentId');
+      _validateParam(childId, 'childId');
+      _validateParam(storyId, 'storyId');
+      _validateParam(answerChoice, 'answerChoice');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/parent-child/$parentId/$childId/answer',
+          data: {
+            'story_id': storyId,
+            'answer_choice': answerChoice,
+          },
+        ),
       );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for parent-child answer');
+      }
+
+      _logger.log('Parent-child story answered: $storyId');
       return ParentAnswerResponse.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to answer parent-child story: ${e.message}');
+      _logger.logError('Failed to answer parent-child story', e);
+      throw ApiException(
+        'Failed to answer parent-child story: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -78,13 +248,35 @@ class ApiService {
     String childId,
   ) async {
     try {
-      final response = await _dio.get(
-        '/parent-child/$parentId/$childId/dialogue-history',
+      _validateParam(parentId, 'parentId');
+      _validateParam(childId, 'childId');
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/parent-child/$parentId/$childId/dialogue-history',
+        ),
       );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for dialogue history');
+      }
+
       final List<dynamic> data = response.data['histories'] ?? [];
+      if (data is! List) {
+        throw ApiException('Expected histories to be a list');
+      }
+
+      _logger.log('Dialogue history fetched: ${data.length} items');
       return data.map((item) => ParentChildComparison.fromJson(item)).toList();
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to fetch dialogue history: ${e.message}');
+      _logger.logError('Failed to fetch dialogue history', e);
+      throw ApiException(
+        'Failed to fetch dialogue history: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -95,17 +287,34 @@ class ApiService {
     try {
       final histories = await getParentChildDialogueHistory(parentId, childId);
       return histories.isNotEmpty ? histories.first : null;
-    } on DioException catch (e) {
-      throw Exception('Failed to fetch latest comparison: ${e.message}');
+    } on ApiException {
+      rethrow;
     }
   }
 
   Future<KindnessMission> getCurrentMission(String userId) async {
     try {
-      final response = await _dio.get('/users/$userId/kindness/mission');
+      _validateParam(userId, 'userId');
+
+      final response = await _retryRequest(
+        () => _dio.get('/users/$userId/kindness/mission'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for mission');
+      }
+
+      _logger.log('Kindness mission fetched for user: $userId');
       return KindnessMission.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to fetch mission: ${e.message}');
+      _logger.logError('Failed to fetch mission for user: $userId', e);
+      throw ApiException(
+        'Failed to fetch mission: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -116,42 +325,101 @@ class ApiService {
     String? context,
   ) async {
     try {
-      final response = await _dio.post(
-        '/users/$userId/kindness-records',
-        data: {
-          'kindness_description': description,
-          'person_involved': person,
-          'context': context,
-        },
+      _validateParam(userId, 'userId');
+      _validateParam(description, 'description');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/users/$userId/kindness-records',
+          data: {
+            'kindness_description': description,
+            'person_involved': person,
+            'context': context,
+          },
+        ),
       );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for kindness record');
+      }
+
+      _logger.log('Kindness recorded for user: $userId');
       return KindnessRecordResponse.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to record kindness: ${e.message}');
+      _logger.logError('Failed to record kindness for user: $userId', e);
+      throw ApiException(
+        'Failed to record kindness: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
   Future<KindnessMap> getKindnessMap(String userId, String month) async {
     try {
-      final response = await _dio.get(
-        '/users/$userId/kindness-map/$month',
+      _validateParam(userId, 'userId');
+      _validateParam(month, 'month');
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/users/$userId/kindness-map/$month',
+        ),
       );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for kindness map');
+      }
+
+      _logger.log('Kindness map fetched for user: $userId, month: $month');
       return KindnessMap.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to fetch kindness map: ${e.message}');
+      _logger.logError('Failed to fetch kindness map for user: $userId', e);
+      throw ApiException(
+        'Failed to fetch kindness map: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
   // ③ りゆう記録分析（月50人抽出版）
   Future<ReasonAnalysis?> getReasonAnalysis(String userId, String month) async {
     try {
-      final response = await _dio.get(
-        '/users/$userId/reason-analysis/$month',
+      _validateParam(userId, 'userId');
+      _validateParam(month, 'month');
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/users/$userId/reason-analysis/$month',
+        ),
       );
+
+      // No content status
       if (response.statusCode == 204) return null;
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for reason analysis');
+      }
+
+      _logger.log('Reason analysis fetched for user: $userId, month: $month');
       return ReasonAnalysis.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) return null;
-      throw Exception('Failed to fetch reason analysis: ${e.message}');
+      if (e.response?.statusCode == 404) {
+        _logger.log('Reason analysis not found for user: $userId, month: $month');
+        return null;
+      }
+      _logger.logError('Failed to fetch reason analysis for user: $userId', e);
+      throw ApiException(
+        'Failed to fetch reason analysis: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -163,16 +431,32 @@ class ApiService {
     String userCreatedEnding,
   ) async {
     try {
-      await _dio.post(
-        '/users/$userId/creations',
-        data: {
-          'story_id': storyId,
-          'story_title': storyTitle,
-          'user_created_ending': userCreatedEnding,
-        },
+      _validateParam(userId, 'userId');
+      _validateParam(storyId, 'storyId');
+      _validateParam(storyTitle, 'storyTitle');
+      _validateParam(userCreatedEnding, 'userCreatedEnding');
+
+      await _retryRequest(
+        () => _dio.post(
+          '/users/$userId/creations',
+          data: {
+            'story_id': storyId,
+            'story_title': storyTitle,
+            'user_created_ending': userCreatedEnding,
+          },
+        ),
       );
+
+      _logger.log('Creation submitted for user: $userId, story: $storyId');
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      throw Exception('Failed to submit creation: ${e.message}');
+      _logger.logError('Failed to submit creation for user: $userId', e);
+      throw ApiException(
+        'Failed to submit creation: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 
@@ -182,14 +466,39 @@ class ApiService {
     String month,
   ) async {
     try {
-      final response = await _dio.get(
-        '/users/$userId/creation-feedback/$month',
+      _validateParam(userId, 'userId');
+      _validateParam(month, 'month');
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/users/$userId/creation-feedback/$month',
+        ),
       );
+
+      // No content status
       if (response.statusCode == 204) return null;
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for creation feedback');
+      }
+
+      _logger.log('Creation feedback fetched for user: $userId, month: $month');
       return CreationFeedback.fromJson(response.data);
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) return null;
-      throw Exception('Failed to fetch creation feedback: ${e.message}');
+      if (e.response?.statusCode == 404) {
+        _logger.log(
+          'Creation feedback not found for user: $userId, month: $month',
+        );
+        return null;
+      }
+      _logger.logError('Failed to fetch creation feedback for user: $userId', e);
+      throw ApiException(
+        'Failed to fetch creation feedback: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
     }
   }
 }
