@@ -8,6 +8,7 @@ import '../learning/piano_learning_screen.dart';
 import '../learning/drawing_screen.dart';
 import '../learning/physical_education_screen.dart';
 import '../learning/color_learning_screen.dart';
+import '../badge/badge_showcase_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -60,6 +61,18 @@ class HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const RankingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '🎖️',
+                    title: 'バッジ図鑑',
+                    subtitle: 'バッジを集める',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const BadgeShowcaseScreen(),
                         ),
                       );
                     },

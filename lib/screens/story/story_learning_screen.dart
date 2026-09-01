@@ -37,7 +37,10 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   final PageController _pageController = PageController();
   int _currentPage = 0;
   StoryChoice? _selectedChoice;
-  bool _showOutcome = false;
+
+  /// Phase tracking: 'reading' → 'choice' → 'branching' → 'reflection' → 'complete'
+  String _currentPhase = 'reading'; // 'reading', 'choice', 'branching', 'reflection'
+
   bool _completing = false;
   bool _storyNarrated = false; // 最初のページを自動読み上げ済みかどうか
 
@@ -156,7 +159,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void _selectChoice(Story story, StoryChoice choice) {
     setState(() {
       _selectedChoice = choice;
-      _showOutcome = true;
+      _currentPhase = 'branching'; // Move to branching phase
     });
     _animatePageChange();
     AnalyticsService().logChoiceMade(
@@ -164,6 +167,12 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
       choiceOrder: story.content?.choices.indexOf(choice) ?? -1,
       isRecommended: false,
     );
+  }
+
+  /// Move to reflection phase after showing the branching story
+  void _showReflection() {
+    setState(() => _currentPhase = 'reflection');
+    _animatePageChange();
   }
 
   /// ストーリー完了 — APIにセッション完了を送信し、結果画面へ遷移する。
@@ -268,7 +277,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
     final isLastReadPage = _currentPage == pages.length - 1;
 
     // 初回表示時にナレーション自動起動
-    if (!_storyNarrated) {
+    if (!_storyNarrated && _currentPhase == 'reading') {
       _storyNarrated = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _speakPage(pages));
     }
@@ -283,37 +292,45 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
               story: story,
               currentPage: _currentPage,
               totalPages: pages.length,
-              showOutcome: _showOutcome,
+              showOutcome: _currentPhase != 'reading',
               onClose: () => _confirmExit(context),
             ),
 
             // ─── コンテンツ ───
             Expanded(
-              child: _showOutcome && _selectedChoice != null
-                  ? _OutcomeView(
-                      choice: _selectedChoice!,
+              child: _currentPhase == 'reading' && isLastReadPage
+                  ? _ChoiceView(
+                      story: story,
                       fadeAnim: _fadeAnim,
-                      slideAnim: _slideAnim,
-                      isCompleting: _completing,
-                      onComplete: _completing ? null : () => _complete(story),
+                      onChoiceSelected: (c) => _selectChoice(story, c),
                     )
-                  : isLastReadPage
-                      ? _ChoiceView(
-                          story: story,
-                          fadeAnim: _fadeAnim,
-                          onChoiceSelected: (c) => _selectChoice(story, c),
-                        )
-                      : _NarrativePageView(
-                          pages: pages,
-                          controller: _pageController,
-                          currentPage: _currentPage,
+                  : _currentPhase == 'branching' && _selectedChoice != null
+                      ? _BranchingStoryView(
+                          choice: _selectedChoice!,
                           fadeAnim: _fadeAnim,
                           slideAnim: _slideAnim,
-                        ),
+                          onContinue: _showReflection,
+                        )
+                      : _currentPhase == 'reflection' && _selectedChoice != null
+                          ? _ReflectionView(
+                              choice: _selectedChoice!,
+                              fadeAnim: _fadeAnim,
+                              slideAnim: _slideAnim,
+                              isCompleting: _completing,
+                              onComplete:
+                                  _completing ? null : () => _complete(story),
+                            )
+                          : _NarrativePageView(
+                              pages: pages,
+                              controller: _pageController,
+                              currentPage: _currentPage,
+                              fadeAnim: _fadeAnim,
+                              slideAnim: _slideAnim,
+                            ),
             ),
 
             // ─── ナビゲーション ───
-            if (!_showOutcome && !isLastReadPage)
+            if (_currentPhase == 'reading' && !isLastReadPage)
               _NavigationBar(
                 currentPage: _currentPage,
                 totalPages: pages.length,
@@ -624,6 +641,306 @@ class _ChoiceView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ─── 分岐ストーリー表示 ────────────────────────────
+
+/// Shows the branching story (branchContent) with distinct styling
+class _BranchingStoryView extends StatelessWidget {
+  final StoryChoice choice;
+  final Animation<double> fadeAnim;
+  final Animation<Offset> slideAnim;
+  final VoidCallback onContinue;
+
+  const _BranchingStoryView({
+    required this.choice,
+    required this.fadeAnim,
+    required this.slideAnim,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: fadeAnim,
+      child: SlideTransition(
+        position: slideAnim,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 選択の確認
+              Container(
+                padding: const EdgeInsets.all(14),
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: _primaryColor.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _primaryColor.withAlpha(60)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'あなたの選択',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      choice.text,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 分岐ストーリーヘッダー
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_primaryColor.withAlpha(30), _primaryColor.withAlpha(15)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _primaryColor.withAlpha(80)),
+                ),
+                child: const Row(
+                  children: [
+                    Text('📖', style: TextStyle(fontSize: 16)),
+                    SizedBox(width: 8),
+                    Text(
+                      'その後のおはなし',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 分岐ストーリーテキスト
+              Text(
+                choice.branchContent,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 2.0,
+                  color: _textPrimary,
+                  letterSpacing: 0.3,
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 続ける ボタン
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ふりかえりへ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── ふりかえり表示 ────────────────────────────────
+
+/// Shows the reflection/learning point
+class _ReflectionView extends StatelessWidget {
+  final StoryChoice choice;
+  final Animation<double> fadeAnim;
+  final Animation<Offset> slideAnim;
+  final VoidCallback? onComplete;
+  final bool isCompleting;
+
+  const _ReflectionView({
+    required this.choice,
+    required this.fadeAnim,
+    required this.slideAnim,
+    required this.onComplete,
+    this.isCompleting = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final virtueEmoji = _virtueEmoji(choice.value ?? '');
+
+    return FadeTransition(
+      opacity: fadeAnim,
+      child: SlideTransition(
+        position: slideAnim,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 選択ラベル
+              Row(
+                children: [
+                  Text(virtueEmoji, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'あなたの選択',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _primaryColor.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _primaryColor.withAlpha(60)),
+                ),
+                child: Text(
+                  choice.text,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _primaryColor,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // 振り返り
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFFFE082)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Text('💭', style: TextStyle(fontSize: 18)),
+                        SizedBox(width: 8),
+                        Text(
+                          'ふりかえり',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF856404),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      choice.reflection,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF856404),
+                        height: 1.7,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 完了ボタン
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onComplete,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: isCompleting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '結果を見る',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _virtueEmoji(String value) {
+    switch (value) {
+      case 'kindness': return '💜';
+      case 'honesty': return '💛';
+      case 'responsibility': return '💙';
+      case 'courage': return '❤️';
+      case 'respect': return '💚';
+      case 'cooperation': return '🧡';
+      default: return '⭐';
+    }
   }
 }
 
