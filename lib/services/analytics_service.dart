@@ -117,6 +117,84 @@ class AnalyticsService {
     );
   }
 
+  // ============ サブスクリプションイベント ============
+
+  Future<void> logTrialStarted({required int durationDays}) async {
+    await _analytics.logEvent(
+      name: 'trial_started',
+      parameters: {
+        'duration_days': durationDays,
+      },
+    );
+    _log('trial_started', {'duration_days': durationDays});
+  }
+
+  Future<void> logTrialConverted({required String planType}) async {
+    await _analytics.logEvent(
+      name: 'trial_converted',
+      parameters: {
+        'plan_type': planType,
+      },
+    );
+    _log('trial_converted', {'plan_type': planType});
+  }
+
+  Future<void> logTrialExpired() async {
+    await _analytics.logEvent(name: 'trial_expired');
+    _log('trial_expired', {});
+  }
+
+  Future<void> logSubscriptionPurchased({
+    required String planType,
+    required double price,
+  }) async {
+    await _analytics.logPurchase(
+      value: price,
+      currency: 'JPY',
+      items: [
+        AnalyticsEventItem(itemName: planType),
+      ],
+    );
+    await _analytics.logEvent(
+      name: 'subscription_purchased',
+      parameters: {
+        'plan_type': planType,
+        'price': price,
+      },
+    );
+    _log('subscription_purchased', {'plan_type': planType, 'price': price});
+  }
+
+  Future<void> logSubscriptionRenewed({required String planType}) async {
+    await _analytics.logEvent(
+      name: 'subscription_renewed',
+      parameters: {
+        'plan_type': planType,
+      },
+    );
+    _log('subscription_renewed', {'plan_type': planType});
+  }
+
+  Future<void> logSubscriptionCancelled({required String planType}) async {
+    await _analytics.logEvent(
+      name: 'subscription_cancelled',
+      parameters: {
+        'plan_type': planType,
+      },
+    );
+    _log('subscription_cancelled', {'plan_type': planType});
+  }
+
+  Future<void> logTrialStatusViewed({required int daysRemaining}) async {
+    await _analytics.logEvent(
+      name: 'trial_status_viewed',
+      parameters: {
+        'days_remaining': daysRemaining,
+      },
+    );
+    _log('trial_status_viewed', {'days_remaining': daysRemaining});
+  }
+
   // ============ スクリーンビュー ============
 
   Future<void> logScreenView({

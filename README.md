@@ -18,6 +18,8 @@
 - 🔒 **COPPA準拠**: 13歳未満の子どもの個人情報を厳格に保護
 - 🎤 **音声ナレーション**: テキスト読み上げ機能でリーディング支援
 - 📊 **データドリブン成長**: 親が子どもの道徳的発展をデータで見守れる
+- ⏰ **2週間無料トライアル**: ユーザー登録時に自動開始、全機能無料体験
+- 💳 **柔軟なサブスクリプション**: 月額250円 / 年額2,500円プラン
 
 ## 🚀 クイックスタート
 
@@ -56,6 +58,18 @@ flutter run
 4. Firestore と Storage を有効化
 
 詳細は [docs/firebase-setup.md](docs/firebase-setup.md) をご参照ください。
+
+### サブスクリプション・トライアルセットアップ
+
+In-App Purchase 統合、2週間無料トライアル、課金機能の実装手順：
+
+1. [docs/SUBSCRIPTION_SETUP.md](docs/SUBSCRIPTION_SETUP.md) - App Store Connect / Google Play Console での商品設定
+2. [docs/IN_APP_PURCHASE_TESTING.md](docs/IN_APP_PURCHASE_TESTING.md) - iOS / Android でのテスト手順
+3. [docs/PAYMENT_INTEGRATION.md](docs/PAYMENT_INTEGRATION.md) - バックエンド Receipt 検証エンドポイント実装
+
+### 利用規約
+
+[docs/legal/subscription-terms.md](docs/legal/subscription-terms.md) - サブスクリプション利用規約（COPPA準拠）
 
 ## 📁 ディレクトリ構成
 

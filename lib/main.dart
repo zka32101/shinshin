@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/subscription/trial_status_screen.dart';
+import 'screens/subscription/subscription_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,10 @@ class ShougakuKoreDoutokuApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const HomeScreen(),
+      routes: {
+        '/trial_status': (context) => const TrialStatusScreen(),
+        '/subscription': (context) => const SubscriptionScreen(),
+      },
     );
   }
 }
