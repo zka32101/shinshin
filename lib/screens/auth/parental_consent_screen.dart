@@ -348,6 +348,19 @@ class _ParentalConsentScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ヘッダーイメージ
+        Container(
+          width: double.infinity,
+          height: 140,
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.green.shade50,
+          ),
+          child: _buildImageWithFallback(
+            'assets/images/parental_consent/header_image.png',
+          ),
+        ),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -384,6 +397,39 @@ class _ParentalConsentScreenState
           ),
         ),
       ],
+    );
+  }
+
+  /// 画像を表示するヘルパー関数（フォールバック付き）
+  Widget _buildImageWithFallback(String imagePath) {
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[200],
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image_not_supported,
+                  color: Colors.grey[400],
+                  size: 32,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Image',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
