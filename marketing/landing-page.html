@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小学コレ！道徳 - お子さんの判断力を育てるアプリ</title>
+    <meta name="description" content="小学3-4年生の判断力を育てる選択肢型ストーリーアプリ。月次成長レポートで親さんも納得。無料トライアル開始！">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 20px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .cta-primary {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-block;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255,107,107,0.3);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: white;
+            padding: 15px 40px;
+            border: 2px solid white;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .cta-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 36px;
+            margin-bottom: 50px;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .benefits {
+            background: #f8f9ff;
+            padding: 80px 20px;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .benefit-item {
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .benefit-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .testimonials {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-top: 4px solid #667eea;
+        }
+
+        .stars {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .testimonial-text {
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .faq {
+            background: #f8f9ff;
+            padding: 80px 20px;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .faq-question {
+            padding: 20px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #667eea;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: #f0f4ff;
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 20px 20px 20px;
+        }
+
+        .faq-toggle {
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .pricing {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: #f8f9ff;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.2);
+            transform: scale(1.05);
+        }
+
+        .pricing-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .price-period {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .features-list {
+            text-align: left;
+            margin: 30px 0;
+            font-size: 14px;
+        }
+
+        .features-list li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="header-container">
+            <div class="logo">🧠 小学コレ！道徳</div>
+            <nav>
+                <a href="#features">機能紹介</a>
+                <a href="#benefits">親のメリット</a>
+                <a href="#pricing">料金</a>
+                <a href="#faq">よくある質問</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>お子さんの「判断力」を育てる</h1>
+            <p class="subtitle">小学3-4年生が日常のジレンマから学ぶ、物語型道徳アプリ</p>
+            <p class="subtitle" style="font-size: 16px; opacity: 0.9;">毎月の成長レポートで、お子さんの判断基準の成長を見守れます</p>
+            <div style="margin-top: 40px;">
+                <a href="#" class="cta-primary">14日間無料で試す</a>
+                <a href="#" class="cta-secondary">デモを見る</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 機能紹介 -->
+    <section id="features">
+        <h2>📖 3つの学習ステップ</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>ストーリーで学ぶ</h3>
+                <p>友達との友情、約束の大切さ、正直さなど—日常のジレンマを物語で体験。お子さんが選んだ選択肢で物語が分岐します。</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🤔</div>
+                <h3>考えて選ぶ</h3>
+                <p>「正解」はありません。お子さんが自分の価値観で判断することが重要。複数の視点を学ぶことで、判断力が育ちます。</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>成長を見守る</h3>
+                <p>月に1回、親さんへ成長レポートをお届け。レーダーチャートで「共感力」「正直さ」などの成長が一目瞭然。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 親のメリット -->
+    <section class="benefits" id="benefits">
+        <h2>👨‍👩‍👧 親さんへのメリット</h2>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <h3>✓ 判断力の成長が見える</h3>
+                <p>月次レポートで「思いやり」「勇気」「正直さ」など、お子さんの判断基準の成長を数字で確認できます。</p>
+            </div>
+
+            <div class="benefit-item">
+                <h3>✓ 親子の会話が増える</h3>
+                <p>「このお話、どう思った？」とお子さんとの会話が自然に増えます。親子で価値観を共有できます。</p>
+            </div>
+
+            <div class="benefit-item">
+                <h3>✓ 道徳教育が習慣化</h3>
+                <p>毎日5分のストーリーで、道徳教育が無理なく習慣化。学校の道徳の授業の補完にも最適です。</p>
+            </div>
+
+            <div class="benefit-item">
+                <h3>✓ プライバシーに配慮</h3>
+                <p>お子さんの個人情報は最小限（名前・学年のみ）。COPPA準拠で、安全に利用できます。</p>
+            </div>
+
+            <div class="benefit-item">
+                <h3>✓ オフライン対応</h3>
+                <p>ダウンロード済みの物語はオフラインで読むことができます。通学時やお出かけ時も安心です。</p>
+            </div>
+
+            <div class="benefit-item">
+                <h3>✓ 学習効果が認められた教材</h3>
+                <p>教育心理学に基づいた選択肢型学習で、お子さんの判断力をより効果的に育てます。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ユーザー声 -->
+    <section class="testimonials">
+        <h2>💬 親さんからの声</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"毎月のレポートを見て、息子の成長に気づくことが増えました。思いやりの点数が上がっていて、嬉しかったです。"</p>
+                <div class="testimonial-author">— 田中さん（小3女の親）</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"学校では『正解』を求められますが、このアプリで『自分で考える』ことの大切さを学べているのが良いです。"</p>
+                <div class="testimonial-author">— 佐藤さん（小4男の親）</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"アプリの物語について『なんでこう選んだの？』と聞くようになり、子どもとの会話がグッと増えました！"</p>
+                <div class="testimonial-author">— 山田さん（小3男の親）</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 料金プラン -->
+    <section class="pricing" id="pricing">
+        <h2>💳 シンプルな料金プラン</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>無料トライアル</h3>
+                <p style="color: #667eea; margin: 15px 0;">14日間</p>
+                <p style="font-size: 14px; color: #999; margin-bottom: 20px;">クレジットカード不要</p>
+                <ul class="features-list">
+                    <li>全ストーリーにアクセス</li>
+                    <li>成長レポート（1回）</li>
+                    <li>親向けガイド</li>
+                    <li>キャンセルいつでもOK</li>
+                </ul>
+                <a href="#" class="cta-primary" style="width: 100%; text-align: center;">今すぐ無料で始める</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <h3>プレミアム</h3>
+                <div class="price">¥498<span class="price-period">/月</span></div>
+                <p style="font-size: 14px; color: #999; margin-bottom: 20px;">30日間は無料で試す</p>
+                <ul class="features-list">
+                    <li>全ストーリーにアクセス</li>
+                    <li>毎月の成長レポート</li>
+                    <li>レーダーチャート分析</li>
+                    <li>親向けレポート解説動画</li>
+                    <li>優先サポート</li>
+                </ul>
+                <a href="#" class="cta-primary" style="width: 100%; text-align: center;">無料トライアルを開始</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <h2>❓ よくある質問</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>対象年齢は？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>小学3-4年生（8-10歳）を主対象としています。物語の内容や語彙も、この年代が理解しやすいように設計されています。小5・6でもご利用いただけます。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>1日どのくらい使う？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1つのストーリーは約5分で完了します。毎日1話読むことをお勧めしていますが、お子さんのペースで自由に進められます。オフライン対応なので、通学時などの隙間時間での活用も可能です。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>個人情報は安全？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>COPPA（児童オンラインプライバシー保護法）に完全準拠しています。お子さんから収集するのは名前と学年のみ。選択履歴やレポート生成に必要な最小限の情報に限定し、第三者に共有することはありません。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>キャンセル・退会はいつでもできる？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>はい、いつでも退会できます。無料トライアル中のキャンセルはもちろん、サブスクリプション後も次回請求日の前日までにキャンセルすれば、追加料金は発生しません。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>学校の道徳の授業とはどう違う？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>学校の道徳は「正解」を学ぶことが多いですが、このアプリは「自分で考える力」を育てることに焦点を当てています。親さんも月次レポートでお子さんの判断パターンを理解でき、家庭での対話がより深くなります。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>月次レポートは何が分かる？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>6つの判断基準（思いやり、勇気、正直さ、責任感、公正さ、感謝の気持ち）を可視化します。レーダーチャートで前月比の成長が一目瞭然。親向けの解説動画もあり、結果をどう活かすかが分かります。</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>複数のお子さんで使える？</span>
+                    <span class="faq-toggle">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>1つのアカウント（親さんのメールアドレス）で、複数のお子さんを登録・管理できます。お子さんごとに独立したレポートが生成されます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>お子さんの判断力の成長、見守ってみませんか？</h2>
+        <p style="margin-bottom: 30px; font-size: 16px;">無料トライアル・クレジットカード不要</p>
+        <a href="#" class="cta-primary">14日間無料で始める</a>
+    </section>
+
+    <!-- フッター -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#privacy">プライバシーポリシー</a>
+                <a href="#terms">利用規約</a>
+                <a href="#contact">お問い合わせ</a>
+                <a href="#company">会社情報</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 小学コレ！道徳 - All rights reserved.</p>
+                <p>COPPA準拠・お子さんのプライバシー保護を最優先しています</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ アコーディオン機能
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                this.parentElement.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

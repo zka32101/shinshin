@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  # ============ Flutter Tests ============
+  # ============ Flutter Unit & Integration Tests ============
   flutter-test:
     name: Flutter Tests
     runs-on: ubuntu-latest
@@ -30,14 +30,35 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Run tests
-        run: flutter test --coverage
+      - name: Run unit tests
+        run: flutter test --coverage --exclude-tags="integration"
+
+      - name: Run integration tests
+        run: flutter test test/integration_tests/ --coverage
+
+      - name: Run performance tests
+        run: flutter test test/performance_test.dart --coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           file: coverage/lcov.info
           flags: flutter
+
+      - name: Generate coverage report
+        if: always()
+        run: |
+          if command -v genhtml &> /dev/null; then
+            genhtml coverage/lcov.info -o coverage/html
+            echo "Coverage report generated"
+          fi
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: ./coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   # ============ Backend Tests ============
   backend-test:
@@ -89,11 +110,102 @@ jobs:
           file: backend/coverage.xml
           flags: backend
 
+  # ============ Detailed Integration Tests ============
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: flutter-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run app flow tests
+        run: flutter test test/integration_tests/app_flow_test.dart -v
+
+      - name: Run firebase integration tests
+        run: flutter test test/integration_tests/firebase_integration_test.dart -v
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results/
+          retention-days: 30
+
+  # ============ Performance Tests ============
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: flutter-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run performance benchmarks
+        run: flutter test test/performance_test.dart --verbose 2>&1 | tee perf-results.txt
+
+      - name: Parse performance results
+        if: always()
+        run: |
+          echo "## Performance Test Results" >> $GITHUB_STEP_SUMMARY
+          grep -E "Performance Benchmark Report|Average:|Min:|Max:|Count:" perf-results.txt >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-results
+          path: perf-results.txt
+          retention-days: 30
+
+      - name: Comment performance on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = fs.readFileSync('perf-results.txt', 'utf8');
+
+            // Check for performance regressions
+            const comment = `## Performance Test Results\n\n\`\`\`\n${results}\n\`\`\``;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
   # ============ Flutter Build Check ============
   flutter-build:
     name: Flutter Build Check
     runs-on: ubuntu-latest
-    needs: flutter-test
+    needs: [flutter-test, integration-tests, performance-tests]
     steps:
       - uses: actions/checkout@v4
 
