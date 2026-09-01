@@ -92,3 +92,15 @@ credentials.json
 *.jks
 *.keystore
 appstore_api_key.p8
+
+# Review artifacts
+_review_result.json
+review_*.json
+
+# JVM crash dumps
+hs_err_pid*.mdmp
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/

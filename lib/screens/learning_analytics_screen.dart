@@ -34,7 +34,7 @@ class LearningAnalyticsScreen extends ConsumerWidget {
         body: TabBarView(
           children: [
             _buildStatisticsTab(),
-            _buildMonthlyAnalyticsTab(ref),
+            _buildMonthlyAnalyticsTab(context, ref),
           ],
         ),
       ),
@@ -72,7 +72,7 @@ class LearningAnalyticsScreen extends ConsumerWidget {
   }
 
   /// 月別学力タブ
-  Widget _buildMonthlyAnalyticsTab(WidgetRef ref) {
+  Widget _buildMonthlyAnalyticsTab(BuildContext context, WidgetRef ref) {
     final analytics = ref.watch(analyticsProvider);
 
     if (analytics == null || analytics.isEmpty) {
@@ -165,12 +165,16 @@ class LearningAnalyticsScreen extends ConsumerWidget {
 
       if (monthlyMap.containsKey(monthStr)) {
         final existing = monthlyMap[monthStr]!;
+        final totalQuestsCompleted = existing.totalQuestsCompleted + daily.questsCompleted;
+        final totalCorrectAnswers = existing.totalCorrectAnswers + daily.correctAnswers;
+        final totalAnswers = existing.totalAnswers + daily.totalAnswers;
+
         monthlyMap[monthStr] = MonthlyStats(
           month: monthStr,
-          totalQuestsCompleted: existing.totalQuestsCompleted + daily.questsCompleted,
-          totalCorrectAnswers: existing.totalCorrectAnswers + daily.correctAnswers,
-          totalAnswers: existing.totalAnswers + daily.totalAnswers,
-          accuracyRate: 0, // Will be calculated below
+          totalQuestsCompleted: totalQuestsCompleted,
+          totalCorrectAnswers: totalCorrectAnswers,
+          totalAnswers: totalAnswers,
+          accuracyRate: totalAnswers > 0 ? totalCorrectAnswers / totalAnswers : 0.0,
           totalStudyMinutes: existing.totalStudyMinutes + daily.studyMinutes,
           totalCoinsEarned: existing.totalCoinsEarned + daily.coinsEarned,
           studyDaysCount: existing.studyDaysCount + 1,
@@ -182,7 +186,7 @@ class LearningAnalyticsScreen extends ConsumerWidget {
           totalQuestsCompleted: daily.questsCompleted,
           totalCorrectAnswers: daily.correctAnswers,
           totalAnswers: daily.totalAnswers,
-          accuracyRate: daily.totalAnswers > 0 ? daily.correctAnswers / daily.totalAnswers : 0,
+          accuracyRate: daily.totalAnswers > 0 ? daily.correctAnswers / daily.totalAnswers : 0.0,
           totalStudyMinutes: daily.studyMinutes,
           totalCoinsEarned: daily.coinsEarned,
           studyDaysCount: 1,
@@ -191,23 +195,8 @@ class LearningAnalyticsScreen extends ConsumerWidget {
       }
     }
 
-    // Recalculate accuracy rates
-    final result = monthlyMap.values.map((m) {
-      final accuracy = m.totalAnswers > 0 ? m.totalCorrectAnswers / m.totalAnswers : 0.0;
-      return MonthlyStats(
-        month: m.month,
-        totalQuestsCompleted: m.totalQuestsCompleted,
-        totalCorrectAnswers: m.totalCorrectAnswers,
-        totalAnswers: m.totalAnswers,
-        accuracyRate: accuracy,
-        totalStudyMinutes: m.totalStudyMinutes,
-        totalCoinsEarned: m.totalCoinsEarned,
-        studyDaysCount: m.studyDaysCount,
-        categoryStats: m.categoryStats,
-      );
-    }).toList();
-
     // Sort by month descending
+    final result = monthlyMap.values.toList();
     result.sort((a, b) => b.month.compareTo(a.month));
     return result;
   }
