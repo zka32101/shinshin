@@ -1,0 +1,50 @@
+name: Manual APK Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK Release
+        run: flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shinshin-release-apk
+          path: build/app/outputs/apk/release/app-release.apk
+          retention-days: 30
+
+      - name: Build Complete
+        run: |
+          echo "✅ APK Build Complete!"
+          echo ""
+          echo "📦 Build Artifact:"
+          ls -lh build/app/outputs/apk/release/app-release.apk
+          echo ""
+          echo "📥 Download: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
