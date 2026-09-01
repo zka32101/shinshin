@@ -4,6 +4,10 @@ import '../ranking/ranking_screen.dart';
 import '../settings/settings_screen.dart';
 import '../library/library_screen.dart';
 import '../report/report_screen.dart';
+import '../learning/piano_learning_screen.dart';
+import '../learning/drawing_screen.dart';
+import '../learning/physical_education_screen.dart';
+import '../learning/color_learning_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -80,6 +84,54 @@ class HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '🎹',
+                    title: 'ピアノ',
+                    subtitle: '音の学習',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const PianoLearningScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '🎨',
+                    title: 'お絵かき',
+                    subtitle: '創意表現',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const DrawingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '⛹️',
+                    title: '体育',
+                    subtitle: '運動の学習',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const PhysicalEducationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '🎨',
+                    title: '色選び',
+                    subtitle: '色の学習',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ColorLearningScreen(),
                         ),
                       );
                     },
