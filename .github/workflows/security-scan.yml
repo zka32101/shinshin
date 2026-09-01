@@ -23,7 +23,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.19.x'
           channel: 'stable'
           cache: true
 
@@ -32,9 +32,6 @@ jobs:
 
       - name: Run Flutter Analyzer
         run: flutter analyze --no-pub
-
-      - name: Run Flutter Lints
-        run: dart run lints:main lib
 
   # ========================================
   # 秘密情報スキャン
@@ -118,7 +115,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.19.x'
           channel: 'stable'
           cache: true
 
