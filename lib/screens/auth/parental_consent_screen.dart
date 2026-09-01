@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/parental_consent.dart';
-import '../../services/auth_service.dart';
+import '../../services/logger_service.dart';
+import '../../providers/auth_provider.dart';
 
 /// 親向け同意確認画面のプロバイダー
 final parentalConsentNotifierProvider = StateNotifierProvider<
@@ -596,12 +597,28 @@ class ParentalConsentNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
 
     try {
-      final authService = ref.read(authServiceProvider);
-      // TODO: 実装 - Firebase Firestore に同意情報を保存
-      await Future.delayed(const Duration(seconds: 2)); // ダミー遅延
+      final firebaseService = ref.read(firebaseServiceProvider);
+      final currentUser = firebaseService.currentUser;
+
+      if (currentUser == null) {
+        throw Exception('User not authenticated. Please sign in first.');
+      }
+
+      // Save parental consent to Firestore for audit trail (COPPA compliance)
+      await firebaseService.saveParentalConsent(
+        parentUid: currentUser.uid,
+        childEmail: childEmail,
+        consentData: consentData,
+        privacyPolicyVersion: '1.0',
+      );
+
+      LoggerService().log(
+        'Parental consent submitted for email: $parentEmail, child: $childEmail',
+      );
 
       state = const AsyncValue.data(null);
     } catch (e, st) {
+      LoggerService().logError('Failed to submit parental consent', e, st);
       state = AsyncValue.error(e, st);
     }
   }

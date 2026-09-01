@@ -4,7 +4,6 @@ import '../models/user.dart';
 import '../services/firebase_service.dart';
 
 final firebaseServiceProvider = Provider((ref) => FirebaseService());
-final authServiceProvider = Provider((ref) => FirebaseService());
 
 // User auth state provider - listens to Firebase auth changes
 final userAuthStateProvider = StreamProvider<firebase_auth.User?>((ref) {

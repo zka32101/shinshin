@@ -187,7 +187,19 @@ class SubscriptionService {
   Future<void> checkAndMarkTrialExpired(String userId) async {
     try {
       final sub = await getSubscriptionInfo(userId);
-      if (sub != null && sub.isInTrial && sub.daysRemainingInTrial! <= 0) {
+      if (sub == null) {
+        _logger.log('No subscription found for user: $userId');
+        return;
+      }
+
+      if (!sub.isInTrial) {
+        _logger.log('User is not in trial: $userId');
+        return;
+      }
+
+      // Safely check daysRemainingInTrial (it should be non-null if isInTrial is true)
+      final daysRemaining = sub.daysRemainingInTrial;
+      if (daysRemaining == null || daysRemaining <= 0) {
         await _firestore
             .collection('users')
             .doc(userId)

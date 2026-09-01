@@ -279,6 +279,8 @@ class RankingService {
         return 'rankings/virtues/respect';
       case RankingType.virtueCooperation:
         return 'rankings/virtues/cooperation';
+      default:
+        throw ArgumentError('Unknown ranking type: $type');
     }
   }
 

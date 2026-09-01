@@ -9,6 +9,26 @@ import '../models/child_profile.dart';
 import 'subscription_service.dart';
 import 'logger_service.dart';
 
+/// Custom exceptions for Firebase operations
+class AuthException implements Exception {
+  final String message;
+  final String? code;
+
+  AuthException(this.message, [this.code]);
+
+  @override
+  String toString() => message;
+}
+
+class ValidationException implements Exception {
+  final String message;
+
+  ValidationException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class FirebaseService {
   late final FirebaseAuth _auth;
   late final FirebaseFirestore _firestore;
@@ -30,13 +50,27 @@ class FirebaseService {
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
   Future<User?> signInWithEmailPassword(String email, String password) async {
+    // Validate input
+    final emailError = validateEmail(email);
+    if (emailError != null) {
+      throw ValidationException(emailError);
+    }
+
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      LoggerService().log('User signed in: $email');
       return credential.user;
-    } on FirebaseAuthException {
+    } on FirebaseAuthException catch (e) {
+      LoggerService().logError('Sign in failed for email: $email', e);
+      throw AuthException(
+        'Sign in failed: ${e.message}',
+        e.code,
+      );
+    } catch (e) {
+      LoggerService().logError('Unexpected error during sign in', e);
       rethrow;
     }
   }
@@ -46,14 +80,43 @@ class FirebaseService {
     String password,
     String displayName,
   ) async {
+    // Validate input
+    final emailError = validateEmail(email);
+    if (emailError != null) {
+      throw ValidationException(emailError);
+    }
+
+    final passwordError = validatePassword(password);
+    if (passwordError != null) {
+      throw ValidationException(passwordError);
+    }
+
+    final displayNameError = validateDisplayName(displayName);
+    if (displayNameError != null) {
+      throw ValidationException(displayNameError);
+    }
+
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      await credential.user?.updateDisplayName(displayName);
+
+      if (credential.user == null) {
+        throw AuthException('User creation returned null');
+      }
+
+      await credential.user!.updateDisplayName(displayName);
+      LoggerService().log('User registered successfully: $email');
       return credential.user;
-    } on FirebaseAuthException {
+    } on FirebaseAuthException catch (e) {
+      LoggerService().logError('Registration failed for email: $email', e);
+      throw AuthException(
+        'Registration failed: ${e.message}',
+        e.code,
+      );
+    } catch (e) {
+      LoggerService().logError('Unexpected error during registration', e);
       rethrow;
     }
   }
@@ -70,6 +133,17 @@ class FirebaseService {
     String displayName,
     List<String> childrenIds,
   ) async {
+    // Validate input
+    final emailError = validateEmail(email);
+    if (emailError != null) {
+      throw ValidationException(emailError);
+    }
+
+    final displayNameError = validateDisplayName(displayName);
+    if (displayNameError != null) {
+      throw ValidationException(displayNameError);
+    }
+
     try {
       await _firestore.collection('users').doc(uid).set({
         'email': email,
@@ -79,10 +153,10 @@ class FirebaseService {
         'subscription': {
           'plan': 'free',
           'status': 'active',
-          'startDate': DateTime.now().toIso8601String(),
+          'startDate': FieldValue.serverTimestamp(),
         },
-        'createdAt': DateTime.now().toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       });
 
       // Initialize trial for new user
@@ -99,15 +173,23 @@ class FirebaseService {
   Future<app_models.User?> getUserProfile(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
-      if (!doc.exists) return null;
+      if (!doc.exists) {
+        LoggerService().log('User profile not found: $uid');
+        return null;
+      }
 
-      final data = doc.data()!;
+      final data = doc.data();
+      if (data == null) {
+        LoggerService().logError('User document exists but has no data: $uid', null);
+        return null;
+      }
+
       final subData = data['subscription'] as Map<String, dynamic>? ?? {};
 
       return app_models.User(
         uid: uid,
-        email: data['email'] as String,
-        displayName: data['displayName'] as String,
+        email: data['email'] as String? ?? '',
+        displayName: data['displayName'] as String? ?? '',
         childrenIds: List<String>.from(data['childrenIds'] as List? ?? []),
         role: data['role'] as String? ?? 'parent',
         subscription: app_models.SubscriptionInfo(
@@ -128,6 +210,7 @@ class FirebaseService {
             : DateTime.now(),
       );
     } catch (e) {
+      LoggerService().logError('Failed to get user profile: $uid', e);
       rethrow;
     }
   }
@@ -191,10 +274,18 @@ class FirebaseService {
   Future<Story> fetchStory(String storyId) async {
     try {
       final doc = await _firestore.collection('stories').doc(storyId).get();
-      if (!doc.exists) throw Exception('Story not found');
+      if (!doc.exists) {
+        throw Exception('Story not found: $storyId');
+      }
 
-      return Story.fromJson({...doc.data()!, 'id': doc.id});
+      final data = doc.data();
+      if (data == null) {
+        throw Exception('Story document exists but has no data: $storyId');
+      }
+
+      return Story.fromJson({...data, 'id': doc.id});
     } catch (e) {
+      LoggerService().logError('Failed to fetch story: $storyId', e);
       rethrow;
     }
   }
@@ -232,10 +323,18 @@ class FirebaseService {
     try {
       final doc =
           await _firestore.collection('quiz_sessions').doc(sessionId).get();
-      if (!doc.exists) throw Exception('Quiz session not found');
+      if (!doc.exists) {
+        throw Exception('Quiz session not found: $sessionId');
+      }
 
-      return QuizSession.fromJson({...doc.data()!, 'id': doc.id});
+      final data = doc.data();
+      if (data == null) {
+        throw Exception('Quiz session document exists but has no data: $sessionId');
+      }
+
+      return QuizSession.fromJson({...data, 'id': doc.id});
     } catch (e) {
+      LoggerService().logError('Failed to fetch quiz session: $sessionId', e);
       rethrow;
     }
   }
@@ -291,10 +390,18 @@ class FirebaseService {
     try {
       final doc =
           await _firestore.collection('child_profiles').doc(childId).get();
-      if (!doc.exists) throw Exception('Child profile not found');
+      if (!doc.exists) {
+        throw Exception('Child profile not found: $childId');
+      }
 
-      return ChildProfile.fromJson({...doc.data()!, 'id': doc.id});
+      final data = doc.data();
+      if (data == null) {
+        throw Exception('Child profile document exists but has no data: $childId');
+      }
+
+      return ChildProfile.fromJson({...data, 'id': doc.id});
     } catch (e) {
+      LoggerService().logError('Failed to fetch child profile: $childId', e);
       rethrow;
     }
   }
@@ -311,6 +418,126 @@ class FirebaseService {
           .map((doc) => ChildProfile.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ========================================================
+  // Validation Functions
+  // ========================================================
+
+  /// Validates email format
+  String? validateEmail(String email) {
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (email.isEmpty) {
+      return 'Email cannot be empty';
+    }
+    if (!emailRegex.hasMatch(email)) {
+      return 'Invalid email format';
+    }
+    return null;
+  }
+
+  /// Validates password strength
+  String? validatePassword(String password) {
+    if (password.isEmpty) {
+      return 'Password cannot be empty';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one number';
+    }
+    return null;
+  }
+
+  /// Validates display name
+  String? validateDisplayName(String displayName) {
+    if (displayName.isEmpty) {
+      return 'Display name cannot be empty';
+    }
+    if (displayName.length < 2) {
+      return 'Display name must be at least 2 characters';
+    }
+    if (displayName.length > 100) {
+      return 'Display name must be less than 100 characters';
+    }
+    return null;
+  }
+
+  // ========================================================
+  // Parental Consent Methods (COPPA Compliance)
+  // ========================================================
+
+  /// Saves parental consent to Firestore for audit trail
+  Future<void> saveParentalConsent({
+    required String parentUid,
+    required String childEmail,
+    required Map<String, bool> consentData,
+    String privacyPolicyVersion = '1.0',
+  }) async {
+    try {
+      final consentId =
+          _firestore.collection('parental_consents').doc().id;
+
+      await _firestore.collection('parental_consents').doc(consentId).set({
+        'id': consentId,
+        'parentUid': parentUid,
+        'childEmail': childEmail,
+        'consentedAt': FieldValue.serverTimestamp(),
+        'privacyPolicyVersion': privacyPolicyVersion,
+        'consentTo': {
+          'dataProcessing': consentData['dataProcessing'] ?? false,
+          'thirdPartySharing': consentData['thirdPartySharing'] ?? false,
+          'analyticsTracking': consentData['analyticsTracking'] ?? false,
+        },
+      });
+
+      LoggerService().log(
+        'Parental consent saved successfully for parent: $parentUid, child: $childEmail',
+      );
+    } catch (e) {
+      LoggerService().logError('Failed to save parental consent', e);
+      rethrow;
+    }
+  }
+
+  /// Revokes parental consent (for COPPA compliance - parent can revoke anytime)
+  Future<void> revokeParentalConsent(String consentId) async {
+    try {
+      await _firestore
+          .collection('parental_consents')
+          .doc(consentId)
+          .update({
+        'revokedAt': FieldValue.serverTimestamp(),
+      });
+
+      LoggerService().log('Parental consent revoked: $consentId');
+    } catch (e) {
+      LoggerService().logError('Failed to revoke parental consent', e);
+      rethrow;
+    }
+  }
+
+  /// Fetches parental consent records for a parent
+  Future<List<Map<String, dynamic>>> getParentalConsents(
+      String parentUid) async {
+    try {
+      final snapshot = await _firestore
+          .collection('parental_consents')
+          .where('parentUid', isEqualTo: parentUid)
+          .where('revokedAt', isNull: true)
+          .get();
+
+      LoggerService()
+          .log('Fetched ${snapshot.docs.length} active consents for parent');
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      LoggerService().logError('Failed to fetch parental consents', e);
       rethrow;
     }
   }
