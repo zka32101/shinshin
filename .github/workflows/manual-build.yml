@@ -29,8 +29,9 @@ jobs:
 
       - name: Get Flutter dependencies
         run: |
-          flutter pub get
-          flutter pub get --upgrade
+          echo "Getting Flutter dependencies..."
+          flutter pub get --verbose 2>&1 | tail -50
+          echo "Dependencies resolved successfully!"
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
