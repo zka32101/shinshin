@@ -1,5 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/avatar_display_widget.dart';
+import '../../utils/sound_effects_utils.dart';
 import '../ranking/ranking_screen.dart';
 import '../settings/settings_screen.dart';
 import '../library/library_screen.dart';
@@ -9,12 +11,13 @@ import '../learning/drawing_screen.dart';
 import '../learning/physical_education_screen.dart';
 import '../learning/color_learning_screen.dart';
 import '../badge/badge_showcase_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('小学コレ！道徳'),
@@ -61,6 +64,18 @@ class HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const RankingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '📈',
+                    title: 'ダッシュボード',
+                    subtitle: '学習統計',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const DashboardScreen(),
                         ),
                       );
                     },
@@ -162,7 +177,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 /// ホーム画面のメニューカード
-class _MenuCard extends StatelessWidget {
+class _MenuCard extends ConsumerWidget {
   final String icon;
   final String title;
   final String subtitle;
@@ -176,7 +191,7 @@ class _MenuCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -185,7 +200,11 @@ class _MenuCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
+        onTap: () {
+          // メニュー選択音を再生
+          SoundEffectsUtils(ref).playButtonTapSound();
+          onTap();
+        },
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

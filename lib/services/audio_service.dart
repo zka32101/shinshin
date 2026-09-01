@@ -1,8 +1,10 @@
 import "package:flutter/foundation.dart";
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class AudioService {
   FlutterTts? _flutterTts;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isInitialized = false;
   bool _isInitializing = false;
 
@@ -27,15 +29,18 @@ class AudioService {
     }
   }
 
-  /// 効果音を再生 (デモ用)
+  /// 効果音を再生 (audio_players パッケージで実装)
   Future<void> playSoundEffect(
     String soundName, {
     double volume = 0.8,
   }) async {
     try {
-      // TODO: audio_players パッケージで実装
-      // 効果音ファイル: assets/sounds/{soundName}.mp3
-      debugPrint('Playing sound effect: $soundName');
+      final volumeClamped = volume.clamp(0.0, 1.0);
+      await _audioPlayer.setVolume(volumeClamped);
+      await _audioPlayer.play(
+        AssetSource('sounds/$soundName.mp3'),
+        volume: volumeClamped,
+      );
     } catch (e) {
       debugPrint('Failed to play sound effect: $e');
     }

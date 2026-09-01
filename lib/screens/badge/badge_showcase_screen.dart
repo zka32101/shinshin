@@ -4,6 +4,7 @@ import '../../models/badge.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/child_provider.dart';
 import '../../providers/badge_provider.dart';
+import '../../utils/sound_effects_utils.dart';
 
 const _primaryColor = Color(0xFF9B59B6);
 const _bgColor = Color(0xFFFAF9FF);
@@ -342,6 +343,12 @@ class _BadgeCard extends ConsumerWidget {
 
         return GestureDetector(
           onTap: () {
+            // バッジをタップした際の音声効果
+            if (isEarned) {
+              SoundEffectsUtils(ref).playBadgeUnlockSound();
+            } else {
+              SoundEffectsUtils(ref).playButtonTapSound();
+            }
             showDialog(
               context: context,
               builder: (ctx) => _BadgeDetailDialog(

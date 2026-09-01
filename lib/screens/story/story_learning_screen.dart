@@ -8,6 +8,7 @@ import '../../providers/progress_provider.dart';
 import '../../providers/quiz_completion_provider.dart';
 import '../../providers/firestore_provider.dart';
 import '../../services/analytics_service.dart';
+import '../../utils/sound_effects_utils.dart';
 import 'story_result_screen.dart';
 import '../../widgets/animated_option_card.dart';
 
@@ -162,6 +163,10 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
       _currentPhase = 'branching'; // Move to branching phase
     });
     _animatePageChange();
+
+    // 選択肢決定音を再生
+    SoundEffectsUtils(ref).playChoiceMadeSound();
+
     AnalyticsService().logChoiceMade(
       storyId: story.id,
       choiceOrder: story.content?.choices.indexOf(choice) ?? -1,
@@ -179,6 +184,9 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   Future<void> _complete(Story story) async {
     if (_completing) return; // 二重送信防止
     setState(() => _completing = true);
+
+    // ストーリー完了音を再生
+    SoundEffectsUtils(ref).playStoryCompleteSound();
 
     final elapsed = DateTime.now().difference(_startTime).inSeconds;
 
