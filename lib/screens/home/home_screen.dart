@@ -1,5 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import '../../widgets/avatar_display_widget.dart';
+import '../ranking/ranking_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -9,6 +11,9 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('小学コレ！道徳'),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF2C2C2C),
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -20,9 +25,120 @@ class HomeScreen extends StatelessWidget {
                 userName: 'ユーザー',
               ),
               const SizedBox(height: 32),
-              // Main content placeholder
-              const Center(
-                child: Text('v1.1 実装中...'),
+
+              // Main menu grid
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                children: [
+                  _MenuCard(
+                    icon: '📖',
+                    title: 'ストーリー',
+                    subtitle: '道徳の学習',
+                    onTap: () {
+                      // TODO: Navigate to story selection screen
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '🏆',
+                    title: 'ランキング',
+                    subtitle: '成績を確認',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const RankingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '📊',
+                    title: 'レポート',
+                    subtitle: '成長を分析',
+                    onTap: () {
+                      // TODO: Navigate to report screen
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '⚙️',
+                    title: '設定',
+                    subtitle: 'アプリ設定',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ホーム画面のメニューカード
+class _MenuCard extends StatelessWidget {
+  final String icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _MenuCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFEEEEEE)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                icon,
+                style: const TextStyle(fontSize: 40),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2C2C2C),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF999999),
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
