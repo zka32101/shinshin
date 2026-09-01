@@ -87,11 +87,26 @@ credentials.json
 # Secrets
 *secret*
 *token*
+.env.local
+.env.*.local
+.env.development.local
+.env.staging.local
+.env.production.local
 
 # App Store & Play Store
 *.jks
 *.keystore
 appstore_api_key.p8
+*_password.txt
+*_base64.txt
+*_info.txt
+
+# iOS 署名関連
+*.mobileprovision
+*.p12
+*.cer
+*.p8
+developer_id_*
 
 # Review artifacts
 _review_result.json

@@ -19,8 +19,33 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    // ========================================
+    // リリース署名設定
+    // 環境変数またはlocal.propertiesから読み込み
+    // ========================================
+    signingConfigs {
+        // リリース用署名設定
+        // GitHub Actions では環境変数から読み込み
+        // ローカルビルドでは gradle.properties から読み込み
+        create("release") {
+            // キーストアファイルパス
+            // 環境変数: KEYSTORE_PATH (デフォルト: ~/.shougaku-kore-release.jks)
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+                ?: file("${System.getProperty("user.home")}/.shougaku-kore-release.jks").absolutePath
+
+            // キーストアの詳細情報
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("KEYSTORE_ALIAS") ?: "shougaku-kore-key"
+            keyPassword = System.getenv("KEYSTORE_KEY_PASSWORD") ?: ""
+
+            // ストアタイプ
+            storeType = "jks"
+        }
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // アプリケーション ID
         applicationId = "jp.petitworks.shougaku_kore_doutoku"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -31,10 +56,30 @@ android {
     }
 
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+        // ========================================
+        // Debug ビルド設定
+        // ========================================
+        debug {
+            // デバッグビルドは既存のデバッグ署名を使用
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+        }
+
+        // ========================================
+        // Release ビルド設定
+        // ========================================
+        release {
+            // リリースビルドはリリース署名を使用
+            // 本番環境に公開するビルドには必須
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            // ProGuard/R8 ルールファイル
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

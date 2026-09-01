@@ -2,7 +2,7 @@ name: shougaku_kore_doutoku
 description: "小学コレ！道徳 ～かっこいい大人になるために～。小学3-4年生が、日常のジレンマを選択肢型ストーリーで体験しながら、親向けの月次成長レポートで判断力の成長を見守るサブスク型道徳学習アプリ。"
 publish_to: 'none'
 
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.3.0
@@ -57,8 +57,16 @@ dependencies:
   # Secure Storage (for tokens)
   flutter_secure_storage: ^9.2.0
 
+  # In-App Purchase
+  in_app_purchase: ^3.1.0
+  in_app_purchase_android: ^0.3.3
+  in_app_purchase_storekit: ^0.3.10
+
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+
+  integration_test:
     sdk: flutter
 
   flutter_lints: ^5.0.0
@@ -71,6 +79,9 @@ dev_dependencies:
   # Test helpers
   path_provider_platform_interface: ^2.1.0
   plugin_platform_interface: ^2.1.0
+  mockito: ^5.4.4
+  fake_cloud_firestore: ^3.0.0
+  firebase_auth_mocks: ^0.13.0
 
 flutter:
   uses-material-design: true

@@ -6,6 +6,8 @@ import '../models/story.dart';
 import '../models/question.dart';
 import '../models/quiz_session.dart';
 import '../models/child_profile.dart';
+import 'subscription_service.dart';
+import 'logger_service.dart';
 
 class FirebaseService {
   late final FirebaseAuth _auth;
@@ -68,19 +70,30 @@ class FirebaseService {
     String displayName,
     List<String> childrenIds,
   ) async {
-    await _firestore.collection('users').doc(uid).set({
-      'email': email,
-      'displayName': displayName,
-      'childrenIds': childrenIds,
-      'role': 'parent',
-      'subscription': {
-        'plan': 'free',
-        'status': 'active',
-        'startDate': DateTime.now().toIso8601String(),
-      },
-      'createdAt': DateTime.now().toIso8601String(),
-      'updatedAt': DateTime.now().toIso8601String(),
-    });
+    try {
+      await _firestore.collection('users').doc(uid).set({
+        'email': email,
+        'displayName': displayName,
+        'childrenIds': childrenIds,
+        'role': 'parent',
+        'subscription': {
+          'plan': 'free',
+          'status': 'active',
+          'startDate': DateTime.now().toIso8601String(),
+        },
+        'createdAt': DateTime.now().toIso8601String(),
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+
+      // Initialize trial for new user
+      final subscriptionService = SubscriptionService();
+      await subscriptionService.initializeTrialForNewUser(uid);
+
+      LoggerService().log('User profile created and trial initialized: $uid');
+    } catch (e) {
+      LoggerService().logError('Failed to save user profile', e);
+      rethrow;
+    }
   }
 
   Future<app_models.User?> getUserProfile(String uid) async {

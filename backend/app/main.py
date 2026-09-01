@@ -6,6 +6,12 @@ from app.config import get_settings
 from app.api import auth, users, children, stories, quizzes, reports, progress, parent_coaching
 from app.db.database import engine
 from app.db.base import Base
+from app.middleware.security import (
+    SecurityHeadersMiddleware,
+    HTTPSRedirectMiddleware,
+    RateLimitMiddleware,
+    RequestLoggingMiddleware,
+)
 
 settings = get_settings()
 logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO)
@@ -45,13 +51,34 @@ app = FastAPI(
     redoc_url="/redoc" if settings.debug else None,
 )
 
-# CORS設定
+# セキュリティミドルウェア（逆順で登録）
+# 後に登録したものが先に実行される
+
+# リクエストログ
+app.add_middleware(RequestLoggingMiddleware)
+
+# レート制限
+app.add_middleware(
+    RateLimitMiddleware,
+    requests_per_minute=settings.rate_limit_per_minute,
+)
+
+# HTTPS リダイレクト
+if settings.force_https:
+    app.add_middleware(HTTPSRedirectMiddleware, enabled=True)
+
+# セキュリティヘッダー
+if settings.security_headers_enabled:
+    app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS設定 - 本番環境では厳格に制限
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.debug else ["https://shougaku-kore.jp"],
+    allow_origins=settings.get_allowed_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=3600,  # プリフライトリクエストキャッシュ時間（秒）
 )
 
 # ルーター登録

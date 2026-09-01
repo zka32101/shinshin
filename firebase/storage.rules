@@ -1,0 +1,105 @@
+// ========================================================
+// Firebase Storage セキュリティルール
+// 小学コレ！道徳アプリ
+//
+// ストレージ構造:
+// gs://bucket/
+//   ├── profile_images/{userId}/...
+//   ├── story_images/{storyId}/...
+//   └── badges/{badgeId}/...
+// ========================================================
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ========================================================
+    // Helper Functions
+    // ========================================================
+
+    // ユーザーが認証されているか
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // ユーザーが本人のリソースにアクセスしているか
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // ファイルサイズが制限内か（5MB以下）
+    function isValidSize() {
+      return request.resource.size <= 5 * 1024 * 1024;
+    }
+
+    // 画像ファイルか
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // ========================================================
+    // プロフィール画像ディレクトリ
+    // ========================================================
+    match /profile_images/{userId}/{allPaths=**} {
+      // 読み取り: 認証ユーザーのみ
+      allow read: if isAuthenticated();
+
+      // 書き込み: 本人のみ、かつ画像ファイル、かつサイズ制限
+      allow write: if isOwner(userId) &&
+        isImage() &&
+        isValidSize();
+
+      // 削除: 本人のみ
+      allow delete: if isOwner(userId);
+    }
+
+    // ========================================================
+    // ストーリー画像ディレクトリ（管理者がアップロード）
+    // ========================================================
+    match /story_images/{storyId}/{allPaths=**} {
+      // 読み取り: 認証ユーザーのみ（公開コンテンツ）
+      allow read: if isAuthenticated();
+
+      // 書き込み: なし（管理者がサーバーから直接アップロード）
+      allow write: if false;
+
+      // 削除: なし（管理者がサーバーから直接削除）
+      allow delete: if false;
+    }
+
+    // ========================================================
+    // バッジ画像ディレクトリ（管理者がアップロード）
+    // ========================================================
+    match /badges/{badgeId}/{allPaths=**} {
+      // 読み取り: 認証ユーザーのみ（公開コンテンツ）
+      allow read: if isAuthenticated();
+
+      // 書き込み: なし（管理者がサーバーから直接アップロード）
+      allow write: if false;
+
+      // 削除: なし
+      allow delete: if false;
+    }
+
+    // ========================================================
+    // サムネイル画像（管理者作成）
+    // ========================================================
+    match /thumbnails/{imageType}/{id}/{allPaths=**} {
+      // 読み取り: 認証ユーザーのみ
+      allow read: if isAuthenticated();
+
+      // 書き込み: なし
+      allow write: if false;
+
+      // 削除: なし
+      allow delete: if false;
+    }
+
+    // ========================================================
+    // その他のパスはすべてアクセス禁止
+    // ========================================================
+    match /{allPaths=**} {
+      allow read, write, delete: if false;
+    }
+  }
+}
