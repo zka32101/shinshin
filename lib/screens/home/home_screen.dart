@@ -9,6 +9,7 @@ import '../learning/drawing_screen.dart';
 import '../learning/physical_education_screen.dart';
 import '../learning/color_learning_screen.dart';
 import '../badge/badge_showcase_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -61,6 +62,18 @@ class HomeScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const RankingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuCard(
+                    icon: '📈',
+                    title: 'ダッシュボード',
+                    subtitle: '学習統計',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const DashboardScreen(),
                         ),
                       );
                     },

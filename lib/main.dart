@@ -16,6 +16,7 @@ import 'screens/learning/drawing_screen.dart';
 import 'screens/learning/physical_education_screen.dart';
 import 'screens/learning/color_learning_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
+import 'screens/dashboard/dashboard_screen.dart';
 import 'services/logger_service.dart';
 
 void main() async {
@@ -176,6 +177,7 @@ class ShougakuKoreDoutokuApp extends StatelessWidget {
         '/avatar_selection': (context) => const AvatarSelectionScreen(),
         '/avatar_shop': (context) => const AvatarShopScreen(),
         '/ranking': (context) => const RankingScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
         '/badge_showcase': (context) => const BadgeShowcaseScreen(),
         '/piano': (context) => const PianoLearningScreen(),
         '/drawing': (context) => const DrawingScreen(),
