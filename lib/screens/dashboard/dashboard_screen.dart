@@ -5,11 +5,11 @@ import '../../providers/child_provider.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/badge_provider.dart';
 import '../../providers/ranking_provider.dart';
-
-const _primaryColor = Color(0xFF9B59B6);
-const _bgColor = Color(0xFFFAF9FF);
-const _textPrimary = Color(0xFF2C2C2C);
-const _textSecondary = Color(0xFF888888);
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
+import '../../constants/app_constants.dart';
+import '../../widgets/common_states.dart';
+import '../../utils/logging_utils.dart';
 
 /// ダッシュボード画面 — 子どもの学習進捗を視覚的に表示
 /// 統計情報、バッジ、アクティビティ、成長トレンドを表示
@@ -23,25 +23,26 @@ class DashboardScreen extends ConsumerWidget {
 
     if (childId == null) {
       return Scaffold(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.bgPrimary,
         appBar: AppBar(
           title: const Text('ダッシュボード'),
-          backgroundColor: Colors.white,
-          foregroundColor: _textPrimary,
+          backgroundColor: AppColors.bgSecondary,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
-        body: const Center(
-          child: Text('子どもを選択してください'),
+        body: CommonEmptyState(
+          message: '子どもを選択してください',
+          icon: Icons.person_outline,
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         title: const Text('ダッシュボード'),
-        backgroundColor: Colors.white,
-        foregroundColor: _textPrimary,
+        backgroundColor: AppColors.bgSecondary,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: _DashboardContent(childId: childId),
@@ -50,6 +51,7 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 /// Extracted to reduce rebuild frequency and isolate provider dependencies
+/// Handles loading/error states with RefreshIndicator for data refresh
 class _DashboardContent extends ConsumerWidget {
   final String childId;
 
@@ -57,44 +59,53 @@ class _DashboardContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Only watch the profile name (using .select() to optimize rebuilds)
-    final childName = ref.watch(
-      currentChildProfileProvider.select(
-        (asyncProfile) => asyncProfile.maybeWhen(
-          data: (profile) => profile?.name ?? 'ユーザー',
-          orElse: () => 'ユーザー',
+    // Watch the full profile for state handling
+    final childProfile = ref.watch(currentChildProfileProvider);
+
+    return childProfile.when(
+      data: (profile) => RefreshIndicator(
+        onRefresh: () async {
+          // ダッシュボード関連データの再取得
+          ref.invalidate(currentChildProfileProvider);
+          ref.invalidate(userProgressProvider(childId));
+          ref.invalidate(earnedBadgesProvider(childId));
+          ref.invalidate(rankingProvider);
+          // リフレッシュ完了待ち
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // グリーティング
+                _GreetingSection(childName: profile?.name ?? 'ユーザー'),
+                const SizedBox(height: 24),
+
+                // 統計カード
+                _StatsSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 学習進捗
+                _ProgressSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 獲得バッジ
+                _BadgesSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 徳目別スコア
+                _VirtueScoresSection(childId: childId),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
         ),
       ),
-    );
-
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // グリーティング
-            _GreetingSection(childName: childName),
-            const SizedBox(height: 24),
-
-            // 統計カード
-            _StatsSection(childId: childId),
-            const SizedBox(height: 24),
-
-            // 学習進捗
-            _ProgressSection(childId: childId),
-            const SizedBox(height: 24),
-
-            // 獲得バッジ
-            _BadgesSection(childId: childId),
-            const SizedBox(height: 24),
-
-            // 徳目別スコア
-            _VirtueScoresSection(childId: childId),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
+      loading: () => const CommonLoadingState(),
+      error: (error, _) => CommonErrorState(error: error.toString()),
     );
   }
 }
@@ -115,11 +126,11 @@ class _GreetingSection extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [_primaryColor, Color(0xFF8E44AD)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppStyles.radiusLarge),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,9 +166,9 @@ class _GreetingSection extends StatelessWidget {
   }
 
   String _getGreeting(int hour) {
-    if (hour < 12) {
+    if (hour < AppConstants.morningBoundary) {
       return '🌅 おはよう';
-    } else if (hour < 18) {
+    } else if (hour < AppConstants.afternoonBoundary) {
       return '☀️ こんにちは';
     } else {
       return '🌙 こんばんは';
@@ -187,7 +198,7 @@ class _StatsSection extends ConsumerWidget {
 
         // 完了したストーリー数
         final completedStories = progressList
-            .where((p) => p.action == 'story_completed')
+            .where((p) => p.action == AppConstants.actionStoryCompleted)
             .length;
 
         return earnedBadges.when(
@@ -249,11 +260,11 @@ class _StatCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFEEEEEE)),
+        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: color.withAlpha(20),
+            color: color.withAlpha(AppConstants.alphaLight),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -264,13 +275,13 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             icon,
-            style: const TextStyle(fontSize: 28),
+            style: const TextStyle(fontSize: AppStyles.fontSizeEmoji),
           ),
           const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: AppStyles.fontSizePageTitle,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -279,8 +290,8 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              fontSize: 11,
-              color: _textSecondary,
+              fontSize: AppStyles.fontSizeSmall,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -307,8 +318,9 @@ class _ProgressSection extends ConsumerWidget {
 
         return weeklyActivity.when(
           data: (counts) {
-            final maxCount = counts.isNotEmpty ? counts.reduce((a, b) => a > b ? a : b) : 1;
-            final dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+            final maxCount = counts.isNotEmpty
+                ? counts.reduce((a, b) => a > b ? a : b)
+                : 1;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,9 +328,9 @@ class _ProgressSection extends ConsumerWidget {
                 const Text(
                   '📈 週間学習活動',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: AppStyles.fontSizeTitle,
                     fontWeight: FontWeight.bold,
-                    color: _textPrimary,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -326,8 +338,9 @@ class _ProgressSection extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Color(0xFFEEEEEE)),
+                    borderRadius:
+                        BorderRadius.circular(AppStyles.radiusMedium),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -335,7 +348,7 @@ class _ProgressSection extends ConsumerWidget {
                     children: [
                       for (int i = 0; i < counts.length; i++)
                         _BarChartItem(
-                          day: dayLabels[i],
+                          day: AppConstants.dayLabels[i],
                           count: counts[i],
                           maxCount: maxCount,
                         ),
@@ -368,7 +381,8 @@ class _BarChartItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = (count / (maxCount > 0 ? maxCount : 1)) * 100;
+    final height = (count / (maxCount > 0 ? maxCount : 1)) *
+        AppConstants.minBarChartHeight;
 
     return Column(
       children: [
@@ -376,28 +390,28 @@ class _BarChartItem extends StatelessWidget {
           Text(
             '$count',
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: AppStyles.fontSizeSmall,
               fontWeight: FontWeight.bold,
-              color: _textPrimary,
+              color: AppColors.textPrimary,
             ),
           )
         else
           const SizedBox(height: 16),
         const SizedBox(height: 4),
         Container(
-          width: 24,
+          width: AppConstants.barWidth,
           height: height,
           decoration: BoxDecoration(
-            color: _primaryColor,
-            borderRadius: BorderRadius.circular(4),
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           day,
           style: const TextStyle(
-            fontSize: 11,
-            color: _textSecondary,
+            fontSize: AppStyles.fontSizeSmall,
+            color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -428,7 +442,7 @@ class _BadgesSection extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: _textPrimary,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -436,15 +450,15 @@ class _BadgesSection extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Color(0xFFEEEEEE)),
+                  borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: const Center(
                   child: Text(
                     'ストーリーを完了してバッジを獲得しよう！',
                     style: TextStyle(
                       fontSize: 13,
-                      color: _textSecondary,
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -468,14 +482,14 @@ class _BadgesSection extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: _textPrimary,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   '全${badges.length}個',
                   style: const TextStyle(
                     fontSize: 12,
-                    color: _textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -497,9 +511,9 @@ class _BadgesSection extends ConsumerWidget {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
                       border: Border.all(
-                        color: _primaryColor.withAlpha(100),
+                        color: AppColors.primary.withAlpha(AppConstants.alphaHighlight),
                         width: 2,
                       ),
                     ),
@@ -518,7 +532,7 @@ class _BadgesSection extends ConsumerWidget {
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: _textPrimary,
+                              color: AppColors.textPrimary,
                             ),
                             textAlign: TextAlign.center,
                             maxLines: 1,
@@ -589,7 +603,7 @@ class _VirtueScoresSection extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: _textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -607,8 +621,8 @@ class _VirtueScoresSection extends ConsumerWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Color(0xFFEEEEEE)),
+                    borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
@@ -626,7 +640,7 @@ class _VirtueScoresSection extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: _textPrimary,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),

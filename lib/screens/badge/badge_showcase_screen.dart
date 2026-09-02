@@ -5,11 +5,9 @@ import '../../providers/progress_provider.dart';
 import '../../providers/child_provider.dart';
 import '../../providers/badge_provider.dart';
 import '../../utils/sound_effects_utils.dart';
-
-const _primaryColor = Color(0xFF9B59B6);
-const _bgColor = Color(0xFFFAF9FF);
-const _textPrimary = Color(0xFF2C2C2C);
-const _textSecondary = Color(0xFF888888);
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
+import '../../widgets/common_states.dart';
 
 /// バッジ図鑑画面 — 獲得可能なすべてのバッジと進捗を表示
 class BadgeShowcaseScreen extends ConsumerWidget {
@@ -21,25 +19,26 @@ class BadgeShowcaseScreen extends ConsumerWidget {
 
     if (childId == null) {
       return Scaffold(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.bgPrimary,
         appBar: AppBar(
           title: const Text('バッジ図鑑'),
-          backgroundColor: Colors.white,
-          foregroundColor: _textPrimary,
+          backgroundColor: AppColors.bgSecondary,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
-        body: const Center(
-          child: Text('子どもを選択してください'),
+        body: CommonEmptyState(
+          message: '子どもを選択してください',
+          icon: Icons.person_outline,
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(
         title: const Text('バッジ図鑑'),
-        backgroundColor: Colors.white,
-        foregroundColor: _textPrimary,
+        backgroundColor: AppColors.bgSecondary,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -52,7 +51,7 @@ class BadgeShowcaseScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [_primaryColor, Color(0xFF8E44AD)],
+                  colors: [AppColors.primary, AppColors.primaryDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -214,7 +213,7 @@ class _BadgeCategorySection extends ConsumerWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: _textPrimary,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -222,7 +221,7 @@ class _BadgeCategorySection extends ConsumerWidget {
               description,
               style: const TextStyle(
                 fontSize: 12,
-                color: _textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -268,7 +267,7 @@ class _BadgeCategorySection extends ConsumerWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _textSecondary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -325,20 +324,37 @@ class _BadgeCard extends ConsumerWidget {
         double progress = 0;
         if (badge.theme != 'all') {
           // 徳目別バッジの場合
-          final virtueProgress = progressList.firstWhere(
-            (p) => p.virtue == badge.theme,
-            orElse: () => null,
-          );
-          if (virtueProgress != null) {
-            progress = (virtueProgress.completionCount / badge.requiredCompletions).clamp(0, 1).toDouble();
+          try {
+            final virtueProgress = progressList.firstWhere(
+              (p) => p.virtue == badge.theme,
+              orElse: () => null,
+            );
+            if (virtueProgress != null && virtueProgress.completionCount != null) {
+              final completionCount = virtueProgress.completionCount is int
+                  ? virtueProgress.completionCount as int
+                  : (virtueProgress.completionCount as num).toInt();
+              progress = (completionCount / badge.requiredCompletions).clamp(0, 1).toDouble();
+            }
+          } catch (e) {
+            progress = 0;
           }
         } else {
           // 全テーマバッジの場合、全体の完了数を数える
-          final totalCompleted = progressList.fold<int>(
-            0,
-            (sum, p) => sum + (p.completionCount as int),
-          );
-          progress = (totalCompleted / badge.requiredCompletions).clamp(0, 1).toDouble();
+          try {
+            final totalCompleted = progressList.fold<int>(
+              0,
+              (sum, p) {
+                if (p.completionCount == null) return sum;
+                final count = p.completionCount is int
+                    ? p.completionCount as int
+                    : (p.completionCount as num).toInt();
+                return sum + count;
+              },
+            );
+            progress = (totalCompleted / badge.requiredCompletions).clamp(0, 1).toDouble();
+          } catch (e) {
+            progress = 0;
+          }
         }
 
         return GestureDetector(
@@ -364,13 +380,13 @@ class _BadgeCard extends ConsumerWidget {
               color: isEarned ? Colors.white : Colors.white70,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isEarned ? _primaryColor.withAlpha(100) : Color(0xFFDDDDDD),
+                color: isEarned ? AppColors.primary.withAlpha(100) : Color(0xFFDDDDDD),
                 width: 2,
               ),
               boxShadow: [
                 if (isEarned)
                   BoxShadow(
-                    color: _primaryColor.withAlpha(30),
+                    color: AppColors.primary.withAlpha(30),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -397,7 +413,7 @@ class _BadgeCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isEarned ? _textPrimary : _textSecondary,
+                          color: isEarned ? AppColors.textPrimary : AppColors.textSecondary,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -420,7 +436,7 @@ class _BadgeCard extends ConsumerWidget {
                             value: progress,
                             minHeight: 3,
                             backgroundColor: Color(0xFFEEEEEE),
-                            valueColor: AlwaysStoppedAnimation(_primaryColor.withAlpha(150)),
+                            valueColor: AlwaysStoppedAnimation(AppColors.primary.withAlpha(150)),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -428,7 +444,7 @@ class _BadgeCard extends ConsumerWidget {
                           '${(progress * 100).toInt()}%',
                           style: const TextStyle(
                             fontSize: 8,
-                            color: _textSecondary,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -482,7 +498,7 @@ class _BadgeDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bgSecondary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Center(
         child: Text(
@@ -498,7 +514,7 @@ class _BadgeDetailDialog extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: _textPrimary,
+              color: AppColors.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -507,7 +523,7 @@ class _BadgeDetailDialog extends StatelessWidget {
             badge.description,
             style: const TextStyle(
               fontSize: 14,
-              color: _textSecondary,
+              color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

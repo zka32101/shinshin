@@ -216,8 +216,10 @@ class AvatarService {
       }
 
       // 選択したアバターが所持しているかチェック
-      final avatar = (await getAllAvatars())
-          .firstWhere((a) => a.id == avatarId);
+      final avatar = (await getAllAvatars()).firstWhere(
+        (a) => a.id == avatarId,
+        orElse: () => throw Exception('アバターが見つかりません'),
+      );
 
       if (!userAvatarInfo.isOwnedAvatar(avatar)) {
         throw Exception('このアバターはまだ購入していません');
@@ -264,8 +266,10 @@ class AvatarService {
       }
 
       // アバターの存在確認
-      final avatar = (await getAllAvatars())
-          .firstWhere((a) => a.id == avatarId);
+      final avatar = (await getAllAvatars()).firstWhere(
+        (a) => a.id == avatarId,
+        orElse: () => throw Exception('アバターが見つかりません'),
+      );
 
       if (avatar.isDefault) {
         throw Exception('デフォルトアバターは購入できません');
