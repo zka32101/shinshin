@@ -18,6 +18,8 @@ import 'screens/learning/color_learning_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'services/logger_service.dart';
+import 'theme/app_theme.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -146,27 +148,21 @@ class _ErrorScreen extends StatelessWidget {
   }
 }
 
-class ShougakuKoreDoutokuApp extends StatelessWidget {
+/// Main app widget with theme support
+class ShougakuKoreDoutokuApp extends ConsumerWidget {
   const ShougakuKoreDoutokuApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch theme mode and brightness
+    ref.watch(initializeThemeProvider);
+    final brightness = ref.watch(brightnessProvider);
+
     return MaterialApp(
       title: '小学コレ！道徳',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: lightTheme(),
+      darkTheme: darkTheme(),
+      themeMode: _themeModeToBrightness(brightness),
       home: const SplashScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
@@ -185,5 +181,10 @@ class ShougakuKoreDoutokuApp extends StatelessWidget {
         '/color_learning': (context) => const ColorLearningScreen(),
       },
     );
+  }
+
+  /// Convert brightness to ThemeMode
+  static ThemeMode _themeModeToBrightness(Brightness brightness) {
+    return brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
   }
 }

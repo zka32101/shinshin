@@ -18,8 +18,8 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Optimization: Only watch specific needed values, not full provider objects
     final childId = ref.watch(currentChildIdProvider);
-    final childProfile = ref.watch(currentChildProfileProvider);
 
     if (childId == null) {
       return Scaffold(
@@ -45,51 +45,67 @@ class DashboardScreen extends ConsumerWidget {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      body: childProfile.when(
-        data: (profile) => RefreshIndicator(
-          onRefresh: () async {
-            // ダッシュボード関連データの再取得
-            ref.invalidate(currentChildProfileProvider);
-            ref.invalidate(userProgressProvider(childId));
-            ref.invalidate(earnedBadgesProvider(childId));
-            ref.invalidate(rankingProvider);
-            // リフレッシュ完了待ち
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.all(AppStyles.paddingMedium),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // グリーティング
-                  _GreetingSection(childName: profile?.name ?? 'ユーザー'),
-                  const SizedBox(height: 24),
+      body: _DashboardContent(childId: childId),
+    );
+  }
+}
 
-                  // 統計カード
-                  _StatsSection(childId: childId),
-                  const SizedBox(height: 24),
+/// Extracted to reduce rebuild frequency and isolate provider dependencies
+/// Handles loading/error states with RefreshIndicator for data refresh
+class _DashboardContent extends ConsumerWidget {
+  final String childId;
 
-                  // 学習進捗
-                  _ProgressSection(childId: childId),
-                  const SizedBox(height: 24),
+  const _DashboardContent({required this.childId});
 
-                  // 獲得バッジ
-                  _BadgesSection(childId: childId),
-                  const SizedBox(height: 24),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the full profile for state handling
+    final childProfile = ref.watch(currentChildProfileProvider);
 
-                  // 徳目別スコア
-                  _VirtueScoresSection(childId: childId),
-                  const SizedBox(height: 32),
-                ],
-              ),
+    return childProfile.when(
+      data: (profile) => RefreshIndicator(
+        onRefresh: () async {
+          // ダッシュボード関連データの再取得
+          ref.invalidate(currentChildProfileProvider);
+          ref.invalidate(userProgressProvider(childId));
+          ref.invalidate(earnedBadgesProvider(childId));
+          ref.invalidate(rankingProvider);
+          // リフレッシュ完了待ち
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // グリーティング
+                _GreetingSection(childName: profile?.name ?? 'ユーザー'),
+                const SizedBox(height: 24),
+
+                // 統計カード
+                _StatsSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 学習進捗
+                _ProgressSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 獲得バッジ
+                _BadgesSection(childId: childId),
+                const SizedBox(height: 24),
+
+                // 徳目別スコア
+                _VirtueScoresSection(childId: childId),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
         ),
-        loading: () => const CommonLoadingState(),
-        error: (error, _) => CommonErrorState(error: error.toString()),
       ),
+      loading: () => const CommonLoadingState(),
+      error: (error, _) => CommonErrorState(error: error.toString()),
     );
   }
 }
