@@ -1,13 +1,12 @@
 # Gitleaks ignore file - Whitelist false positives for development secrets
-# Format: <commit>:<filepath>:<regex pattern>:<line number>
-# Using * for commit field applies to all commits (including git history)
+# Format: commit:filepath:pattern:lineNum
+# Using * for commit applies to all commits in history
+# Pattern is a simplified matcher for the secret string
 # See: https://github.com/gitleaks/gitleaks#ignoring-findings
 
-# Development secret placeholder in config.py (appears in git history)
-*:backend/app/config.py:secret_key:\s*=\s*["\']dev-secret-change-in-production["\']:*
+# Development secret in config.py - applies to all commits
+*:backend/app/config.py:dev-secret-change-in-production:*
 
-# Test secret placeholder in conftest.py
-*:backend/tests/conftest.py:test-secret-key-not-for-production-use-[a-z0-9]+:*
-
-# Also ignore the old test secret format that may be in history
-*:backend/tests/conftest.py:test-secret-key-for-unit-tests-only:*
+# Test secret placeholders in conftest.py
+*:backend/tests/conftest.py:test-secret-key:*
+*:backend/tests/conftest.py:test-secret-key-not-for-production-use:*
