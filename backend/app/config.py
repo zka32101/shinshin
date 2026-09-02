@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # ========================================================================
     # JWT認証設定
     # ========================================================================
-    secret_key: str = "dev-secret-change-in-production"
+    secret_key: str = ""  # Must be set via SECRET_KEY env var in production
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 

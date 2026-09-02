@@ -277,6 +277,63 @@ pana --no-warning
 
 ---
 
-**Document Status**: Draft - Awaiting pubspec.lock generation and CI verification  
-**Next Review**: After pubspec.lock is committed and CI runs  
+## CI Run Results - Attempt 1
+
+**Status**: ❌ All 7 checks still failing (5 commits tested)
+
+### Findings
+
+**Gitleaks Configuration**
+- `.gitleaksignore` format is incorrect
+- Gitleaks still detecting secrets despite ignore file
+- Need to use proper gitleaks configuration format
+- Alternative: Remove secrets from code entirely
+
+**Pubspec.lock Generated**
+- Lock file created but may have formatting issues
+- Flutter dependency resolution still failing
+- Possible causes:
+  - Lock file schema incomplete
+  - Missing platform-specific dependencies
+  - Transitive dependency conflicts not resolved
+
+**Backend Tests**
+- Still failing independently of Flutter issues
+- Test setup or import errors
+- Needs direct investigation of conftest.py
+
+---
+
+## Revised Remediation Strategy
+
+### Approach 1: Fix Gitleaks Directly (Preferred)
+Instead of using `.gitleaksignore`, the better approach is:
+1. Remove the hardcoded secret from `backend/app/config.py`
+2. Use environment variables with empty default
+3. Add validation in production settings
+
+```python
+# Current (line 16):
+secret_key: str = "dev-secret-change-in-production"
+
+# Should be:
+secret_key: str = ""  # Must be set via SECRET_KEY env var
+```
+
+### Approach 2: Fix Flutter Dependencies
+1. Check if pubspec.lock schema is correct
+2. Run `flutter pub get --verbose` to see exact errors
+3. Update CI workflow to show full error output
+4. Consider using `--upgrade` flag in CI
+
+### Approach 3: Fix Backend Tests
+1. Add verbose pytest output to CI
+2. Check import errors in test files
+3. Verify conftest.py database setup
+4. Ensure all test dependencies installed
+
+---
+
+**Document Status**: Updated with CI run results - Next attempt pending  
+**Last Status Check**: 2026-09-02 06:20 UTC (31 notifications, 7 checks failing)  
 **Maintainer**: Phase 5 CI Remediation Task

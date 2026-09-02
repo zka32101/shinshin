@@ -22,7 +22,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -99,10 +99,10 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/shougaku_test
-          SECRET_KEY: test-secret-key
+          SECRET_KEY: test-secret-key-not-for-production-use-12345678
           FIREBASE_PROJECT_ID: test-project
           DEBUG: true
-        run: pytest --cov=app --cov-report=xml
+        run: pytest -vv --cov=app --cov-report=xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -126,7 +126,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -161,7 +161,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -223,7 +223,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs

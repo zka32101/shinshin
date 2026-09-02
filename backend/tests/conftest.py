@@ -8,8 +8,8 @@ from typing import AsyncGenerator
 # Note: config.py uses case_sensitive=True, so lowercase key is required.
 os.environ["database_url"] = "sqlite+aiosqlite:///:memory:"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"  # also uppercase
-os.environ.setdefault("secret_key", "test-secret-key-for-unit-tests-only")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-for-unit-tests-only")
+os.environ.setdefault("secret_key", "test-secret-key-not-for-production-use-12345678")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production-use-12345678")
 os.environ.setdefault("FIREBASE_PROJECT_ID", "test-project")
 
 from httpx import AsyncClient, ASGITransport  # noqa: E402
