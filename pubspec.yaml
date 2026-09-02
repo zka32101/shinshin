@@ -43,7 +43,7 @@ dependencies:
 
   # Audio & Narration
   audioplayers: ^5.2.0
-  flutter_tts: ^4.2.5
+  flutter_tts: ^4.1.0
 
   # Charting (for radar chart in parent report)
   fl_chart: ^0.68.0
