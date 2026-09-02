@@ -195,14 +195,16 @@ class _MenuCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    void _handleTap() {
+      // メニュー選択音を再生
+      SoundEffectsUtils(ref).playButtonTapSound();
+      onTap();
+    }
+
     return AccessibilityUtils.semanticButton(
       label: title,
       hint: subtitle,
-      onPressed: () {
-        // メニュー選択音を再生
-        SoundEffectsUtils(ref).playButtonTapSound();
-        onTap();
-      },
+      onPressed: _handleTap,
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -211,11 +213,7 @@ class _MenuCard extends ConsumerWidget {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-          onTap: () {
-            // メニュー選択音を再生
-            SoundEffectsUtils(ref).playButtonTapSound();
-            onTap();
-          },
+          onTap: _handleTap,
           child: Padding(
             padding: const EdgeInsets.all(AppStyles.paddingMedium),
             child: Column(

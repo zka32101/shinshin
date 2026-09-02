@@ -159,4 +159,27 @@ class AppStyles {
     color: AppColors.primary,
     linearMinHeight: 4,
   );
+
+  // Animation durations
+  static const Duration animationFast = Duration(milliseconds: 200);
+  static const Duration animationNormal = Duration(milliseconds: 350);
+  static const Duration animationSlow = Duration(milliseconds: 400);
+  static const Duration animationPageChange = Duration(milliseconds: 350);
+  static const Duration delaySmall = Duration(milliseconds: 500);
+  static const Duration delayMedium = Duration(milliseconds: 1000);
+
+  // Font sizes
+  static const double fontSizeSmall = 11.0;
+  static const double fontSizeSmallMedium = 12.0;
+  static const double fontSizeBase = 13.0;
+  static const double fontSizeMedium = 14.0;
+  static const double fontSizeTitle = 15.0;
+  static const double fontSizeLarge = 16.0;
+  static const double fontSizeLargeTitle = 17.0;
+  static const double fontSizeXLarge = 18.0;
+  static const double fontSizeHeading = 20.0;
+  static const double fontSizePageTitle = 24.0;
+  static const double fontSizeEmoji = 28.0;
+  static const double fontSizeEmojiLarge = 32.0;
+  static const double fontSizeEmojiXLarge = 40.0;
 }
