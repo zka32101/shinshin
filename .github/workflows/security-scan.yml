@@ -58,8 +58,9 @@ jobs:
           fetch-depth: 1  # Only fetch latest commit to avoid scanning full history
 
       # Gitleaks を使用した秘密情報スキャン
+      # Using v1 to avoid licensing requirements; v2+ requires paid license
       - name: Run Gitleaks Secret Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_VERBOSE: "true"
