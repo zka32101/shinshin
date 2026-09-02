@@ -10,6 +10,8 @@ import '../../providers/quiz_completion_provider.dart';
 import '../../providers/firestore_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../utils/sound_effects_utils.dart';
+import '../../utils/animation_constants.dart';
+import '../../widgets/animations/index.dart';
 import '../../constants/virtue_constants.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
@@ -658,16 +660,21 @@ class _ChoiceView extends StatelessWidget {
             ...?story.content?.choices.asMap().entries.map((e) {
               final labels = ['A', 'B', 'C', 'D'];
               final label = e.key < labels.length ? labels[e.key] : '${e.key + 1}';
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AnimatedOptionCard(
-                  key: ValueKey(e.value.id),
-                  label: label,
-                  text: e.value.text,
-                  isSelected: false,
-                  isCorrect: false,
-                  showFeedback: false,
-                  onTap: () => onChoiceSelected(e.value),
+              return AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 200 + (e.key * 100)),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: AnimatedOptionCard(
+                    key: ValueKey(e.value.id),
+                    label: label,
+                    text: e.value.text,
+                    isSelected: false,
+                    isCorrect: false,
+                    showFeedback: false,
+                    onTap: () => onChoiceSelected(e.value),
+                  ),
                 ),
               );
             }),
@@ -707,74 +714,84 @@ class _BranchingStoryView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 選択の確認
-              Container(
-                padding: const EdgeInsets.all(14),
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withAlpha(AppConstants.alphaVeryLight),
-                  borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-                  border: Border.all(
-                      color: AppColors.primary
-                          .withAlpha(AppConstants.alphaDark)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'あなたの選択',
-                      style: TextStyle(
-                        fontSize: AppStyles.fontSizeSmallMedium,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 200),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary
+                        .withAlpha(AppConstants.alphaVeryLight),
+                    borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                    border: Border.all(
+                        color: AppColors.primary
+                            .withAlpha(AppConstants.alphaDark)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'あなたの選択',
+                        style: TextStyle(
+                          fontSize: AppStyles.fontSizeSmallMedium,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      choice.text,
-                      style: const TextStyle(
-                        fontSize: AppStyles.fontSizeMedium,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                      const SizedBox(height: 6),
+                      Text(
+                        choice.text,
+                        style: const TextStyle(
+                          fontSize: AppStyles.fontSizeMedium,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
               // 分岐ストーリーヘッダー
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary
-                          .withAlpha(AppConstants.alphaLight),
-                      AppColors.primary
-                          .withAlpha(AppConstants.alphaVeryLight)
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-                  border: Border.all(
-                      color: AppColors.primary
-                          .withAlpha(AppConstants.alphaMedium)),
-                ),
-                child: const Row(
-                  children: [
-                    Text('📖', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
-                    SizedBox(width: 8),
-                    Text(
-                      'その後のおはなし',
-                      style: TextStyle(
-                        fontSize: AppStyles.fontSizeBase,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 300),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary
+                            .withAlpha(AppConstants.alphaLight),
+                        AppColors.primary
+                            .withAlpha(AppConstants.alphaVeryLight)
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+                    border: Border.all(
+                        color: AppColors.primary
+                            .withAlpha(AppConstants.alphaMedium)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Text('📖', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
+                      SizedBox(width: 8),
+                      Text(
+                        'その後のおはなし',
+                        style: TextStyle(
+                          fontSize: AppStyles.fontSizeBase,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -792,29 +809,16 @@ class _BranchingStoryView extends StatelessWidget {
               const SizedBox(height: 32),
 
               // 続ける ボタン
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                            AppStyles.radiusMedium)),
-                    elevation: 0,
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'ふりかえりへ',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward),
-                    ],
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 400),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _StoryActionButton(
+                    label: 'ふりかえりへ',
+                    onPressed: onContinue,
+                    icon: Icons.arrow_forward,
                   ),
                 ),
               ),
@@ -859,39 +863,49 @@ class _ReflectionView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 選択ラベル
-              Row(
-                children: [
-                  Text(virtueEmoji,
-                      style: const TextStyle(fontSize: AppStyles.fontSizeEmoji)),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'あなたの選択',
-                    style: TextStyle(
-                      fontSize: AppStyles.fontSizeBase,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 200),
+                child: Row(
+                  children: [
+                    Text(virtueEmoji,
+                        style: const TextStyle(fontSize: AppStyles.fontSizeEmoji)),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'あなたの選択',
+                      style: TextStyle(
+                        fontSize: AppStyles.fontSizeBase,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withAlpha(AppConstants.alphaVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppStyles.radiusMedium),
-                  border: Border.all(
-                      color: AppColors.primary
-                          .withAlpha(AppConstants.alphaDark)),
-                ),
-                child: Text(
-                  choice.text,
-                  style: const TextStyle(
-                    fontSize: AppStyles.fontSizeTitle,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 250),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary
+                        .withAlpha(AppConstants.alphaVeryLight),
+                    borderRadius:
+                        BorderRadius.circular(AppStyles.radiusMedium),
+                    border: Border.all(
+                        color: AppColors.primary
+                            .withAlpha(AppConstants.alphaDark)),
+                  ),
+                  child: Text(
+                    choice.text,
+                    style: const TextStyle(
+                      fontSize: AppStyles.fontSizeTitle,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ),
@@ -899,82 +913,64 @@ class _ReflectionView extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 振り返り
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.reflectionBg,
-                  borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-                  border: Border.all(color: AppColors.reflectionBorder),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text('💭',
-                            style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
-                        SizedBox(width: 8),
-                        Text(
-                          'ふりかえり',
-                          style: TextStyle(
-                            fontSize: AppStyles.fontSizeMedium,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.reflectionText,
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 300),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.reflectionBg,
+                    borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                    border: Border.all(color: AppColors.reflectionBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Text('💭',
+                              style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
+                          SizedBox(width: 8),
+                          Text(
+                            'ふりかえり',
+                            style: TextStyle(
+                              fontSize: AppStyles.fontSizeMedium,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.reflectionText,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      choice.reflection,
-                      style: const TextStyle(
-                        fontSize: AppStyles.fontSizeMedium,
-                        color: AppColors.reflectionText,
-                        height: 1.7,
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      Text(
+                        choice.reflection,
+                        style: const TextStyle(
+                          fontSize: AppStyles.fontSizeMedium,
+                          color: AppColors.reflectionText,
+                          height: 1.7,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
               // 完了ボタン
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onComplete,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                            AppStyles.radiusMedium)),
-                    elevation: 0,
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 350),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _StoryActionButton(
+                    label: '結果を見る',
+                    onPressed: onComplete,
+                    isLoading: isCompleting,
+                    icon: Icons.arrow_forward,
                   ),
-                  child: isCompleting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '結果を見る',
-                              style: TextStyle(
-                                  fontSize: AppStyles.fontSizeLarge,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
-                          ],
-                        ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -1094,6 +1090,121 @@ class _AudioButton extends ConsumerWidget {
       onPressed: () {
         ref.read(isNarrationEnabledProvider.notifier).state = !isNarrating;
       },
+    );
+  }
+}
+
+// ─── ストーリーアクション ボタン ───────────────────
+
+/// Reusable action button with tap feedback and optional loading state
+class _StoryActionButton extends StatefulWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final bool isLoading;
+
+  const _StoryActionButton({
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.isLoading = false,
+  });
+
+  @override
+  State<_StoryActionButton> createState() => _StoryActionButtonState();
+}
+
+class _StoryActionButtonState extends State<_StoryActionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    if (!widget.isLoading) {
+      setState(() => _isPressed = true);
+      _controller.forward();
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+    if (!widget.isLoading && widget.onPressed != null) {
+      widget.onPressed!();
+    }
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+            ),
+            elevation: 0,
+          ),
+          child: widget.isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.label,
+                      style: const TextStyle(
+                        fontSize: AppStyles.fontSizeLarge,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (widget.icon != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(widget.icon),
+                    ],
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }
