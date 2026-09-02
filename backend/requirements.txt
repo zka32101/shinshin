@@ -2,6 +2,7 @@
 uvicorn==0.27.0
 pydantic==2.5.0
 pydantic-settings==2.1.0
+email-validator==2.1.0
 
 firebase-admin==6.4.0
 google-cloud-firestore==2.13.0
