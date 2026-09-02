@@ -97,7 +97,7 @@ class RankingService:
         )
         existing_rankings = existing.scalars().all()
         for ranking in existing_rankings:
-            await session.delete(ranking)
+            session.delete(ranking)
 
         # 全体ランキング（overall）を計算
         await RankingService._calculate_overall_ranking(
