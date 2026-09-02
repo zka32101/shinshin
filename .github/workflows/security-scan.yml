@@ -32,6 +32,13 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Remove potentially corrupted pubspec.lock
+        run: |
+          if [ -f pubspec.lock ]; then
+            echo "Removing existing pubspec.lock to ensure fresh regeneration"
+            rm pubspec.lock
+          fi
+
       - name: Get dependencies
         run: flutter pub get --verbose
 
