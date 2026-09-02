@@ -89,8 +89,8 @@ class Settings(BaseSettings):
     def _validate_production_settings(self):
         """本番環境設定の検証"""
         if self.environment == "production":
-            # SECRET_KEY チェック
-            if self.secret_key == "dev-secret-change-in-production" or len(self.secret_key) < 64:
+            # SECRET_KEY チェック - Production requires long, random key
+            if not self.secret_key or len(self.secret_key) < 64:
                 raise ValueError(
                     "本番環境では SECRET_KEY を64文字以上の "
                     "ランダムな値に設定してください"
