@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ranking.dart';
 import 'logger_service.dart';
+import 'api_service.dart';
 
 /// ランキングサービス
 /// ユーザーのランキング情報とプライバシー設定を管理
@@ -309,21 +310,23 @@ class RankingService {
   /// 月間ランキングを取得（API経由）
   Future<List<RankingEntry>> getMonthlyRanking(RankingGroupType groupType) async {
     try {
-      // TODO: API から月間ランキングを取得
-      // 現在は空のリストを返す（フロントエンド実装用プレースホルダー）
+      final apiService = ApiService();
       _logger.log('Fetching monthly ranking for group type: $groupType');
 
-      // 実装例:
-      // final response = await _apiService.get('/rankings/month/${DateTime.now().toIso8601String().split('T')[0]}?group_type=${_getRankingGroupTypeString(groupType)}');
-      // final entries = <RankingEntry>[];
-      // if (response is List) {
-      //   for (final item in response) {
-      //     entries.add(RankingEntry.fromJson(item));
-      //   }
-      // }
-      // return entries;
+      // 現在の月をYYYY-MM-01形式で取得
+      final today = DateTime.now();
+      final rankingMonth =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-01';
+      final groupTypeStr = _getRankingGroupTypeString(groupType);
 
-      return [];
+      // バックエンドAPIを呼び出し
+      // GET /api/v1/rankings/month/{ranking_month}?group_type=...
+      final entries =
+          await apiService.getMonthlyRanking(rankingMonth, groupTypeStr);
+
+      _logger.log(
+          'Monthly ranking fetched: ${entries.length} entries for $rankingMonth ($groupTypeStr)');
+      return entries;
     } catch (e) {
       _logger.logError('Failed to get monthly ranking', e);
       rethrow;
