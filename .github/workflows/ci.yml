@@ -26,6 +26,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Verify Flutter and Dart versions
+        run: |
+          echo "=== Flutter Version ==="
+          flutter --version
+          echo ""
+          echo "=== Dart Version ==="
+          dart --version
+          echo ""
+          echo "=== Current pubspec.yaml ==="
+          head -15 pubspec.yaml
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."
@@ -34,7 +45,9 @@ jobs:
           echo "Cache cleaned, ready for fresh dependency resolution"
 
       - name: Install dependencies
-        run: flutter pub get --verbose
+        run: |
+          echo "=== Running flutter pub get (verbose) ==="
+          flutter pub get --verbose 2>&1 | tail -100
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
