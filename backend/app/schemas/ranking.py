@@ -28,14 +28,6 @@ class RankingResponse(RankingBase):
         from_attributes = True
 
 
-class RankingListResponse(BaseModel):
-    """ランキング一覧応答スキーマ"""
-    ranking_month: date
-    group_type: Literal["overall", "by_grade", "by_start_month", "combined"]
-    group_value: str | None = None
-    rankings: List["RankingDetailResponse"]
-
-
 class RankingDetailResponse(BaseModel):
     """ランキング詳細応答（子ども情報を含む）"""
     rank: int
@@ -47,3 +39,11 @@ class RankingDetailResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RankingListResponse(BaseModel):
+    """ランキング一覧応答スキーマ"""
+    ranking_month: date
+    group_type: Literal["overall", "by_grade", "by_start_month", "combined"]
+    group_value: str | None = None
+    rankings: List[RankingDetailResponse]
