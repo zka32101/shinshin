@@ -18,22 +18,22 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    appId: '1:000000000000:android:aaaaaaaaaaaaaaaa',
-    messagingSenderId: '000000000000',
+    apiKey: 'PLACEHOLDER_ANDROID_API_KEY_REPLACE_WITH_REAL_KEY',
+    appId: 'PLACEHOLDER_ANDROID_APP_ID',
+    messagingSenderId: 'PLACEHOLDER_MESSAGING_SENDER_ID',
     projectId: 'shougaku-kore-doutoku',
     databaseURL: 'https://shougaku-kore-doutoku.firebaseio.com',
     storageBucket: 'shougaku-kore-doutoku.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    appId: '1:000000000000:ios:bbbbbbbbbbbbbbbb',
-    messagingSenderId: '000000000000',
+    apiKey: 'PLACEHOLDER_IOS_API_KEY_REPLACE_WITH_REAL_KEY',
+    appId: 'PLACEHOLDER_IOS_APP_ID',
+    messagingSenderId: 'PLACEHOLDER_MESSAGING_SENDER_ID',
     projectId: 'shougaku-kore-doutoku',
     databaseURL: 'https://shougaku-kore-doutoku.firebaseio.com',
     storageBucket: 'shougaku-kore-doutoku.appspot.com',
-    iosClientId: 'xxxxxxxx.apps.googleusercontent.com',
+    iosClientId: 'PLACEHOLDER_IOS_CLIENT_ID',
     iosBundleId: 'jp.petitworks.shougakuKoreDoutoku',
   );
 }
