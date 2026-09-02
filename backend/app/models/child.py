@@ -32,6 +32,7 @@ class Child(Base):
     quiz_sessions = relationship("QuizSession", back_populates="child", cascade="all, delete-orphan")
     progress_records = relationship("Progress", back_populates="child", cascade="all, delete-orphan")
     monthly_reports = relationship("MonthlyReport", back_populates="child", cascade="all, delete-orphan")
+    rankings = relationship("Ranking", back_populates="child", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<Child id={self.id} name={self.name} grade={self.grade}>"

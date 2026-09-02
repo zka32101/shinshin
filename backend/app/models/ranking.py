@@ -27,7 +27,7 @@ class Ranking(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
-    child = relationship("Child", foreign_keys=[child_id])
+    child = relationship("Child", foreign_keys=[child_id], back_populates="rankings")
 
     # インデックス: 月ごと、グループごとの検索を高速化
     __table_args__ = (
