@@ -6,6 +6,7 @@ from app.models.progress import Progress
 from app.models.report import MonthlyReport
 from app.models.notification import Notification
 from app.models.weekly_coaching import WeeklyCoachingData
+from app.models.ranking import Ranking
 
 __all__ = [
     "User", "Child",
@@ -15,4 +16,5 @@ __all__ = [
     "MonthlyReport",
     "Notification",
     "WeeklyCoachingData",
+    "Ranking",
 ]

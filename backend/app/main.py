@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
-from app.api import auth, users, children, stories, quizzes, reports, progress, parent_coaching
+from app.api import auth, users, children, stories, quizzes, reports, progress, parent_coaching, rankings
 from app.db.database import engine
 from app.db.base import Base
 from app.middleware.security import (
@@ -90,6 +90,7 @@ app.include_router(stories.router, prefix=f"{PREFIX}/stories", tags=["ストー�
 app.include_router(quizzes.router, prefix=f"{PREFIX}/quizzes", tags=["クイズ"])
 app.include_router(reports.router, prefix=f"{PREFIX}/reports", tags=["レポート"])
 app.include_router(progress.router, prefix=f"{PREFIX}/progress", tags=["進捗"])
+app.include_router(rankings.router, prefix=f"{PREFIX}/rankings", tags=["ランキング"])
 app.include_router(parent_coaching.router, prefix=PREFIX, tags=["親向けコーチング"])
 
 
