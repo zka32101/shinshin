@@ -162,7 +162,7 @@ async def get_child_current_ranking(
 
 @router.post("/calculate/{ranking_month}")
 async def manually_calculate_ranking(
-    ranking_month: date = Query(..., description="ランキング対象月"),
+    ranking_month: date,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
