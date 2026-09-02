@@ -3,7 +3,8 @@ import '../models/progress.dart';
 import '../models/story.dart';
 import '../constants/app_constants.dart';
 import '../utils/date_time_utils.dart';
-import 'story_provider.dart';
+import 'story_provider.dart'
+    show apiServiceProvider, hiveServiceProvider, storiesProvider;
 
 /// 子どもの進捗履歴プロバイダー（Hive オフラインキャッシュ付き）
 /// 学習活動履歴を取得し、ローカルキャッシュでオフライン対応
