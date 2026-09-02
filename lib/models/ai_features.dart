@@ -1,6 +1,6 @@
 ﻿import 'package:json_annotation/json_annotation.dart';
 
-part 'reason_analysis.g.dart';
+part 'ai_features.g.dart';
 
 @JsonSerializable()
 class ReasonAnalysis {
