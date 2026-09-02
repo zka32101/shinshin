@@ -497,7 +497,7 @@ class _BadgesSection extends ConsumerWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
                       border: Border.all(
-                        color: AppColors.primary.withAlpha(100),
+                        color: AppColors.primary.withAlpha(AppConstants.alphaHighlight),
                         width: 2,
                       ),
                     ),
