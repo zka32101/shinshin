@@ -305,4 +305,42 @@ class RankingService {
         return '協力';
     }
   }
+
+  /// 月間ランキングを取得（API経由）
+  Future<List<RankingEntry>> getMonthlyRanking(RankingGroupType groupType) async {
+    try {
+      // TODO: API から月間ランキングを取得
+      // 現在は空のリストを返す（フロントエンド実装用プレースホルダー）
+      _logger.log('Fetching monthly ranking for group type: $groupType');
+
+      // 実装例:
+      // final response = await _apiService.get('/rankings/month/${DateTime.now().toIso8601String().split('T')[0]}?group_type=${_getRankingGroupTypeString(groupType)}');
+      // final entries = <RankingEntry>[];
+      // if (response is List) {
+      //   for (final item in response) {
+      //     entries.add(RankingEntry.fromJson(item));
+      //   }
+      // }
+      // return entries;
+
+      return [];
+    } catch (e) {
+      _logger.logError('Failed to get monthly ranking', e);
+      rethrow;
+    }
+  }
+
+  /// ランキンググループ化タイプの文字列表現を取得
+  String _getRankingGroupTypeString(RankingGroupType type) {
+    switch (type) {
+      case RankingGroupType.overall:
+        return 'overall';
+      case RankingGroupType.byGrade:
+        return 'by_grade';
+      case RankingGroupType.byStartMonth:
+        return 'by_start_month';
+      case RankingGroupType.combined:
+        return 'combined';
+    }
+  }
 }
