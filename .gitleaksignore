@@ -1,0 +1,10 @@
+# Gitleaks ignore file
+# Format: <commit>:<filename>:<pattern>:<lineNumber>
+
+# Allow development secret key placeholder in config.py
+# This is clearly marked as "dev-secret-change-in-production"
+# and is only used for local development and testing
+*:backend/app/config.py:secret_key:*
+
+# Allow test secret keys in conftest.py
+*:backend/tests/conftest.py:test-secret-key:*
