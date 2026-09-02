@@ -1,4 +1,3 @@
-import 'app_colors.dart';
 import 'emoji_constants.dart';
 
 /// Virtue names and their associated metadata
