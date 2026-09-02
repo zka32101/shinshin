@@ -280,8 +280,9 @@ lib/
 - Theme implementation: ✅ Complete (CI infrastructure issues pre-existing)
 - Performance optimization: ✅ Complete
 - Testing implementation: ✅ Complete (100% - 220+ test cases)
+- **Main branch integration**: ✅ Complete (merge conflict resolved 2026-09-02)
 
-**Commits in branch** (15 total):
+**Commits in branch** (16 total):
 Phase 1: 1. `a057366` - Initial theme implementation
 Phase 2: 2. `82bd7a9` - Provider select optimization + documentation  
          3. `9a219bd` - Badge provider caching & memoization
@@ -295,7 +296,14 @@ Phase 3: 5. `727d132` - Phase 3 testing plan + badge provider tests
          11. `711554a` - Story screen optimization tests
          12. `f715fc8` - Badge display optimization tests
          13. `793d5b6` - Stress testing (60+ test files achieved!)
-         14. Plus 2 earlier framework commits
+         14. `4346d24` - Phase 3 complete status update
+         15. `ca64bd9` - **NEW**: Merge main branch conflict resolution
+
+**Merge Resolution**: 
+- ✅ Merged `origin/main` with extracted widget optimization pattern
+- ✅ Combined performance optimization (provider.select()) with UX enhancements (RefreshIndicator)
+- ✅ Resolved `lib/screens/dashboard/dashboard_screen.dart` conflict
+- ✅ Preserved all state handling (loading/error) and refresh functionality
 
 **CI Status**: 
 - 🔴 Multiple checks failing (pre-existing infrastructure issues, same as PR #13)
