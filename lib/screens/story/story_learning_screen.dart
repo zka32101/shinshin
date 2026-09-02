@@ -11,13 +11,11 @@ import '../../providers/firestore_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../utils/sound_effects_utils.dart';
 import '../../constants/virtue_constants.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
+import '../../constants/app_constants.dart';
 import 'story_result_screen.dart';
 import '../../widgets/animated_option_card.dart';
-
-const _primaryColor = Color(0xFF9B59B6);
-const _bgColor = Color(0xFFFAF9FF);
-const _textPrimary = Color(0xFF2C2C2C);
-const _textSecondary = Color(0xFF888888);
 
 /// ストーリー読解画面
 /// 読む → 選択 → 結果の3フェーズ
@@ -41,8 +39,8 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   int _currentPage = 0;
   StoryChoice? _selectedChoice;
 
-  /// Phase tracking: 'reading' → 'choice' → 'branching' → 'reflection' → 'complete'
-  String _currentPhase = 'reading'; // 'reading', 'choice', 'branching', 'reflection'
+  /// Phase tracking: reading → choice → branching → reflection → complete
+  String _currentPhase = AppConstants.phaseReading;
 
   bool _completing = false;
   bool _storyNarrated = false; // 最初のページを自動読み上げ済みかどうか
@@ -61,12 +59,12 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void initState() {
     super.initState();
     _fadeController = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 400));
+      vsync: this, duration: AppStyles.animationSlow);
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
 
     _slideController = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 350));
+      vsync: this, duration: AppStyles.animationNormal);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
         .animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
     _slideController.forward();
@@ -130,7 +128,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void _nextPage(int total) {
     if (_currentPage < total - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 350),
+        duration: AppStyles.animationNormal,
         curve: Curves.easeInOut,
       );
       setState(() => _currentPage++);
@@ -146,7 +144,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void _prevPage() {
     if (_currentPage > 0) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 350),
+        duration: AppStyles.animationNormal,
         curve: Curves.easeInOut,
       );
       setState(() => _currentPage--);
@@ -174,7 +172,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void _selectChoice(Story story, StoryChoice choice) {
     setState(() {
       _selectedChoice = choice;
-      _currentPhase = 'branching'; // Move to branching phase
+      _currentPhase = AppConstants.phaseBranching;
     });
     _animatePageChange();
 
@@ -190,7 +188,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
 
   /// Move to reflection phase after showing the branching story
   void _showReflection() {
-    setState(() => _currentPhase = 'reflection');
+    setState(() => _currentPhase = AppConstants.phaseReflection);
     _animatePageChange();
   }
 
@@ -217,10 +215,14 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
         )).future,
       );
       // オフラインフォールバックは pointsEarned == 0 を返す → ローカル推定値で補完
-      points = result.pointsEarned > 0 ? result.pointsEarned : 15;
+      points = result.pointsEarned > 0
+          ? result.pointsEarned
+          : AppConstants.estimatedPointsWithChoice;
     } else {
       // セッション未開始 (オフライン起動) — ローカル推定値
-      points = _selectedChoice != null ? 15 : 10;
+      points = _selectedChoice != null
+          ? AppConstants.estimatedPointsWithChoice
+          : AppConstants.estimatedPointsWithoutChoice;
     }
 
     if (!mounted) return;
@@ -253,8 +255,9 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
           .catchError((_) {});
     }
 
-    // スコアをポイントから計算: 10pt→70%, 15pt→80%, 20pt→90%, 25pt+→100%
-    final score = (50 + points * 2).clamp(0, 100);
+    // スコアをポイントから計算
+    final score = (AppConstants.scoreBaseValue + points * AppConstants.scorePointMultiplier)
+        .clamp(AppConstants.scoreMinValue, AppConstants.scoreMaxValue);
     final navigator = Navigator.of(context);
     navigator.pushReplacement(
       MaterialPageRoute(
@@ -275,7 +278,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
 
     return storyAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.bgPrimary,
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
@@ -291,21 +294,21 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
     // content が null（リストキャッシュからのフォールバック時）— ローディングを再表示
     if (pages.isEmpty) {
       return const Scaffold(
-        backgroundColor: _bgColor,
-        body: Center(child: CircularProgressIndicator(color: _primaryColor)),
+        backgroundColor: AppColors.bgPrimary,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
     final isLastReadPage = _currentPage == pages.length - 1;
 
     // 初回表示時にナレーション自動起動
-    if (!_storyNarrated && _currentPhase == 'reading') {
+    if (!_storyNarrated && _currentPhase == AppConstants.phaseReading) {
       _storyNarrated = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _speakPage(pages));
     }
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.bgPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -314,33 +317,37 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
               story: story,
               currentPage: _currentPage,
               totalPages: pages.length,
-              showOutcome: _currentPhase != 'reading',
+              showOutcome: _currentPhase != AppConstants.phaseReading,
               onClose: () => _confirmExit(context),
             ),
 
             // ─── コンテンツ ───
             Expanded(
-              child: _currentPhase == 'reading' && isLastReadPage
+              child: _currentPhase == AppConstants.phaseReading &&
+                      isLastReadPage
                   ? _ChoiceView(
                       story: story,
                       fadeAnim: _fadeAnim,
                       onChoiceSelected: (c) => _selectChoice(story, c),
                     )
-                  : _currentPhase == 'branching' && _selectedChoice != null
+                  : _currentPhase == AppConstants.phaseBranching &&
+                          _selectedChoice != null
                       ? _BranchingStoryView(
                           choice: _selectedChoice!,
                           fadeAnim: _fadeAnim,
                           slideAnim: _slideAnim,
                           onContinue: _showReflection,
                         )
-                      : _currentPhase == 'reflection' && _selectedChoice != null
+                      : _currentPhase == AppConstants.phaseReflection &&
+                              _selectedChoice != null
                           ? _ReflectionView(
                               choice: _selectedChoice!,
                               fadeAnim: _fadeAnim,
                               slideAnim: _slideAnim,
                               isCompleting: _completing,
-                              onComplete:
-                                  _completing ? null : () => _complete(story),
+                              onComplete: _completing
+                                  ? null
+                                  : () => _complete(story),
                             )
                           : _NarrativePageView(
                               pages: pages,
@@ -352,7 +359,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
             ),
 
             // ─── ナビゲーション ───
-            if (_currentPhase == 'reading' && !isLastReadPage)
+            if (_currentPhase == AppConstants.phaseReading && !isLastReadPage)
               _NavigationBar(
                 currentPage: _currentPage,
                 totalPages: pages.length,
@@ -412,7 +419,7 @@ class _StoryHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [_primaryColor, Color(0xFF8E44AD)],
+          colors: [AppColors.primary, AppColors.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -516,14 +523,14 @@ class _NarrativePageView extends StatelessWidget {
                           horizontal: 10, vertical: 4),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: _primaryColor.withAlpha(25),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.primary.withAlpha(AppConstants.alphaLight),
+                        borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
                       ),
                       child: const Text(
                         'はじめに',
                         style: TextStyle(
-                          color: _primaryColor,
-                          fontSize: 12,
+                          color: AppColors.primary,
+                          fontSize: AppStyles.fontSizeSmallMedium,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -533,18 +540,22 @@ class _NarrativePageView extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3CD),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD43B).withAlpha(100)),
+                        color: AppColors.warningBg,
+                        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                        border: Border.all(
+                            color: AppColors.warningBorder
+                                .withAlpha(AppConstants.alphaHighlight)),
                       ),
                       child: const Row(
                         children: [
-                          Text('⚡', style: TextStyle(fontSize: 18)),
+                          Text('⚡', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'もうすぐジレンマの場面です。よく読んで考えてみよう！',
-                              style: TextStyle(fontSize: 13, color: Color(0xFF856404)),
+                              style: TextStyle(
+                                  fontSize: AppStyles.fontSizeBase,
+                                  color: AppColors.reflectionText),
                             ),
                           ),
                         ],
@@ -553,9 +564,9 @@ class _NarrativePageView extends StatelessWidget {
                   Text(
                     pages[index],
                     style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: AppStyles.fontSizeLargeTitle,
                       height: 2.0,
-                      color: _textPrimary,
+                      color: AppColors.textPrimary,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -596,9 +607,11 @@ class _ChoiceView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3E5F5),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _primaryColor.withAlpha(60)),
+                color: AppColors.dilemmaBg,
+                borderRadius: BorderRadius.circular(AppStyles.radiusLarge),
+                border: Border.all(
+                    color: AppColors.primary
+                        .withAlpha(AppConstants.alphaDark)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,9 +623,9 @@ class _ChoiceView extends StatelessWidget {
                       Text(
                         'どうする？',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: AppStyles.fontSizeTitle,
                           fontWeight: FontWeight.bold,
-                          color: _primaryColor,
+                          color: AppColors.primary,
                         ),
                       ),
                     ],
@@ -621,9 +634,9 @@ class _ChoiceView extends StatelessWidget {
                   Text(
                     story.content?.dilemmaScene ?? '',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: AppStyles.fontSizeLarge,
                       height: 1.8,
-                      color: _textPrimary,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -634,9 +647,9 @@ class _ChoiceView extends StatelessWidget {
             const Text(
               'どれを選ぶ？',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: AppStyles.fontSizeMedium,
                 fontWeight: FontWeight.w600,
-                color: _textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -698,9 +711,12 @@ class _BranchingStoryView extends StatelessWidget {
                 padding: const EdgeInsets.all(14),
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: _primaryColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _primaryColor.withAlpha(60)),
+                  color: AppColors.primary
+                      .withAlpha(AppConstants.alphaVeryLight),
+                  borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                  border: Border.all(
+                      color: AppColors.primary
+                          .withAlpha(AppConstants.alphaDark)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,8 +724,8 @@ class _BranchingStoryView extends StatelessWidget {
                     const Text(
                       'あなたの選択',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: _textSecondary,
+                        fontSize: AppStyles.fontSizeSmallMedium,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -717,9 +733,9 @@ class _BranchingStoryView extends StatelessWidget {
                     Text(
                       choice.text,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: AppStyles.fontSizeMedium,
                         fontWeight: FontWeight.w600,
-                        color: _primaryColor,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -732,23 +748,30 @@ class _BranchingStoryView extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [_primaryColor.withAlpha(30), _primaryColor.withAlpha(15)],
+                    colors: [
+                      AppColors.primary
+                          .withAlpha(AppConstants.alphaLight),
+                      AppColors.primary
+                          .withAlpha(AppConstants.alphaVeryLight)
+                    ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _primaryColor.withAlpha(80)),
+                  borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+                  border: Border.all(
+                      color: AppColors.primary
+                          .withAlpha(AppConstants.alphaMedium)),
                 ),
                 child: const Row(
                   children: [
-                    Text('📖', style: TextStyle(fontSize: 16)),
+                    Text('📖', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
                     SizedBox(width: 8),
                     Text(
                       'その後のおはなし',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AppStyles.fontSizeBase,
                         fontWeight: FontWeight.w700,
-                        color: _primaryColor,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -759,9 +782,9 @@ class _BranchingStoryView extends StatelessWidget {
               Text(
                 choice.branchContent,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: AppStyles.fontSizeLarge,
                   height: 2.0,
-                  color: _textPrimary,
+                  color: AppColors.textPrimary,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -774,11 +797,12 @@ class _BranchingStoryView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onContinue,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(
+                            AppStyles.radiusMedium)),
                     elevation: 0,
                   ),
                   child: const Row(
@@ -837,13 +861,14 @@ class _ReflectionView extends StatelessWidget {
               // 選択ラベル
               Row(
                 children: [
-                  Text(virtueEmoji, style: const TextStyle(fontSize: 28)),
+                  Text(virtueEmoji,
+                      style: const TextStyle(fontSize: AppStyles.fontSizeEmoji)),
                   const SizedBox(width: 10),
                   const Text(
                     'あなたの選択',
                     style: TextStyle(
-                      fontSize: 13,
-                      color: _textSecondary,
+                      fontSize: AppStyles.fontSizeBase,
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -853,16 +878,20 @@ class _ReflectionView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _primaryColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _primaryColor.withAlpha(60)),
+                  color: AppColors.primary
+                      .withAlpha(AppConstants.alphaVeryLight),
+                  borderRadius:
+                      BorderRadius.circular(AppStyles.radiusMedium),
+                  border: Border.all(
+                      color: AppColors.primary
+                          .withAlpha(AppConstants.alphaDark)),
                 ),
                 child: Text(
                   choice.text,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: AppStyles.fontSizeTitle,
                     fontWeight: FontWeight.w600,
-                    color: _primaryColor,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -873,23 +902,24 @@ class _ReflectionView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFFFE082)),
+                  color: AppColors.reflectionBg,
+                  borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                  border: Border.all(color: AppColors.reflectionBorder),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Text('💭', style: TextStyle(fontSize: 18)),
+                        Text('💭',
+                            style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
                         SizedBox(width: 8),
                         Text(
                           'ふりかえり',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: AppStyles.fontSizeMedium,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF856404),
+                            color: AppColors.reflectionText,
                           ),
                         ),
                       ],
@@ -898,8 +928,8 @@ class _ReflectionView extends StatelessWidget {
                     Text(
                       choice.reflection,
                       style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF856404),
+                        fontSize: AppStyles.fontSizeMedium,
+                        color: AppColors.reflectionText,
                         height: 1.7,
                       ),
                     ),
@@ -915,11 +945,12 @@ class _ReflectionView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onComplete,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(
+                            AppStyles.radiusMedium)),
                     elevation: 0,
                   ),
                   child: isCompleting
@@ -937,7 +968,8 @@ class _ReflectionView extends StatelessWidget {
                             Text(
                               '結果を見る',
                               style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                                  fontSize: AppStyles.fontSizeLarge,
+                                  fontWeight: FontWeight.bold),
                             ),
                             SizedBox(width: 8),
                             Icon(Icons.arrow_forward),
@@ -977,13 +1009,7 @@ class _NavigationBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(15),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: AppStyles.shadowSmall,
       ),
       child: Row(
         children: [
@@ -995,9 +1021,10 @@ class _NavigationBar extends StatelessWidget {
                 onPressed: onPrev,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: const BorderSide(color: Color(0xFFE0E0E0)),
+                  side: const BorderSide(color: AppColors.border),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius:
+                          BorderRadius.circular(AppStyles.radiusMedium)),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1018,11 +1045,13 @@ class _NavigationBar extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onNext,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isNearEnd ? const Color(0xFFE74C3C) : _primaryColor,
+                backgroundColor:
+                    isNearEnd ? AppColors.error : AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius:
+                        BorderRadius.circular(AppStyles.radiusMedium)),
                 elevation: 0,
               ),
               child: Row(
@@ -1031,7 +1060,7 @@ class _NavigationBar extends StatelessWidget {
                   Text(
                     isNearEnd ? '選択へ進む 🤔' : '次のページへ',
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: AppStyles.fontSizeTitle,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

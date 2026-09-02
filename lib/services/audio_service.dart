@@ -128,14 +128,16 @@ class AudioService {
   }
 
   /// 音声再生を再開
-  // Note: FlutterTts doesn't have a resume method, use speak instead
+  /// Note: FlutterTts doesn't have a resume method.
+  /// Implementation would require storing the text and re-speaking it,
+  /// which is not a standard UX pattern for text-to-speech in this app.
+  /// Consider using a different architecture if resume is critical.
   Future<void> resume() async {
     try {
-      // Resume is not available in flutter_tts
-      // Re-speaking the text would be required
-      debugPrint('Resume not available in current flutter_tts version');
+      debugPrint(
+          'Resume not available in current flutter_tts version - stop and re-speak required');
     } catch (e) {
-      debugPrint('Failed to resume audio: $e');
+      debugPrint('Error in resume method: $e');
     }
   }
 

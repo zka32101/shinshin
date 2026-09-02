@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// アプリケーション全体で使用する色定義
 class AppColors {
   // Primary color palette
@@ -41,4 +43,17 @@ class AppColors {
   // Shimmer/Loading colors
   static const Color shimmerBase = Color(0xFFF0F0F0);
   static const Color shimmerHighlight = Color(0xFFE0E0E0);
+
+  // Additional color constants for UI elements
+  static const Color dilemmaBg = Color(0xFFF3E5F5);
+  static const Color warningBg = Color(0xFFFFF3CD);
+  static const Color warningBorder = Color(0xFFFFD43B);
+  static const Color reflectionBg = Color(0xFFFFF8E1);
+  static const Color reflectionBorder = Color(0xFFFFE082);
+  static const Color reflectionText = Color(0xFF856404);
+  static const Color scoreGreen = Color(0xFF27AE60);
+  static const Color scoreYellow = Color(0xFF2ECC71);
+  static const Color scoreOrange = Color(0xFFF39C12);
+  static const Color scoreRed = Color(0xFFE74C3C);
+  static const Color lightPurple = Color(0xFFF3E8FF);
 }
