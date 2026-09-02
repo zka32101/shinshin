@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/story.dart';
@@ -9,6 +10,7 @@ import '../../providers/quiz_completion_provider.dart';
 import '../../providers/firestore_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../utils/sound_effects_utils.dart';
+import '../../constants/virtue_constants.dart';
 import 'story_result_screen.dart';
 import '../../widgets/animated_option_card.dart';
 
@@ -75,7 +77,10 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
 
   /// バックグラウンドでクイズセッションを開始する。
   /// オフラインや失敗時は _sessionId が null のまま → ローカル完了フォールバック。
+  /// マウント状態と widget.childId が有効であることを確認してから実行。
   Future<void> _startSession() async {
+    if (!mounted || widget.childId.isEmpty) return;
+
     try {
       final id = await ref.read(
         quizStartProvider((
@@ -83,9 +88,13 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
           storyId: widget.storyId,
         )).future,
       );
-      if (mounted) setState(() => _sessionId = id);
-    } catch (_) {
+      // setStateの前に再度マウント状態を確認
+      if (mounted && id != null) {
+        setState(() => _sessionId = id);
+      }
+    } catch (e) {
       // オフライン or API エラー — セッション ID なしで続行
+      debugPrint('Failed to start quiz session: $e');
     }
   }
 
@@ -93,8 +102,13 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   void dispose() {
     // ナレーション停止 — ProviderScope が先に破棄された場合（テスト等）は無視
     try {
-      ref.read(audioControllerProvider.notifier).stop();
-    } catch (_) {}
+      if (mounted) {
+        final audioController = ref.read(audioControllerProvider.notifier);
+        audioController.stop();
+      }
+    } catch (e) {
+      debugPrint('Error stopping audio during dispose: $e');
+    }
     _pageController.dispose();
     _fadeController.dispose();
     _slideController.dispose();
@@ -809,7 +823,7 @@ class _ReflectionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final virtueEmoji = _virtueEmoji(choice.value ?? '');
+    final virtueEmoji = VirtueConstants.getVirtueEmoji(choice.value);
 
     return FadeTransition(
       opacity: fadeAnim,
@@ -937,201 +951,6 @@ class _ReflectionView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _virtueEmoji(String value) {
-    switch (value) {
-      case 'kindness': return '💜';
-      case 'honesty': return '💛';
-      case 'responsibility': return '💙';
-      case 'courage': return '❤️';
-      case 'respect': return '💚';
-      case 'cooperation': return '🧡';
-      default: return '⭐';
-    }
-  }
-}
-
-// ─── 選択後の結果表示 ──────────────────────────────
-
-class _OutcomeView extends StatelessWidget {
-  final StoryChoice choice;
-  final Animation<double> fadeAnim;
-  final Animation<Offset> slideAnim;
-  final VoidCallback? onComplete;
-  final bool isCompleting;
-
-  const _OutcomeView({
-    required this.choice,
-    required this.fadeAnim,
-    required this.slideAnim,
-    required this.onComplete,
-    this.isCompleting = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final virtueEmoji = _virtueEmoji(choice.value ?? '');
-
-    return FadeTransition(
-      opacity: fadeAnim,
-      child: SlideTransition(
-        position: slideAnim,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 選択ラベル
-              Row(
-                children: [
-                  Text(virtueEmoji, style: const TextStyle(fontSize: 28)),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'あなたの選択',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: _textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: _primaryColor.withAlpha(15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _primaryColor.withAlpha(60)),
-                ),
-                child: Text(
-                  choice.text,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: _primaryColor,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // 結果テキスト
-              const Text(
-                '📖 その後のおはなし',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: _textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                choice.branchContent,
-                style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.9,
-                  color: _textPrimary,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // 振り返り
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFFFE082)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text('💭', style: TextStyle(fontSize: 18)),
-                        SizedBox(width: 8),
-                        Text(
-                          'ふりかえり',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF856404),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      choice.reflection,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF856404),
-                        height: 1.7,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // 完了ボタン
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onComplete,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                  child: isCompleting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '結果を見る',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
-                          ],
-                        ),
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _virtueEmoji(String value) {
-    switch (value) {
-      case 'kindness': return '💜';
-      case 'honesty': return '💛';
-      case 'responsibility': return '💙';
-      case 'courage': return '❤️';
-      case 'respect': return '💚';
-      case 'cooperation': return '🧡';
-      default: return '⭐';
-    }
   }
 }
 

@@ -324,20 +324,37 @@ class _BadgeCard extends ConsumerWidget {
         double progress = 0;
         if (badge.theme != 'all') {
           // 徳目別バッジの場合
-          final virtueProgress = progressList.firstWhere(
-            (p) => p.virtue == badge.theme,
-            orElse: () => null,
-          );
-          if (virtueProgress != null) {
-            progress = (virtueProgress.completionCount / badge.requiredCompletions).clamp(0, 1).toDouble();
+          try {
+            final virtueProgress = progressList.firstWhere(
+              (p) => p.virtue == badge.theme,
+              orElse: () => null,
+            );
+            if (virtueProgress != null && virtueProgress.completionCount != null) {
+              final completionCount = virtueProgress.completionCount is int
+                  ? virtueProgress.completionCount as int
+                  : (virtueProgress.completionCount as num).toInt();
+              progress = (completionCount / badge.requiredCompletions).clamp(0, 1).toDouble();
+            }
+          } catch (e) {
+            progress = 0;
           }
         } else {
           // 全テーマバッジの場合、全体の完了数を数える
-          final totalCompleted = progressList.fold<int>(
-            0,
-            (sum, p) => sum + (p.completionCount as int),
-          );
-          progress = (totalCompleted / badge.requiredCompletions).clamp(0, 1).toDouble();
+          try {
+            final totalCompleted = progressList.fold<int>(
+              0,
+              (sum, p) {
+                if (p.completionCount == null) return sum;
+                final count = p.completionCount is int
+                    ? p.completionCount as int
+                    : (p.completionCount as num).toInt();
+                return sum + count;
+              },
+            );
+            progress = (totalCompleted / badge.requiredCompletions).clamp(0, 1).toDouble();
+          } catch (e) {
+            progress = 0;
+          }
         }
 
         return GestureDetector(

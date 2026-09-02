@@ -7,25 +7,60 @@ class AudioService {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isInitialized = false;
   bool _isInitializing = false;
+  String _currentLanguage = 'ja-JP';
+  int _initRetries = 0;
+  static const int _maxRetries = 3;
 
-  AudioService() {
+  AudioService({String language = 'ja-JP'}) {
+    _currentLanguage = language;
     _initializeTts();
   }
 
-  /// TTSを初期化 — 二重初期化を防ぐためフラグで保護
+  /// TTSを初期化 — 二重初期化を防ぐためフラグで保護、失敗時にリトライロジック
   Future<void> _initializeTts() async {
     if (_isInitialized || _isInitializing) return;
     _isInitializing = true;
     try {
       _flutterTts ??= FlutterTts();
-      await _flutterTts!.setLanguage('ja-JP');
+
+      // 言語設定（フォールバック対応）
+      try {
+        await _flutterTts!.setLanguage(_currentLanguage);
+      } catch (e) {
+        debugPrint('Failed to set language $_currentLanguage, trying ja-JP fallback');
+        try {
+          await _flutterTts!.setLanguage('ja-JP');
+          _currentLanguage = 'ja-JP';
+        } catch (fallbackError) {
+          debugPrint('Failed to set fallback language: $fallbackError');
+        }
+      }
+
       await _flutterTts!.setSpeechRate(1.0);
       await _flutterTts!.setVolume(0.8);
       _isInitialized = true;
     } catch (e) {
       debugPrint('Failed to initialize TTS: $e');
+      // リトライロジック
+      if (_initRetries < _maxRetries) {
+        _initRetries++;
+        await Future.delayed(const Duration(milliseconds: 500));
+        _isInitializing = false;
+        await _initializeTts();
+        return;
+      }
     } finally {
       _isInitializing = false;
+    }
+  }
+
+  /// TTS言語を設定（実行時の言語変更に対応）
+  Future<void> setLanguage(String language) async {
+    _currentLanguage = language;
+    try {
+      await _flutterTts?.setLanguage(language);
+    } catch (e) {
+      debugPrint('Failed to set TTS language to $language: $e');
     }
   }
 

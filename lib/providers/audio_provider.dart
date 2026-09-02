@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_service.dart';
 import '../services/hive_service.dart';
+import './locale_provider.dart';
 
 // ── Hive 永続化ノティファイアー ────────────────────────────────────────────
 
@@ -45,8 +46,22 @@ class _DoubleSettingNotifier extends StateNotifier<double> {
 // ── オーディオ設定プロバイダー（アプリ再起動後も復元） ─────────────────────
 
 /// オーディオサービスプロバイダー
+/// ロケール変更に応じてTTS言語を更新
 final audioServiceProvider = Provider((ref) {
-  return AudioService();
+  final locale = ref.watch(currentLocaleProvider);
+
+  // TTS言語コード: ja -> ja-JP, en -> en-US
+  final ttsLanguage = locale.code == 'ja' ? 'ja-JP' : 'en-US';
+
+  final audioService = AudioService(language: ttsLanguage);
+
+  // ロケール変更時にTTS言語を更新
+  ref.listen(currentLocaleProvider, (previous, next) {
+    final newLanguage = next.code == 'ja' ? 'ja-JP' : 'en-US';
+    audioService.setLanguage(newLanguage);
+  });
+
+  return audioService;
 });
 
 /// 音声再生有効フラグプロバイダー
