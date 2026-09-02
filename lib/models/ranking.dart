@@ -5,14 +5,20 @@ part 'ranking.g.dart';
 /// ランキングエントリ
 @JsonSerializable()
 class RankingEntry {
-  /// ユーザーID
-  final String userId;
+  /// 子どもID
+  final String childId;
 
-  /// ユーザー名
-  final String userName;
+  /// 子ども名
+  final String childName;
 
-  /// スコア（ポイント数など）
-  final int score;
+  /// アバター絵文字
+  final String avatarEmoji;
+
+  /// スコア（成長スコア）
+  final int totalGrowthScore;
+
+  /// 回答総数
+  final int totalAnswers;
 
   /// 順位
   final int rank;
@@ -24,9 +30,11 @@ class RankingEntry {
   final bool isNamePublic;
 
   const RankingEntry({
-    required this.userId,
-    required this.userName,
-    required this.score,
+    required this.childId,
+    required this.childName,
+    required this.avatarEmoji,
+    required this.totalGrowthScore,
+    required this.totalAnswers,
     required this.rank,
     required this.updatedAt,
     this.isNamePublic = false,
@@ -38,11 +46,29 @@ class RankingEntry {
   Map<String, dynamic> toJson() => _$RankingEntryToJson(this);
 
   /// 表示用の名前を取得（プライバシー設定に従う）
-  String getDisplayName() => isNamePublic ? userName : 'ユーザー';
+  String getDisplayName() => isNamePublic ? childName : 'ユーザー';
+
+  /// スコアの表示（成長スコア）
+  int get score => totalGrowthScore;
 
   @override
   String toString() =>
-      'RankingEntry(rank: $rank, score: $score, isNamePublic: $isNamePublic)';
+      'RankingEntry(rank: $rank, score: $totalGrowthScore, answers: $totalAnswers)';
+}
+
+/// ランキンググループ化タイプ
+enum RankingGroupType {
+  /// 全体ランキング
+  overall,
+
+  /// 学年別ランキング
+  byGrade,
+
+  /// 開始月別ランキング
+  byStartMonth,
+
+  /// 複合（学年 + 開始月）ランキング
+  combined,
 }
 
 /// ランキングタイプ
