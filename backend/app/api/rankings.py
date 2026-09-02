@@ -24,7 +24,7 @@ router = APIRouter(prefix="/rankings", tags=["rankings"])
     response_model=RankingListResponse,
 )
 async def get_monthly_ranking(
-    ranking_month: date = Query(..., description="ランキング対象月 (YYYY-MM-DD)"),
+    ranking_month: date,
     group_type: Literal["overall", "by_grade", "by_start_month", "combined"] = Query(
         "overall", description="グループ化タイプ"
     ),
