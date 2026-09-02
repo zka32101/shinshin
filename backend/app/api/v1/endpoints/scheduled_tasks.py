@@ -6,7 +6,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from datetime import datetime, date
 from app.db.database import get_db
 from app.models.child import Child
