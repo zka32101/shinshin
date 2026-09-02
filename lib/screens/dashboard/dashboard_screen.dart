@@ -45,32 +45,44 @@ class DashboardScreen extends ConsumerWidget {
         elevation: 0,
       ),
       body: childProfile.when(
-        data: (profile) => SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppStyles.paddingMedium),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // グリーティング
-                _GreetingSection(childName: profile?.name ?? 'ユーザー'),
-                const SizedBox(height: 24),
+        data: (profile) => RefreshIndicator(
+          onRefresh: () async {
+            // ダッシュボード関連データの再取得
+            ref.invalidate(currentChildProfileProvider);
+            ref.invalidate(userProgressProvider(childId));
+            ref.invalidate(earnedBadgesProvider(childId));
+            ref.invalidate(rankingProvider);
+            // リフレッシュ完了待ち
+            await Future.delayed(const Duration(milliseconds: 500));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(AppStyles.paddingMedium),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // グリーティング
+                  _GreetingSection(childName: profile?.name ?? 'ユーザー'),
+                  const SizedBox(height: 24),
 
-                // 統計カード
-                _StatsSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 統計カード
+                  _StatsSection(childId: childId),
+                  const SizedBox(height: 24),
 
-                // 学習進捗
-                _ProgressSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 学習進捗
+                  _ProgressSection(childId: childId),
+                  const SizedBox(height: 24),
 
-                // 獲得バッジ
-                _BadgesSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 獲得バッジ
+                  _BadgesSection(childId: childId),
+                  const SizedBox(height: 24),
 
-                // 徳目別スコア
-                _VirtueScoresSection(childId: childId),
-                const SizedBox(height: 32),
-              ],
+                  // 徳目別スコア
+                  _VirtueScoresSection(childId: childId),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         ),

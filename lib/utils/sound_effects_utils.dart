@@ -1,31 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/sound_constants.dart';
 import '../providers/audio_provider.dart';
-import '../services/audio_service.dart';
 
 /// 効果音管理のユーティリティ
 /// Riverpodプロバイダーと連携して音声設定を尊重
 class SoundEffectsUtils {
   final Ref ref;
-  late AudioService _audioService;
 
-  SoundEffectsUtils(this.ref) {
-    _audioService = AudioService();
-  }
+  SoundEffectsUtils(this.ref);
 
   /// 効果音を再生（設定に応じて自動的に有効/無効を切り替え）
   Future<void> playSound(String soundName) async {
     // 音声が有効かチェック
-    final isSoundEnabled = ref.watch(isSoundEnabledProvider);
+    final isSoundEnabled = ref.read(isSoundEnabledProvider);
     if (!isSoundEnabled) {
       return;
     }
 
     // 音量を取得
-    final volumeLevel = ref.watch(volumeLevelProvider);
+    final volumeLevel = ref.read(volumeLevelProvider);
 
-    // 効果音を再生
-    await _audioService.playSoundEffect(soundName, volume: volumeLevel);
+    // オーディオサービスを取得してプロバイダー経由で再生
+    final audioService = ref.read(audioServiceProvider);
+    await audioService.playSoundEffect(soundName, volume: volumeLevel);
   }
 
   /// UI ボタンタップ音
