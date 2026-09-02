@@ -80,7 +80,7 @@ dev_dependencies:
   path_provider_platform_interface: ^2.1.0
   plugin_platform_interface: ^2.1.0
   mockito: ^5.4.4
-  fake_cloud_firestore: ^3.0.0
+  fake_cloud_firestore: ^2.0.0
   firebase_auth_mocks: ^0.13.0
 
 flutter:
