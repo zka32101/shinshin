@@ -26,12 +26,12 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Remove potentially corrupted pubspec.lock
+      - name: Clean Flutter cache and regenerate dependencies
         run: |
-          if [ -f pubspec.lock ]; then
-            echo "Removing existing pubspec.lock to ensure fresh regeneration"
-            rm pubspec.lock
-          fi
+          echo "Cleaning Flutter cache..."
+          rm -rf pubspec.lock .dart_tool/
+          flutter clean
+          echo "Cache cleaned, ready for fresh dependency resolution"
 
       - name: Install dependencies
         run: flutter pub get --verbose
