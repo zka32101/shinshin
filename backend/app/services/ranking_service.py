@@ -55,7 +55,7 @@ class RankingService:
             )
         )
 
-        row = result.scalar_one()
+        row = result.one()
         total_answers = row[0] or 0
         total_growth_score = row[1] or 0
 

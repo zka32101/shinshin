@@ -33,7 +33,7 @@ class RankingListResponse(BaseModel):
     ranking_month: date
     group_type: Literal["overall", "by_grade", "by_start_month", "combined"]
     group_value: str | None = None
-    rankings: List[RankingResponse]
+    rankings: List["RankingDetailResponse"]
 
 
 class RankingDetailResponse(BaseModel):

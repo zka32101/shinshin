@@ -7,7 +7,7 @@ from typing import List, Literal, Optional
 from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 from app.db.database import get_db
 from app.models.ranking import Ranking
@@ -129,13 +129,18 @@ async def get_child_current_ranking(
             group_value = f"{child.grade}_{child.created_at.strftime('%Y-%m')}"
 
         # ランキングを取得
+        conditions = [
+            Ranking.child_id == child_id,
+            Ranking.ranking_month == current_month,
+            Ranking.group_type == group_type,
+        ]
+        if group_value:
+            conditions.append(Ranking.group_value == group_value)
+        else:
+            conditions.append(Ranking.group_value.is_(None))
+
         ranking_result = await db.execute(
-            select(Ranking).where(
-                Ranking.child_id == child_id,
-                Ranking.ranking_month == current_month,
-                Ranking.group_type == group_type,
-                Ranking.group_value == group_value if group_value else True,
-            )
+            select(Ranking).where(and_(*conditions))
         )
         ranking = ranking_result.scalar_one_or_none()
 
