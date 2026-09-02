@@ -18,8 +18,8 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Optimization: Only watch specific needed values, not full provider objects
     final childId = ref.watch(currentChildIdProvider);
-    final childProfile = ref.watch(currentChildProfileProvider);
 
     if (childId == null) {
       return Scaffold(
@@ -44,38 +44,56 @@ class DashboardScreen extends ConsumerWidget {
         foregroundColor: _textPrimary,
         elevation: 0,
       ),
-      body: childProfile.when(
-        data: (profile) => SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // グリーティング
-                _GreetingSection(childName: profile?.name ?? 'ユーザー'),
-                const SizedBox(height: 24),
+      body: _DashboardContent(childId: childId),
+    );
+  }
+}
 
-                // 統計カード
-                _StatsSection(childId: childId),
-                const SizedBox(height: 24),
+/// Extracted to reduce rebuild frequency and isolate provider dependencies
+class _DashboardContent extends ConsumerWidget {
+  final String childId;
 
-                // 学習進捗
-                _ProgressSection(childId: childId),
-                const SizedBox(height: 24),
+  const _DashboardContent({required this.childId});
 
-                // 獲得バッジ
-                _BadgesSection(childId: childId),
-                const SizedBox(height: 24),
-
-                // 徳目別スコア
-                _VirtueScoresSection(childId: childId),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch the profile name (using .select() to optimize rebuilds)
+    final childName = ref.watch(
+      currentChildProfileProvider.select(
+        (asyncProfile) => asyncProfile.maybeWhen(
+          data: (profile) => profile?.name ?? 'ユーザー',
+          orElse: () => 'ユーザー',
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('エラー: $error')),
+      ),
+    );
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // グリーティング
+            _GreetingSection(childName: childName),
+            const SizedBox(height: 24),
+
+            // 統計カード
+            _StatsSection(childId: childId),
+            const SizedBox(height: 24),
+
+            // 学習進捗
+            _ProgressSection(childId: childId),
+            const SizedBox(height: 24),
+
+            // 獲得バッジ
+            _BadgesSection(childId: childId),
+            const SizedBox(height: 24),
+
+            // 徳目別スコア
+            _VirtueScoresSection(childId: childId),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
