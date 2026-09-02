@@ -9,6 +9,11 @@ on:
     # 毎日午前 2:00 UTC にスキャンを実行
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   # ========================================
   # Dart/Flutter コードスキャン
