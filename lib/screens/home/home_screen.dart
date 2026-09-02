@@ -1,7 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
 import '../../widgets/avatar_display_widget.dart';
 import '../../utils/sound_effects_utils.dart';
+import '../../utils/accessibility_utils.dart';
 import '../ranking/ranking_screen.dart';
 import '../settings/settings_screen.dart';
 import '../library/library_screen.dart';
@@ -21,8 +24,8 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('小学コレ！道徳'),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF2C2C2C),
+        backgroundColor: AppColors.bgSecondary,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -192,49 +195,53 @@ class _MenuCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFFEEEEEE)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // メニュー選択音を再生
-          SoundEffectsUtils(ref).playButtonTapSound();
-          onTap();
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                icon,
-                style: const TextStyle(fontSize: 40),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2C2C2C),
+    return AccessibilityUtils.semanticButton(
+      label: title,
+      hint: subtitle,
+      onPressed: () {
+        // メニュー選択音を再生
+        SoundEffectsUtils(ref).playButtonTapSound();
+        onTap();
+      },
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+          side: const BorderSide(color: AppColors.border),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+          onTap: () {
+            // メニュー選択音を再生
+            SoundEffectsUtils(ref).playButtonTapSound();
+            onTap();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(AppStyles.paddingMedium),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  icon,
+                  style: const TextStyle(fontSize: 40),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF999999),
+                const SizedBox(height: AppStyles.paddingMedium),
+                Text(
+                  title,
+                  style: AppStyles.headingSmall.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: AppStyles.paddingSmall),
+                Text(
+                  subtitle,
+                  style: AppStyles.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
