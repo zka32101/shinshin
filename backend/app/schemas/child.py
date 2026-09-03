@@ -1,24 +1,56 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
 
 
 class ChildCreate(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    name: str
-    avatar_emoji: str = "🌟"
+    name: str = Field(..., min_length=1, max_length=100)
+    avatar_emoji: str = Field(default="🌟", max_length=2)  # Emoji + ZWJ joiner
     grade: int = Field(ge=3, le=4)  # 3年生または4年生
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        """Name cannot be only whitespace"""
+        if not v.strip():
+            raise ValueError('Name cannot be empty or whitespace only')
+        return v.strip()
+
+    @field_validator('avatar_emoji')
+    @classmethod
+    def validate_emoji(cls, v: str) -> str:
+        """Avatar emoji validation"""
+        if not v or not v.strip():
+            raise ValueError('Emoji cannot be empty')
+        return v
 
 
 class ChildUpdate(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    name: Optional[str] = None
-    avatar_emoji: Optional[str] = None
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    avatar_emoji: Optional[str] = Field(default=None, max_length=2)
     grade: Optional[int] = Field(default=None, ge=3, le=4)
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v: Optional[str]) -> Optional[str]:
+        """Name cannot be only whitespace"""
+        if v is not None and not v.strip():
+            raise ValueError('Name cannot be empty or whitespace only')
+        return v.strip() if v else None
+
+    @field_validator('avatar_emoji')
+    @classmethod
+    def validate_emoji(cls, v: Optional[str]) -> Optional[str]:
+        """Avatar emoji validation"""
+        if v is not None and not v.strip():
+            raise ValueError('Emoji cannot be empty')
+        return v
 
 
 class VirtueScores(BaseModel):

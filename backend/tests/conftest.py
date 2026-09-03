@@ -95,7 +95,7 @@ async def test_user(client: AsyncClient) -> dict:
     """Create a test user via the register endpoint."""
     response = await client.post(
         "/api/v1/auth/register",
-        json={"email": "test@example.com", "password": "password123", "name": "テストユーザー"},
+        json={"email": "test@example.com", "password": "TestPassword123", "name": "テストユーザー"},
     )
     assert response.status_code == 201, response.text
     return response.json()

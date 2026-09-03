@@ -95,7 +95,7 @@ async def test_start_quiz_other_users_child(
     # Register second user
     r = await client.post(
         "/api/v1/auth/register",
-        json={"email": "quiz_other@example.com", "password": "password123", "name": "Other"},
+        json={"email": "quiz_other@example.com", "password": "OtherPass123", "name": "Other"},
     )
     assert r.status_code == 201
     other_token = r.json()["accessToken"]
@@ -189,7 +189,7 @@ async def test_complete_quiz_other_users_child(
     # Register second user
     r = await client.post(
         "/api/v1/auth/register",
-        json={"email": "quiz_complete_other@example.com", "password": "password123", "name": "Other"},
+        json={"email": "quiz_complete_other@example.com", "password": "OtherPass123", "name": "Other"},
     )
     assert r.status_code == 201
     other_headers = {"Authorization": f"Bearer {r.json()['accessToken']}"}

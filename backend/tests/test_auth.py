@@ -11,7 +11,7 @@ async def test_register_success(client: AsyncClient):
     """正常登録"""
     response = await client.post(
         "/api/v1/auth/register",
-        json={"email": "new@example.com", "password": "pass123", "name": "新規ユーザー"},
+        json={"email": "new@example.com", "password": "NewPass123", "name": "新規ユーザー"},
     )
     assert response.status_code == 201
     data = response.json()
@@ -24,7 +24,7 @@ async def test_register_duplicate_email(client: AsyncClient, test_user: dict):
     """重複メールアドレス"""
     response = await client.post(
         "/api/v1/auth/register",
-        json={"email": "test@example.com", "password": "pass123", "name": "重複"},
+        json={"email": "test@example.com", "password": "DupePass123", "name": "重複"},
     )
     assert response.status_code == 409
 
@@ -34,7 +34,7 @@ async def test_login_success(client: AsyncClient, test_user: dict):
     """正常ログイン"""
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "test@example.com", "password": "password123"},
+        json={"email": "test@example.com", "password": "TestPassword123"},
     )
     assert response.status_code == 200
     assert "accessToken" in response.json()
@@ -45,7 +45,7 @@ async def test_login_wrong_password(client: AsyncClient, test_user: dict):
     """パスワード間違い"""
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "test@example.com", "password": "wrongpassword"},
+        json={"email": "test@example.com", "password": "WrongPassword123"},
     )
     assert response.status_code == 401
 
@@ -55,7 +55,7 @@ async def test_login_unknown_email(client: AsyncClient):
     """存在しないメール"""
     response = await client.post(
         "/api/v1/auth/login",
-        json={"email": "nobody@example.com", "password": "pass"},
+        json={"email": "nobody@example.com", "password": "AnyPass123"},
     )
     assert response.status_code == 401
 
@@ -179,7 +179,7 @@ async def test_login_inactive_user(client: AsyncClient, db_session: AsyncSession
     # Register user
     await client.post(
         "/api/v1/auth/register",
-        json={"email": "inactive@example.com", "password": "pass123", "name": "停止ユーザー"},
+        json={"email": "inactive@example.com", "password": "InactivePass123", "name": "停止ユーザー"},
     )
 
     # Deactivate directly in DB
@@ -190,7 +190,7 @@ async def test_login_inactive_user(client: AsyncClient, db_session: AsyncSession
 
     r = await client.post(
         "/api/v1/auth/login",
-        json={"email": "inactive@example.com", "password": "pass123"},
+        json={"email": "inactive@example.com", "password": "InactivePass123"},
     )
     assert r.status_code == 403
 
