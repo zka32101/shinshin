@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, date
 from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Date, Index
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,8 +10,8 @@ class Ranking(Base):
     """月間ランキング記録"""
     __tablename__ = "rankings"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    child_id = Column(UUID(as_uuid=True), ForeignKey("children.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
+    child_id = Column(UUIDType(binary=False), ForeignKey("children.id", ondelete="CASCADE"), nullable=False, index=True)
     ranking_month = Column(Date, nullable=False, index=True)  # ランキング対象月 (2026-09-01 など)
 
     # グループ化タイプ: "overall", "by_grade", "by_start_month", "combined"

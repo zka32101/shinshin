@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer, Float, ForeignKey, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,8 +10,8 @@ class MonthlyReport(Base):
     """月次成長レポート (保護者向け)"""
     __tablename__ = "monthly_reports"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    child_id = Column(UUID(as_uuid=True), ForeignKey("children.id", ondelete="CASCADE"), nullable=False)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
+    child_id = Column(UUIDType(binary=False), ForeignKey("children.id", ondelete="CASCADE"), nullable=False)
     year = Column(Integer, nullable=False)
     month = Column(Integer, nullable=False)
 

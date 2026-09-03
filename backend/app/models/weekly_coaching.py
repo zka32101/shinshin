@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 from sqlalchemy import Column, String, Integer, Float, DateTime, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 import uuid
 from app.db.base import Base
 
@@ -17,7 +17,7 @@ class WeeklyCoachingData(Base):
     __tablename__ = "weekly_coaching_data"
 
     # PK & FK
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
     child_id = Column(String(255), nullable=False, index=True)
     parent_id = Column(String(255), nullable=False, index=True)
 

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer, Boolean, Text, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,7 +10,7 @@ class Story(Base):
     """道徳ストーリー"""
     __tablename__ = "stories"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
 
