@@ -58,6 +58,13 @@ jobs:
           flutter.sdk=$FLUTTER_HOME
           PROPERTIES_EOF
 
+      - name: Initialize Android project
+        run: |
+          cd android
+          chmod +x gradlew 2>/dev/null || true
+          ./gradlew --version || true
+          cd ..
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."
