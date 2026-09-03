@@ -40,6 +40,8 @@ async def update_me(
     if body.fcm_token is not None:
         user.fcm_token = body.fcm_token
 
+    await db.commit()
+    await db.refresh(user)
     return UserResponse.model_validate(user)
 
 
@@ -54,3 +56,4 @@ async def delete_me(
     if not user:
         raise HTTPException(status_code=404, detail="ユーザーが見つかりません")
     await db.delete(user)
+    await db.commit()

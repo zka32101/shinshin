@@ -85,6 +85,8 @@ async def update_child(
     if body.grade is not None:
         child.grade = body.grade
 
+    await db.commit()
+    await db.refresh(child)
     return _child_to_response(child)
 
 
@@ -101,3 +103,4 @@ async def delete_child(
     if not child:
         raise HTTPException(status_code=404, detail="子供プロフィールが見つかりません")
     await db.delete(child)
+    await db.commit()

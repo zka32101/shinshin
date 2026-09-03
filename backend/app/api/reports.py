@@ -128,7 +128,7 @@ async def generate_monthly_report(
         )
         db.add(report)
 
-    await db.flush()
+    await db.commit()
     await db.refresh(report)
     return MonthlyReportResponse.model_validate(report)
 
