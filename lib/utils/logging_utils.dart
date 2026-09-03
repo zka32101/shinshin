@@ -22,28 +22,28 @@ class LoggingUtils {
   }
 
   /// デバッグログ出力
-  static void debug(String tag, String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.debug, tag, message, error, stack);
+  static void debug(String tag, String message, [Object? error, StackTrace? stack, Map<String, dynamic>? metadata]) {
+    _log(LogLevel.debug, tag, message, error, stack, metadata);
   }
 
   /// 情報ログ出力
-  static void info(String tag, String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.info, tag, message, error, stack);
+  static void info(String tag, String message, [Object? error, StackTrace? stack, Map<String, dynamic>? metadata]) {
+    _log(LogLevel.info, tag, message, error, stack, metadata);
   }
 
   /// 警告ログ出力
-  static void warning(String tag, String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.warning, tag, message, error, stack);
+  static void warning(String tag, String message, [Object? error, StackTrace? stack, Map<String, dynamic>? metadata]) {
+    _log(LogLevel.warning, tag, message, error, stack, metadata);
   }
 
   /// エラーログ出力
-  static void error(String tag, String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.error, tag, message, error, stack);
+  static void error(String tag, String message, [Object? error, StackTrace? stack, Map<String, dynamic>? metadata]) {
+    _log(LogLevel.error, tag, message, error, stack, metadata);
   }
 
   /// クリティカルエラーログ出力
-  static void critical(String tag, String message, [Object? error, StackTrace? stack]) {
-    _log(LogLevel.critical, tag, message, error, stack);
+  static void critical(String tag, String message, [Object? error, StackTrace? stack, Map<String, dynamic>? metadata]) {
+    _log(LogLevel.critical, tag, message, error, stack, metadata);
   }
 
   static void _log(
@@ -52,6 +52,7 @@ class LoggingUtils {
     String message,
     Object? error,
     StackTrace? stack,
+    [Map<String, dynamic>? metadata],
   ) {
     if (level.level < _minimumLevel.level) return;
 
@@ -61,6 +62,9 @@ class LoggingUtils {
 
     debugPrint(logMessage);
 
+    if (metadata != null) {
+      debugPrint('Metadata: $metadata');
+    }
     if (error != null) {
       debugPrint('Error: $error');
     }
