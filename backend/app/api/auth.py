@@ -38,6 +38,9 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     await db.flush()
     await db.commit()
 
+    # Log successful registration (security event)
+    logger.info(f"SECURITY: User registered - email={request.email}, user_id={user.id}")
+
     token = create_access_token(
         {"sub": str(user.id)},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
@@ -55,17 +58,26 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
 
     if not user or not user.password_hash:
+        # Log failed login attempt (invalid email)
+        logger.warning(f"SECURITY: Failed login - invalid email={request.email}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="メールアドレスまたはパスワードが間違っています",
         )
     if not verify_password(request.password, user.password_hash):
+        # Log failed login attempt (wrong password)
+        logger.warning(f"SECURITY: Failed login - wrong password for email={request.email}, user_id={user.id}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="メールアドレスまたはパスワードが間違っています",
         )
     if not user.is_active:
+        # Log login attempt on inactive account
+        logger.warning(f"SECURITY: Login attempt on inactive account - email={request.email}, user_id={user.id}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="アカウントが無効です")
+
+    # Log successful login (security event)
+    logger.info(f"SECURITY: Successful login - email={request.email}, user_id={user.id}")
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(
@@ -115,6 +127,11 @@ async def firebase_login(request: FirebaseLoginRequest, db: AsyncSession = Depen
         db.add(user)
         await db.flush()
         await db.commit()
+        # Log Firebase user creation (security event)
+        logger.info(f"SECURITY: New Firebase user registered - firebase_uid={firebase_uid}, email={email}, user_id={user.id}")
+    else:
+        # Log existing Firebase user login (security event)
+        logger.info(f"SECURITY: Firebase user login - firebase_uid={firebase_uid}, user_id={user.id}")
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(

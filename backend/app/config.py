@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     # ========================================================================
     # Database設定
     # ========================================================================
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/shougaku"
+    # Must be set via DATABASE_URL env var. Default is empty to force explicit configuration.
+    # Do NOT hardcode credentials. Use environment variables in all environments.
+    database_url: str = ""
 
     # ========================================================================
     # JWT認証設定
@@ -87,7 +89,14 @@ class Settings(BaseSettings):
         self._validate_production_settings()
 
     def _validate_production_settings(self):
-        """本番環境設定の検証"""
+        """本番環境・開発環境設定の検証"""
+        # DATABASE_URL is required in all environments
+        if not self.database_url:
+            raise ValueError(
+                "DATABASE_URL environment variable must be set. "
+                "Do not hardcode database credentials in the application."
+            )
+
         if self.environment == "production":
             # SECRET_KEY チェック - Production requires long, random key
             if not self.secret_key or len(self.secret_key) < 64:
