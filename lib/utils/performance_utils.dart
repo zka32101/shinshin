@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'logging_utils.dart';
 
 /// パフォーマンス計測データ
