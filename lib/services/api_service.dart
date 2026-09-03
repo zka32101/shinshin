@@ -5,6 +5,7 @@ import '../models/parent_child_comparison.dart';
 import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
 import '../models/ranking.dart';
+import '../models/child_profile.dart';
 import 'logger_service.dart';
 
 /// Custom exception for API errors
@@ -543,6 +544,72 @@ class ApiService {
       _logger.logError('Failed to fetch monthly ranking for $month', e);
       throw ApiException(
         'Failed to fetch monthly ranking: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// Firebase IDトークンをバックエンドJWTに交換
+  Future<Map<String, dynamic>> loginWithFirebase(String idToken) async {
+    try {
+      _validateParam(idToken, 'idToken');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/auth/login-firebase',
+          data: {'firebase_id_token': idToken},
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for Firebase login');
+      }
+
+      _logger.log('Firebase login successful');
+      return response.data as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Firebase login failed', e);
+      throw ApiException(
+        'Firebase login failed: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 認証トークンを設定
+  void setAuthToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    _logger.log('Auth token set');
+  }
+
+  /// 子どもプロフィール一覧を取得
+  Future<List<ChildProfile>> fetchChildrenProfiles() async {
+    try {
+      final response = await _retryRequest(
+        () => _dio.get('/children/profiles'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for children profiles');
+      }
+
+      final List<dynamic> data = response.data['children'] ?? [];
+      if (data is! List) {
+        throw ApiException('Expected children to be a list');
+      }
+
+      _logger.log('Children profiles fetched: ${data.length} profiles');
+      return data.map((item) => ChildProfile.fromApiJson(item as Map<String, dynamic>)).toList();
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to fetch children profiles', e);
+      throw ApiException(
+        'Failed to fetch children profiles: ${e.message}',
         statusCode: e.response?.statusCode,
         originalError: e,
       );
