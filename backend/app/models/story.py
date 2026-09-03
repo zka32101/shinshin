@@ -49,8 +49,8 @@ class StoryChoice(Base):
     """ストーリー選択肢"""
     __tablename__ = "story_choices"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    story_id = Column(UUID(as_uuid=True), ForeignKey("stories.id", ondelete="CASCADE"), nullable=False)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    story_id = Column(UUIDType(binary=False), ForeignKey("stories.id", ondelete="CASCADE"), nullable=False)
     order = Column(Integer, nullable=False)             # 表示順
     text = Column(Text, nullable=False)                 # 選択肢テキスト
     branch_content = Column(Text, nullable=False, default="")  # 選択後の展開テキスト (旧: outcome_text)
