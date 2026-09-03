@@ -207,6 +207,16 @@ class AnalyticsService {
     );
   }
 
+  // ============ 汎用イベント ============
+
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object?>? parameters,
+  }) async {
+    await _analytics.logEvent(name: name, parameters: parameters);
+    _log(name, parameters ?? {});
+  }
+
   // ============ ユーティリティ ============
 
   Future<void> setUserId(String? userId) async {
