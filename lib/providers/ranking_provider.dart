@@ -129,6 +129,15 @@ final updateRankingSettingsProvider = FutureProvider.family.autoDispose<
   ref.invalidate(rankingSettingsProvider);
 });
 
+// Get monthly ranking by group type
+final monthlyRankingProvider =
+    FutureProvider.autoDispose.family<List<RankingEntry>, RankingGroupType>(
+  (ref, groupType) async {
+    final rankingService = ref.watch(rankingServiceProvider);
+    return await rankingService.getMonthlyRanking(groupType);
+  },
+);
+
 // Parameters for ranking type and limit
 class RankingTypeParams {
   final RankingType type;

@@ -7,7 +7,8 @@ from passlib.context import CryptContext
 from app.config import get_settings
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use argon2id for password hashing (recommended by OWASP, no 72-byte limit)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 security = HTTPBearer(auto_error=True)
 optional_security = HTTPBearer(auto_error=False)
 
@@ -41,8 +42,13 @@ def decode_token(token: str) -> dict:
 
 
 async def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
 ) -> str:
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authorization credentials",
+        )
     payload = decode_token(credentials.credentials)
     user_id: Optional[str] = payload.get("sub")
     if not user_id:

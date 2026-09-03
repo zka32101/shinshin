@@ -18,8 +18,9 @@ class ResourceCleanupUtils {
       try {
         if (resource is StreamSubscription) {
           await resource.cancel();
-        } else if (resource has close()) {
-          await resource.close();
+        } else if (resource is Future) {
+          // Can't cancel a Future, just await it
+          await resource;
         }
       } catch (e) {
         debugPrint('[ResourceCleanup] Failed to dispose resource: $e');
@@ -35,8 +36,9 @@ class ResourceCleanupUtils {
   }
 }
 
-/// Extension for safer resource management in StatefulWidgets
-extension ResourceManagementState<T extends StatefulWidget> on State<T> {
+/// Mixin for safer resource management in StatefulWidgets
+/// Use this mixin in your State class to get automatic subscription tracking
+mixin ResourceManagementState<T extends StatefulWidget> on State<T> {
   /// Store subscriptions for cleanup in dispose()
   final List<StreamSubscription> _subscriptions = [];
 

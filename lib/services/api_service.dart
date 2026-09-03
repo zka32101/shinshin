@@ -4,6 +4,7 @@ import '../models/revisit_schedule.dart';
 import '../models/parent_child_comparison.dart';
 import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
+import '../models/ranking.dart';
 import 'logger_service.dart';
 
 /// Custom exception for API errors
@@ -496,6 +497,52 @@ class ApiService {
       _logger.logError('Failed to fetch creation feedback for user: $userId', e);
       throw ApiException(
         'Failed to fetch creation feedback: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 月間ランキングを取得
+  Future<List<RankingEntry>> getMonthlyRanking(
+    String month,
+    String groupType, {
+    String? groupValue,
+  }) async {
+    try {
+      _validateParam(month, 'month');
+      _validateParam(groupType, 'groupType');
+
+      final params = {
+        'group_type': groupType,
+        if (groupValue != null) 'group_value': groupValue,
+      };
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/rankings/month/$month',
+          queryParameters: params,
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for monthly ranking');
+      }
+
+      final List<dynamic> rankings = response.data['rankings'] ?? [];
+      if (rankings is! List) {
+        throw ApiException('Expected rankings to be a list');
+      }
+
+      _logger.log(
+          'Monthly ranking fetched: ${rankings.length} entries for $month ($groupType)');
+      return rankings.map((item) => RankingEntry.fromJson(item)).toList();
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to fetch monthly ranking for $month', e);
+      throw ApiException(
+        'Failed to fetch monthly ranking: ${e.message}',
         statusCode: e.response?.statusCode,
         originalError: e,
       );

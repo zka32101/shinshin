@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer, Boolean, Text, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,7 +10,7 @@ class Story(Base):
     """道徳ストーリー"""
     __tablename__ = "stories"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
 
@@ -49,8 +49,8 @@ class StoryChoice(Base):
     """ストーリー選択肢"""
     __tablename__ = "story_choices"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    story_id = Column(UUID(as_uuid=True), ForeignKey("stories.id", ondelete="CASCADE"), nullable=False)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    story_id = Column(UUIDType(binary=False), ForeignKey("stories.id", ondelete="CASCADE"), nullable=False)
     order = Column(Integer, nullable=False)             # 表示順
     text = Column(Text, nullable=False)                 # 選択肢テキスト
     branch_content = Column(Text, nullable=False, default="")  # 選択後の展開テキスト (旧: outcome_text)

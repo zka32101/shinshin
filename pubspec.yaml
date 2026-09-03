@@ -43,7 +43,7 @@ dependencies:
 
   # Audio & Narration
   audioplayers: ^5.2.0
-  flutter_tts: ^4.2.5
+  flutter_tts: ^4.0.2
 
   # Charting (for radar chart in parent report)
   fl_chart: ^0.68.0
@@ -69,7 +69,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.1
 
   # Code Generation
@@ -80,7 +80,7 @@ dev_dependencies:
   path_provider_platform_interface: ^2.1.0
   plugin_platform_interface: ^2.1.0
   mockito: ^5.4.4
-  fake_cloud_firestore: ^3.0.0
+  fake_cloud_firestore: ^2.0.0
   firebase_auth_mocks: ^0.13.0
 
 flutter:

@@ -1,6 +1,7 @@
 """親向けコーチング機能のテスト"""
 
 import pytest
+import uuid
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import WeeklyCoachingData, Child, User
@@ -13,8 +14,8 @@ async def test_parent_analytics_weekly_analysis(db_session: AsyncSession):
     """週次分析の生成テスト"""
 
     # テストデータ作成
-    parent_id = "test-parent-123"
-    child_id = "test-child-456"
+    parent_id = str(uuid.uuid4())
+    child_id = uuid.uuid4()
 
     # サービスを初期化
     analytics_service = ParentAnalyticsService(db_session)

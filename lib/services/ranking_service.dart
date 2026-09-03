@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ranking.dart';
 import 'logger_service.dart';
+import 'api_service.dart';
 
 /// ランキングサービス
 /// ユーザーのランキング情報とプライバシー設定を管理
@@ -303,6 +304,46 @@ class RankingService {
         return '尊重';
       case RankingType.virtueCooperation:
         return '協力';
+    }
+  }
+
+  /// 月間ランキングを取得（API経由）
+  Future<List<RankingEntry>> getMonthlyRanking(RankingGroupType groupType) async {
+    try {
+      final apiService = ApiService();
+      _logger.log('Fetching monthly ranking for group type: $groupType');
+
+      // 現在の月をYYYY-MM-01形式で取得
+      final today = DateTime.now();
+      final rankingMonth =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-01';
+      final groupTypeStr = _getRankingGroupTypeString(groupType);
+
+      // バックエンドAPIを呼び出し
+      // GET /api/v1/rankings/month/{ranking_month}?group_type=...
+      final entries =
+          await apiService.getMonthlyRanking(rankingMonth, groupTypeStr);
+
+      _logger.log(
+          'Monthly ranking fetched: ${entries.length} entries for $rankingMonth ($groupTypeStr)');
+      return entries;
+    } catch (e) {
+      _logger.logError('Failed to get monthly ranking', e);
+      rethrow;
+    }
+  }
+
+  /// ランキンググループ化タイプの文字列表現を取得
+  String _getRankingGroupTypeString(RankingGroupType type) {
+    switch (type) {
+      case RankingGroupType.overall:
+        return 'overall';
+      case RankingGroupType.byGrade:
+        return 'by_grade';
+      case RankingGroupType.byStartMonth:
+        return 'by_start_month';
+      case RankingGroupType.combined:
+        return 'combined';
     }
   }
 }

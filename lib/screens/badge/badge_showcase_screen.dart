@@ -5,9 +5,11 @@ import '../../providers/progress_provider.dart';
 import '../../providers/child_provider.dart';
 import '../../providers/badge_provider.dart';
 import '../../utils/sound_effects_utils.dart';
+import '../../utils/animation_constants.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
 import '../../widgets/common_states.dart';
+import '../../widgets/animations/index.dart';
 
 /// バッジ図鑑画面 — 獲得可能なすべてのバッジと進捗を表示
 class BadgeShowcaseScreen extends ConsumerWidget {
@@ -41,57 +43,72 @@ class BadgeShowcaseScreen extends ConsumerWidget {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ヘッダー
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: AnimatedFadeInScale(
+        duration: AnimationDurations.medium,
+        beginScale: 0.95,
+        endScale: 1.0,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ヘッダー
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: const Duration(milliseconds: 100),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'バッジ図鑑へようこそ！',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'ストーリーを完了してバッジを集めよう',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _BadgeStatsSummary(childId: childId),
+                    ],
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'バッジ図鑑へようこそ！',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'ストーリーを完了してバッジを集めよう',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _BadgeStatsSummary(childId: childId),
-                ],
+
+              const SizedBox(height: 24),
+
+              // バッジカテゴリ
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: const Duration(milliseconds: 200),
+                child: _BadgeCategorySection(
+                  title: 'すべてのバッジ',
+                  description: 'ストーリー完了で獲得',
+                  badges: kDoutokuBadges,
+                  childId: childId,
+                ),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // バッジカテゴリ
-            _BadgeCategorySection(
-              title: 'すべてのバッジ',
-              description: 'ストーリー完了で獲得',
-              badges: kDoutokuBadges,
-              childId: childId,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -250,6 +267,8 @@ class _BadgeCategorySection extends ConsumerWidget {
       'responsibility': '責任',
     };
 
+    int badgeIndex = 0;
+
     for (final theme in ['all', 'kindness', 'honesty', 'courage', 'respect', 'cooperation', 'responsibility']) {
       if (!themeGroups.containsKey(theme) || themeGroups[theme]!.isEmpty) {
         continue;
@@ -271,25 +290,34 @@ class _BadgeCategorySection extends ConsumerWidget {
                   ),
                 ),
               ),
-            GridView.count(
-              crossAxisCount: 3,
+            GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1,
+              ),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1,
-              children: [
-                for (final badge in themeGroups[theme]!)
-                  _BadgeCard(
+              itemCount: themeGroups[theme]!.length,
+              itemBuilder: (context, index) {
+                final badge = themeGroups[theme]![index];
+                return AnimatedSlideIn(
+                  direction: SlideDirection.fromBottom,
+                  duration: AnimationDurations.medium,
+                  delay: Duration(milliseconds: 100 + (badgeIndex * 50)),
+                  child: _BadgeCard(
                     badge: badge,
                     childId: childId,
                     progressList: progressList,
                   ),
-              ],
+                );
+              },
             ),
           ],
         ),
       );
+      badgeIndex += themeGroups[theme]!.length;
     }
 
     return widgets;
@@ -298,7 +326,7 @@ class _BadgeCategorySection extends ConsumerWidget {
 
 // ─── バッジカード ──────────────────────────────────
 
-class _BadgeCard extends ConsumerWidget {
+class _BadgeCard extends ConsumerStatefulWidget {
   final BadgeDefinition badge;
   final String childId;
   final List progressList;
@@ -310,38 +338,139 @@ class _BadgeCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final earnedBadges = ref.watch(earnedBadgesProvider(childId));
+  ConsumerState<_BadgeCard> createState() => _BadgeCardState();
+}
+
+class _BadgeCardState extends ConsumerState<_BadgeCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+    _handleTap();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  void _handleTap() {
+    final earnedBadges = ref.read(earnedBadgesProvider(widget.childId));
+    earnedBadges.whenData((badges) {
+      final isEarned = badges.any((eb) => eb.badgeId == widget.badge.id);
+      final earnedDate = isEarned
+          ? badges.firstWhere((eb) => eb.badgeId == widget.badge.id).earnedAt
+          : null;
+
+      // 進捗を計算
+      double progress = 0;
+      if (widget.badge.theme != 'all') {
+        try {
+          final virtueProgress = widget.progressList.firstWhere(
+            (p) => p.virtue == widget.badge.theme,
+            orElse: () => null,
+          );
+          if (virtueProgress != null && virtueProgress.completionCount != null) {
+            final completionCount = virtueProgress.completionCount is int
+                ? virtueProgress.completionCount as int
+                : (virtueProgress.completionCount as num).toInt();
+            progress = (completionCount / widget.badge.requiredCompletions).clamp(0, 1).toDouble();
+          }
+        } catch (e) {
+          progress = 0;
+        }
+      } else {
+        try {
+          final totalCompleted = widget.progressList.fold<int>(
+            0,
+            (sum, p) {
+              if (p.completionCount == null) return sum;
+              final count = p.completionCount is int
+                  ? p.completionCount as int
+                  : (p.completionCount as num).toInt();
+              return sum + count;
+            },
+          );
+          progress = (totalCompleted / widget.badge.requiredCompletions).clamp(0, 1).toDouble();
+        } catch (e) {
+          progress = 0;
+        }
+      }
+
+      // バッジをタップした際の音声効果
+      if (isEarned) {
+        SoundEffectsUtils(ref).playBadgeUnlockSound();
+      } else {
+        SoundEffectsUtils(ref).playButtonTapSound();
+      }
+      showDialog(
+        context: context,
+        builder: (ctx) => _BadgeDetailDialog(
+          badge: widget.badge,
+          isEarned: isEarned,
+          earnedDate: earnedDate,
+          progress: progress,
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final earnedBadges = ref.watch(earnedBadgesProvider(widget.childId));
 
     return earnedBadges.when(
       data: (badges) {
-        final isEarned = badges.any((eb) => eb.badgeId == badge.id);
-        final earnedDate = isEarned
-            ? badges.firstWhere((eb) => eb.badgeId == badge.id).earnedAt
-            : null;
+        final isEarned = badges.any((eb) => eb.badgeId == widget.badge.id);
 
         // 進捗を計算
         double progress = 0;
-        if (badge.theme != 'all') {
-          // 徳目別バッジの場合
+        if (widget.badge.theme != 'all') {
           try {
-            final virtueProgress = progressList.firstWhere(
-              (p) => p.virtue == badge.theme,
+            final virtueProgress = widget.progressList.firstWhere(
+              (p) => p.virtue == widget.badge.theme,
               orElse: () => null,
             );
             if (virtueProgress != null && virtueProgress.completionCount != null) {
               final completionCount = virtueProgress.completionCount is int
                   ? virtueProgress.completionCount as int
                   : (virtueProgress.completionCount as num).toInt();
-              progress = (completionCount / badge.requiredCompletions).clamp(0, 1).toDouble();
+              progress = (completionCount / widget.badge.requiredCompletions).clamp(0, 1).toDouble();
             }
           } catch (e) {
             progress = 0;
           }
         } else {
-          // 全テーマバッジの場合、全体の完了数を数える
           try {
-            final totalCompleted = progressList.fold<int>(
+            final totalCompleted = widget.progressList.fold<int>(
               0,
               (sum, p) {
                 if (p.completionCount == null) return sum;
@@ -351,125 +480,114 @@ class _BadgeCard extends ConsumerWidget {
                 return sum + count;
               },
             );
-            progress = (totalCompleted / badge.requiredCompletions).clamp(0, 1).toDouble();
+            progress = (totalCompleted / widget.badge.requiredCompletions).clamp(0, 1).toDouble();
           } catch (e) {
             progress = 0;
           }
         }
 
-        return GestureDetector(
-          onTap: () {
-            // バッジをタップした際の音声効果
-            if (isEarned) {
-              SoundEffectsUtils(ref).playBadgeUnlockSound();
-            } else {
-              SoundEffectsUtils(ref).playButtonTapSound();
-            }
-            showDialog(
-              context: context,
-              builder: (ctx) => _BadgeDetailDialog(
-                badge: badge,
-                isEarned: isEarned,
-                earnedDate: earnedDate,
-                progress: progress,
-              ),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: isEarned ? Colors.white : Colors.white70,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isEarned ? AppColors.primary.withAlpha(100) : Color(0xFFDDDDDD),
-                width: 2,
-              ),
-              boxShadow: [
-                if (isEarned)
-                  BoxShadow(
-                    color: AppColors.primary.withAlpha(30),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      badge.emoji,
-                      style: TextStyle(
-                        fontSize: isEarned ? 36 : 28,
-                        opacity: isEarned ? 1.0 : 0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Text(
-                        badge.name,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isEarned ? AppColors.textPrimary : AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+        return ScaleTransition(
+          scale: _scaleAnimation,
+          child: GestureDetector(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isEarned ? Colors.white : Colors.white70,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isEarned ? AppColors.primary.withAlpha(100) : Color(0xFFDDDDDD),
+                  width: 2,
                 ),
-                // 進捗インジケーター（未取得の場合）
-                if (!isEarned)
-                  Positioned(
-                    bottom: 4,
-                    left: 4,
-                    right: 4,
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 3,
-                            backgroundColor: Color(0xFFEEEEEE),
-                            valueColor: AlwaysStoppedAnimation(AppColors.primary.withAlpha(150)),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${(progress * 100).toInt()}%',
-                          style: const TextStyle(
-                            fontSize: 8,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                boxShadow: [
+                  if (isEarned)
+                    BoxShadow(
+                      color: AppColors.primary.withAlpha(30),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                // 獲得済みチェックマーク
-                if (isEarned)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.badge.emoji,
+                        style: TextStyle(
+                          fontSize: isEarned ? 36 : 28,
+                          opacity: isEarned ? 1.0 : 0.4,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          widget.badge.name,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isEarned ? AppColors.textPrimary : AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // 進捗インジケーター（未取得の場合）
+                  if (!isEarned)
+                    Positioned(
+                      bottom: 4,
+                      left: 4,
+                      right: 4,
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 3,
+                              backgroundColor: Color(0xFFEEEEEE),
+                              valueColor: AlwaysStoppedAnimation(AppColors.primary.withAlpha(150)),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${(progress * 100).toInt()}%',
+                            style: const TextStyle(
+                              fontSize: 8,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-              ],
+                  // 獲得済みチェックマーク
+                  if (isEarned)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );

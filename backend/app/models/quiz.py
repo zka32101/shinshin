@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer, Boolean, Text, ForeignKey, Float
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,10 +10,10 @@ class QuizSession(Base):
     """クイズセッション (ストーリー1回分の学習)"""
     __tablename__ = "quiz_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    child_id = Column(UUID(as_uuid=True), ForeignKey("children.id", ondelete="CASCADE"), nullable=False)
-    story_id = Column(UUID(as_uuid=True), ForeignKey("stories.id", ondelete="SET NULL"), nullable=True)
-    chosen_choice_id = Column(UUID(as_uuid=True), nullable=True)  # 最終選択
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
+    child_id = Column(UUIDType(binary=False), ForeignKey("children.id", ondelete="CASCADE"), nullable=False)
+    story_id = Column(UUIDType(binary=False), ForeignKey("stories.id", ondelete="SET NULL"), nullable=True)
+    chosen_choice_id = Column(UUIDType(binary=False), nullable=True)  # 最終選択
     points_earned = Column(Integer, default=0)
     time_spent_seconds = Column(Integer, default=0)
     is_completed = Column(Boolean, default=False)
@@ -34,10 +34,10 @@ class QuizAnswer(Base):
     """クイズ個別回答"""
     __tablename__ = "quiz_answers"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("quiz_sessions.id", ondelete="CASCADE"), nullable=False)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUIDType(binary=False), ForeignKey("quiz_sessions.id", ondelete="CASCADE"), nullable=False)
     question_text = Column(Text, nullable=False)
-    selected_choice_id = Column(UUID(as_uuid=True), nullable=True)
+    selected_choice_id = Column(UUIDType(binary=False), nullable=True)
     selected_choice_text = Column(Text, nullable=True)
     is_correct = Column(Boolean, nullable=True)     # 明確な正解がある場合
     answered_at = Column(DateTime, default=datetime.utcnow, nullable=False)

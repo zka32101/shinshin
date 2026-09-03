@@ -56,7 +56,7 @@ Thumbs.db
 
 # Miscellaneous
 *.class
-*.lock
+# *.lock is removed - pubspec.lock and ios/Podfile.lock must be committed
 *.log
 *.pot
 *.properties

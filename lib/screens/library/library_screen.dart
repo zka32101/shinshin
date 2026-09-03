@@ -5,6 +5,8 @@ import '../../providers/story_provider.dart'; // weeklyThemeProvider
 import '../../providers/story_provider_fs.dart'; // storiesFsProvider
 import '../../providers/child_provider.dart';
 import '../../providers/progress_provider.dart';
+import '../../utils/animation_constants.dart';
+import '../../widgets/animations/index.dart';
 import '../story/story_learning_screen.dart';
 
 const _primaryColor = Color(0xFF9B59B6);
@@ -123,23 +125,29 @@ class _ThemeTab extends ConsumerWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _themes.map((t) {
+              children: List.generate(_themes.length, (index) {
+                final t = _themes[index];
                 final isSelected = t.$2 == selectedTheme;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(t.$1),
-                    selected: isSelected,
-                    onSelected: (_) => onThemeChanged(t.$2),
-                    selectedColor: _primaryColor.withAlpha(40),
-                    checkmarkColor: _primaryColor,
-                    labelStyle: TextStyle(
-                      color: isSelected ? _primaryColor : _textSecondary,
-                      fontSize: 12,
+                return AnimatedSlideIn(
+                  direction: SlideDirection.fromLeft,
+                  duration: AnimationDurations.medium,
+                  delay: Duration(milliseconds: 100 + (index * 50)),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(t.$1),
+                      selected: isSelected,
+                      onSelected: (_) => onThemeChanged(t.$2),
+                      selectedColor: _primaryColor.withAlpha(40),
+                      checkmarkColor: _primaryColor,
+                      labelStyle: TextStyle(
+                        color: isSelected ? _primaryColor : _textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ),
           ),
         ),
@@ -200,7 +208,12 @@ class _CompletedStoriesList extends ConsumerWidget {
           itemCount: stories.length,
           separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, i) {
-            return _CompletedStoryCard(story: stories[i], childId: childId);
+            return AnimatedSlideIn(
+              direction: SlideDirection.fromBottom,
+              duration: AnimationDurations.medium,
+              delay: Duration(milliseconds: 100 + (i * 75)),
+              child: _CompletedStoryCard(story: stories[i], childId: childId),
+            );
           },
         );
       },
@@ -304,25 +317,30 @@ class _StoryList extends ConsumerWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: stories.length,
-      itemBuilder: (context, i) => _LibraryStoryCard(
-        story: stories[i],
-        onTap: () => childAsync.whenData((child) {
-          if (child == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('子供プロフィールを作成してください')),
-            );
-            return;
-          }
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => StoryLearningScreen(storyId: stories[i].id, childId: child.id),
-          ));
-        }),
+      itemBuilder: (context, i) => AnimatedSlideIn(
+        direction: SlideDirection.fromBottom,
+        duration: AnimationDurations.medium,
+        delay: Duration(milliseconds: 100 + (i * 75)),
+        child: _LibraryStoryCard(
+          story: stories[i],
+          onTap: () => childAsync.whenData((child) {
+            if (child == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('子供プロフィールを作成してください')),
+              );
+              return;
+            }
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => StoryLearningScreen(storyId: stories[i].id, childId: child.id),
+            ));
+          }),
+        ),
       ),
     );
   }
 }
 
-class _LibraryStoryCard extends StatelessWidget {
+class _LibraryStoryCard extends StatefulWidget {
   final Story story;
   final VoidCallback onTap;
   const _LibraryStoryCard({required this.story, required this.onTap});
@@ -342,53 +360,106 @@ class _LibraryStoryCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
-    final color = _themeColors[story.theme] ?? _primaryColor;
-    final label = _themeLabels[story.theme] ?? story.theme;
-    final emoji = _themeEmojis[story.theme] ?? '📖';
+  State<_LibraryStoryCard> createState() => _LibraryStoryCardState();
+}
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: _cardColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border(left: BorderSide(color: color, width: 4)),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(12), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(10)),
-              child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(story.title,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _textPrimary)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _Tag(label: label, color: color),
-                      const SizedBox(width: 6),
-                      _Tag(label: '${(story.durationSeconds / 60).round()}分', color: _textSecondary),
-                      if (story.isPremium) ...[
-                        const SizedBox(width: 6),
-                        const _Tag(label: 'Premium', color: Color(0xFFF39C12)),
-                      ],
-                    ],
-                  ),
-                ],
+class _LibraryStoryCardState extends State<_LibraryStoryCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _LibraryStoryCard._themeColors[widget.story.theme] ?? _primaryColor;
+    final label = _LibraryStoryCard._themeLabels[widget.story.theme] ?? widget.story.theme;
+    final emoji = _LibraryStoryCard._themeEmojis[widget.story.theme] ?? '📖';
+
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: _cardColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border(left: BorderSide(color: color, width: 4)),
+            boxShadow: [BoxShadow(
+              color: Colors.black.withAlpha(_isPressed ? 20 : 12),
+              blurRadius: _isPressed ? 4 : 8,
+              offset: const Offset(0, 2),
+            )],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(10)),
+                child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: _textSecondary),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.story.title,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _textPrimary)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _Tag(label: label, color: color),
+                        const SizedBox(width: 6),
+                        _Tag(label: '${(widget.story.durationSeconds / 60).round()}分', color: _textSecondary),
+                        if (widget.story.isPremium) ...[
+                          const SizedBox(width: 6),
+                          const _Tag(label: 'Premium', color: Color(0xFFF39C12)),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: _textSecondary),
+            ],
+          ),
         ),
       ),
     );

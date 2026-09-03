@@ -9,6 +9,11 @@ on:
     # 毎日午前 2:00 UTC にスキャンを実行
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   # ========================================
   # Dart/Flutter コードスキャン
@@ -27,8 +32,15 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Clean Flutter cache and regenerate dependencies
+        run: |
+          echo "Cleaning Flutter cache..."
+          rm -rf pubspec.lock .dart_tool/
+          flutter clean
+          echo "Cache cleaned, ready for fresh dependency resolution"
+
       - name: Get dependencies
-        run: flutter pub get
+        run: flutter pub get --verbose
 
       - name: Run Flutter Analyzer
         run: flutter analyze --no-pub
@@ -43,13 +55,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1  # Only fetch latest commit to avoid scanning full history
 
       # Gitleaks を使用した秘密情報スキャン
+      # Using v1 to avoid licensing requirements; v2+ requires paid license
       - name: Run Gitleaks Secret Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERBOSE: "true"
+        with:
+          args: --verbose --log-level=debug
 
   # ========================================
   # Python バックエンド スキャン

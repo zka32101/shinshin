@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -10,7 +10,7 @@ class User(Base):
     """保護者ユーザー"""
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4, index=True)
     firebase_uid = Column(String(128), unique=True, index=True, nullable=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String(100), nullable=False)

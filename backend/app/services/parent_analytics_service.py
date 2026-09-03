@@ -110,9 +110,9 @@ class ParentAnalyticsService:
         result = await self.db.execute(
             select(func.count(Progress.id)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
-                & (Progress.status == "completed")
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
+                & (Progress.action == "story_completed")
             )
         )
         return result.scalar() or 0
@@ -123,15 +123,17 @@ class ParentAnalyticsService:
         week_start: datetime,
         week_end: datetime,
     ) -> int:
-        """この週の学習時間を分単位で取得"""
+        """この週の学習時間を分単位で取得（進捗レコード数×5分で概算）"""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Progress.study_duration_minutes), 0)).where(
+            select(func.count(Progress.id)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
             )
         )
-        return int(result.scalar() or 0)
+        # 各進捗レコードを約5分として計算
+        count = result.scalar() or 0
+        return int(count * 5)
 
     async def _get_weekly_points_earned(
         self,
@@ -141,10 +143,10 @@ class ParentAnalyticsService:
     ) -> int:
         """この週に獲得したポイントを取得"""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Progress.points_earned), 0)).where(
+            select(func.coalesce(func.sum(Progress.points_delta), 0)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
             )
         )
         return int(result.scalar() or 0)
@@ -158,36 +160,23 @@ class ParentAnalyticsService:
         """
         この週の徳目スコア変化を分析
         Returns: {"思いやり": 25, "責任": -5, ...}
+
+        Note: Progress model doesn't track virtue scores directly.
+        This would be tracked at the story/quiz completion level.
+        For now, return empty dict.
         """
-        # Progress から virtue_score_delta を抽出
-        result = await self.db.execute(
-            select(Progress.virtue_scores).where(
-                (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
-            )
-        )
-
-        virtue_changes: Dict[str, int] = {}
-        for row in result.scalars().all():
-            if row:  # virtue_scores は JSON カラム
-                for virtue, change in row.items():
-                    virtue_changes[virtue] = virtue_changes.get(virtue, 0) + change
-
-        return virtue_changes
+        # TODO: Implement virtue score tracking at story/quiz completion level
+        return {}
 
     async def _calculate_completion_streak(self, child_id: str) -> int:
         """
         連続完了日数を計算（本日を含む）
         """
-        # 子の completed_at を日付ごとにグループ化して、連続した日数を数える
+        # 子の recorded_at を日付ごとにグループ化して、連続した日数を数える
         result = await self.db.execute(
-            select(Progress.completed_at)
-            .where(
-                (Progress.child_id == child_id)
-                & (Progress.status == "completed")
-            )
-            .order_by(Progress.completed_at.desc())
+            select(Progress.recorded_at)
+            .where(Progress.child_id == child_id)
+            .order_by(Progress.recorded_at.desc())
         )
 
         completed_dates = set()

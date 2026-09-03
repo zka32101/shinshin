@@ -10,6 +10,8 @@ import '../../constants/app_styles.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/common_states.dart';
 import '../../utils/logging_utils.dart';
+import '../../utils/animation_constants.dart';
+import '../../widgets/animations/index.dart';
 
 /// ダッシュボード画面 — 子どもの学習進捗を視覚的に表示
 /// 統計情報、バッジ、アクティビティ、成長トレンドを表示
@@ -73,33 +75,63 @@ class _DashboardContent extends ConsumerWidget {
           // リフレッシュ完了待ち
           await Future.delayed(const Duration(milliseconds: 500));
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // グリーティング
-                _GreetingSection(childName: profile?.name ?? 'ユーザー'),
-                const SizedBox(height: 24),
+        child: AnimatedFadeInScale(
+          duration: AnimationDurations.medium,
+          beginScale: 0.95,
+          endScale: 1.0,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // グリーティング
+                  AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 100),
+                    child: _GreetingSection(childName: profile?.name ?? 'ユーザー'),
+                  ),
+                  const SizedBox(height: 24),
 
-                // 統計カード
-                _StatsSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 統計カード
+                  AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 200),
+                    child: _StatsSection(childId: childId),
+                  ),
+                  const SizedBox(height: 24),
 
-                // 学習進捗
-                _ProgressSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 学習進捗
+                  AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 300),
+                    child: _ProgressSection(childId: childId),
+                  ),
+                  const SizedBox(height: 24),
 
-                // 獲得バッジ
-                _BadgesSection(childId: childId),
-                const SizedBox(height: 24),
+                  // 獲得バッジ
+                  AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 400),
+                    child: _BadgesSection(childId: childId),
+                  ),
+                  const SizedBox(height: 24),
 
-                // 徳目別スコア
-                _VirtueScoresSection(childId: childId),
-                const SizedBox(height: 32),
-              ],
+                  // 徳目別スコア
+                  AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 500),
+                    child: _VirtueScoresSection(childId: childId),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         ),
@@ -122,45 +154,50 @@ class _GreetingSection extends StatelessWidget {
     final hour = DateTime.now().hour;
     final greeting = _getGreeting(hour);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return AnimatedBounce(
+      duration: AnimationDurations.long,
+      scale: 1.0,
+      delay: Duration(milliseconds: 200),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.primary, AppColors.primaryDark],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppStyles.radiusLarge),
         ),
-        borderRadius: BorderRadius.circular(AppStyles.radiusLarge),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            greeting,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              greeting,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '$childNameさん',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 4),
+            Text(
+              '$childNameさん',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '今日も頑張ろう！',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
+            const SizedBox(height: 12),
+            const Text(
+              '今日も頑張ろう！',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -203,33 +240,36 @@ class _StatsSection extends ConsumerWidget {
 
         return earnedBadges.when(
           data: (badges) {
-            return GridView.count(
-              crossAxisCount: 3,
+            final statItems = [
+              (icon: '⭐', label: 'ポイント', value: '$totalPoints', color: Colors.amber),
+              (icon: '📖', label: 'ストーリー', value: '$completedStories', color: Colors.blue),
+              (icon: '🎖️', label: 'バッジ', value: '${badges.length}', color: Colors.pink),
+            ];
+
+            return GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1,
+              ),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1,
-              children: [
-                _StatCard(
-                  icon: '⭐',
-                  label: 'ポイント',
-                  value: '$totalPoints',
-                  color: Colors.amber,
-                ),
-                _StatCard(
-                  icon: '📖',
-                  label: 'ストーリー',
-                  value: '$completedStories',
-                  color: Colors.blue,
-                ),
-                _StatCard(
-                  icon: '🎖️',
-                  label: 'バッジ',
-                  value: '${badges.length}',
-                  color: Colors.pink,
-                ),
-              ],
+              itemCount: statItems.length,
+              itemBuilder: (context, index) {
+                final item = statItems[index];
+                return AnimatedSlideIn(
+                  direction: SlideDirection.fromBottom,
+                  duration: AnimationDurations.medium,
+                  delay: Duration(milliseconds: 250 + (index * 100)),
+                  child: _StatCard(
+                    icon: item.icon,
+                    label: item.label,
+                    value: item.value,
+                    color: item.color,
+                  ),
+                );
+              },
             );
           },
           loading: () => const CircularProgressIndicator(),
@@ -242,7 +282,7 @@ class _StatsSection extends ConsumerWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCard extends StatefulWidget {
   final String icon;
   final String label;
   final String value;
@@ -256,45 +296,96 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
+  State<_StatCard> createState() => _StatCardState();
+}
+
+class _StatCardState extends State<_StatCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: color.withAlpha(AppConstants.alphaLight),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withAlpha(_isPressed ? 30 : AppConstants.alphaLight),
+                blurRadius: _isPressed ? 4 : 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            icon,
-            style: const TextStyle(fontSize: AppStyles.fontSizeEmoji),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.icon,
+                style: const TextStyle(fontSize: AppStyles.fontSizeEmoji),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.value,
+                style: TextStyle(
+                  fontSize: AppStyles.fontSizePageTitle,
+                  fontWeight: FontWeight.bold,
+                  color: widget.color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  fontSize: AppStyles.fontSizeSmall,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: AppStyles.fontSizePageTitle,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: AppStyles.fontSizeSmall,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -347,10 +438,15 @@ class _ProgressSection extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       for (int i = 0; i < counts.length; i++)
-                        _BarChartItem(
-                          day: AppConstants.dayLabels[i],
-                          count: counts[i],
-                          maxCount: maxCount,
+                        AnimatedSlideIn(
+                          direction: SlideDirection.fromBottom,
+                          duration: AnimationDurations.medium,
+                          delay: Duration(milliseconds: 350 + (i * 75)),
+                          child: _BarChartItem(
+                            day: AppConstants.dayLabels[i],
+                            count: counts[i],
+                            maxCount: maxCount,
+                          ),
                         ),
                     ],
                   ),
@@ -506,40 +602,45 @@ class _BadgesSection extends ConsumerWidget {
 
                   if (badgeDef == null) return const SizedBox.shrink();
 
-                  return Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-                      border: Border.all(
-                        color: AppColors.primary.withAlpha(AppConstants.alphaHighlight),
-                        width: 2,
+                  return AnimatedSlideIn(
+                    direction: SlideDirection.fromBottom,
+                    duration: AnimationDurations.medium,
+                    delay: Duration(milliseconds: 450 + (index * 100)),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
+                        border: Border.all(
+                          color: AppColors.primary.withAlpha(AppConstants.alphaHighlight),
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          badgeDef.emoji,
-                          style: const TextStyle(fontSize: 32),
-                        ),
-                        const SizedBox(height: 4),
-                        SizedBox(
-                          width: 60,
-                          child: Text(
-                            badgeDef.name,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            badgeDef.emoji,
+                            style: const TextStyle(fontSize: 32),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              badgeDef.name,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -595,6 +696,8 @@ class _VirtueScoresSection extends ConsumerWidget {
           'responsibility': '💙',
         };
 
+        final virtueEntries = virtueColors.entries.toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -607,7 +710,8 @@ class _VirtueScoresSection extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...virtueColors.entries.map((entry) {
+            ...List.generate(virtueEntries.length, (index) {
+              final entry = virtueEntries[index];
               final virtue = entry.key;
               final color = entry.value;
               final count = progressList.fold<int>(
@@ -615,57 +719,62 @@ class _VirtueScoresSection extends ConsumerWidget {
                 (sum, p) => sum + (p.virtue == virtue ? 1 : 0),
               );
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        virtueEmojis[virtue] ?? '⭐',
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              virtueLabels[virtue] ?? virtue,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
-                              child: LinearProgressIndicator(
-                                value: (count / (count + 2)).clamp(0, 1),
-                                minHeight: 6,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation(color),
-                              ),
-                            ),
-                          ],
+              return AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 550 + (index * 80)),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          virtueEmojis[virtue] ?? '⭐',
+                          style: const TextStyle(fontSize: 20),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$count本',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: color,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                virtueLabels[virtue] ?? virtue,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(2),
+                                child: LinearProgressIndicator(
+                                  value: (count / (count + 2)).clamp(0, 1),
+                                  minHeight: 6,
+                                  backgroundColor: Colors.grey[200],
+                                  valueColor: AlwaysStoppedAnimation(color),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Text(
+                          '$count本',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
