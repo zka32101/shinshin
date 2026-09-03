@@ -390,14 +390,14 @@ class _AnimatedRegisterButtonState extends State<_AnimatedRegisterButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     if (!widget.isLoading) {
       setState(() => _isPressed = true);
       _controller.forward();
     }
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
     if (!widget.isLoading) {
