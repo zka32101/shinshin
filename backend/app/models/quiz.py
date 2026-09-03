@@ -34,10 +34,10 @@ class QuizAnswer(Base):
     """クイズ個別回答"""
     __tablename__ = "quiz_answers"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("quiz_sessions.id", ondelete="CASCADE"), nullable=False)
+    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUIDType(binary=False), ForeignKey("quiz_sessions.id", ondelete="CASCADE"), nullable=False)
     question_text = Column(Text, nullable=False)
-    selected_choice_id = Column(UUID(as_uuid=True), nullable=True)
+    selected_choice_id = Column(UUIDType(binary=False), nullable=True)
     selected_choice_text = Column(Text, nullable=True)
     is_correct = Column(Boolean, nullable=True)     # 明確な正解がある場合
     answered_at = Column(DateTime, default=datetime.utcnow, nullable=False)
