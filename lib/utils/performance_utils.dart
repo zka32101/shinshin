@@ -56,25 +56,19 @@ class PerformanceUtils {
       LoggingUtils.warning(
         'PERF',
         '$name: 非常に遅い (${metric.durationMs}ms)',
-        null,
-        null,
-        metadata,
+        metadata: metadata,
       );
     } else if (metric.isSlow) {
       LoggingUtils.info(
         'PERF',
         '$name: やや遅い (${metric.durationMs}ms)',
-        null,
-        null,
-        metadata,
+        metadata: metadata,
       );
     } else {
       LoggingUtils.debug(
         'PERF',
         '$name: ${metric.durationMs}ms',
-        null,
-        null,
-        metadata,
+        metadata: metadata,
       );
     }
 
