@@ -54,8 +54,7 @@ jobs:
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."
-          rm -rf pubspec.lock .dart_tool/
-          flutter clean
+          rm -rf pubspec.lock .dart_tool/ .packages
           echo "Cache cleaned, ready for fresh dependency resolution"
 
       - name: Install dependencies
@@ -178,6 +177,11 @@ jobs:
           echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
+      - name: Clean Flutter cache
+        run: |
+          rm -rf pubspec.lock .dart_tool/ .packages
+          echo "Cache cleaned"
+
       - name: Install dependencies
         run: flutter pub get --verbose
 
@@ -226,6 +230,11 @@ jobs:
           echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
           echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
+
+      - name: Clean Flutter cache
+        run: |
+          rm -rf pubspec.lock .dart_tool/ .packages
+          echo "Cache cleaned"
 
       - name: Install dependencies
         run: flutter pub get --verbose
