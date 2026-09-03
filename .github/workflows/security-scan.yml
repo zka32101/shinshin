@@ -38,6 +38,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."
@@ -146,6 +149,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Check Pub Dependencies
         run: |
