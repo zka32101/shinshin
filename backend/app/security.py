@@ -7,7 +7,8 @@ from passlib.context import CryptContext
 from app.config import get_settings
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use argon2id for password hashing (recommended by OWASP, no 72-byte limit)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 security = HTTPBearer(auto_error=True)
 optional_security = HTTPBearer(auto_error=False)
 
