@@ -91,21 +91,21 @@ class LearningStatsCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
+                color: AppColors.warning.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.calendar_today,
-                    color: AppColors.secondary,
+                    color: AppColors.warning,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '学習日数: ${monthlyStats.studyDaysCount}日',
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.warning,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
