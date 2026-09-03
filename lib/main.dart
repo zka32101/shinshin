@@ -22,6 +22,9 @@ import 'services/logger_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 
+// Global navigator key for navigation from services (e.g., FCM notifications)
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -161,6 +164,7 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
 
     return MaterialApp(
       title: '小学コレ！道徳',
+      navigatorKey: navigatorKey,
       theme: lightTheme(),
       darkTheme: darkTheme(),
       themeMode: _themeModeToBrightness(brightness),
