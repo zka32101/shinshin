@@ -113,9 +113,9 @@ class LoggingUtils {
   /// ユーザーアクションをログ
   static void logUserAction(
     String screen,
-    String action,
-    [Map<String, dynamic>? params],
-  ) {
+    String action, {
+    Map<String, dynamic>? params,
+  }) {
     final paramStr = params != null ? ' - ${params.toString()}' : '';
     info('USER_ACTION', '$screen: $action$paramStr');
   }
