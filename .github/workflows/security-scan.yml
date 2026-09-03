@@ -46,6 +46,13 @@ jobs:
           echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."

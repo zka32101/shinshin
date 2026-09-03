@@ -51,6 +51,13 @@ jobs:
           echo "=== Current pubspec.yaml ==="
           head -15 pubspec.yaml
 
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
           echo "Cleaning Flutter cache..."
@@ -177,6 +184,13 @@ jobs:
           echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
       - name: Clean Flutter cache
         run: |
           rm -rf pubspec.lock .dart_tool/ .packages
@@ -230,6 +244,13 @@ jobs:
           echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
           echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
+
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
 
       - name: Clean Flutter cache
         run: |
