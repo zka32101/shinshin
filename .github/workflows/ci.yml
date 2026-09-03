@@ -36,6 +36,8 @@ jobs:
         run: |
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
       - name: Verify Flutter and Dart versions
@@ -172,6 +174,8 @@ jobs:
         run: |
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
       - name: Install dependencies
@@ -219,6 +223,8 @@ jobs:
         run: |
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
           echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
       - name: Install dependencies
