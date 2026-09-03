@@ -519,7 +519,7 @@ class _BadgeCardState extends ConsumerState<_BadgeCard>
                         widget.badge.emoji,
                         style: TextStyle(
                           fontSize: isEarned ? 36 : 28,
-                          opacity: isEarned ? 1.0 : 0.4,
+                          color: Colors.black.withOpacity(isEarned ? 1.0 : 0.4),
                         ),
                       ),
                       const SizedBox(height: 6),
