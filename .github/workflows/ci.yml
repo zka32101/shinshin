@@ -67,16 +67,16 @@ jobs:
 
       - name: Clean Flutter cache and regenerate dependencies
         run: |
-          echo "Cleaning Flutter cache..."
-          rm -rf pubspec.lock .dart_tool/ .packages
-          echo "Cleaning Android gradle cache..."
-          rm -rf android/.gradle android/app/build android/build
-          echo "Cache cleaned, ready for fresh dependency resolution"
+          echo "Cleaning Flutter cache with flutter clean..."
+          flutter clean
+          echo "Removed .dart_tool and build artifacts"
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
+          echo "Cleaned Android gradle and build cache"
 
       - name: Install dependencies
         run: |
           echo "=== Running flutter pub get (verbose) ==="
-          flutter pub get --verbose 2>&1 | tail -100
+          flutter pub get --verbose --no-offline 2>&1 | tail -100
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -202,12 +202,12 @@ jobs:
 
       - name: Clean Flutter cache
         run: |
-          rm -rf pubspec.lock .dart_tool/ .packages
-          rm -rf android/.gradle android/app/build android/build
+          flutter clean
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
           echo "Cache cleaned"
 
       - name: Install dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get --verbose --no-offline
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -264,12 +264,12 @@ jobs:
 
       - name: Clean Flutter cache
         run: |
-          rm -rf pubspec.lock .dart_tool/ .packages
-          rm -rf android/.gradle android/app/build android/build
+          flutter clean
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
           echo "Cache cleaned"
 
       - name: Install dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get --verbose --no-offline
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs

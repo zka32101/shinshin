@@ -55,14 +55,14 @@ jobs:
 
       - name: Clean Flutter cache and regenerate dependencies
         run: |
-          echo "Cleaning Flutter cache..."
-          rm -rf pubspec.lock .dart_tool/ .packages
-          echo "Cleaning Android gradle cache..."
-          rm -rf android/.gradle android/app/build android/build
-          echo "Cache cleaned, ready for fresh dependency resolution"
+          echo "Cleaning Flutter cache with flutter clean..."
+          flutter clean
+          echo "Removed .dart_tool and build artifacts"
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
+          echo "Cleaned Android gradle and build cache"
 
       - name: Get dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get --verbose --no-offline
 
       - name: Run Flutter Analyzer
         run: flutter analyze --no-pub
