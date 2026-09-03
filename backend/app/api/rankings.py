@@ -104,7 +104,7 @@ async def get_child_current_ranking(
         group_type: グループ化タイプ
 
     Returns:
-        子どものランキング情報、または None（ランキングがない場合）
+        子どものランキング情報、または null（ランキングがない場合）
     """
     # 所有者確認
     child_result = await db.execute(
@@ -145,6 +145,7 @@ async def get_child_current_ranking(
         ranking = ranking_result.scalar_one_or_none()
 
         if not ranking:
+            # Return 200 with null response when no ranking exists
             return None
 
         return RankingDetailResponse(
@@ -156,6 +157,8 @@ async def get_child_current_ranking(
             total_growth_score=ranking.total_growth_score,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -72,8 +72,8 @@ class WeeklyCoachingData(Base):
             "id": str(self.id),
             "child_id": self.child_id,
             "parent_id": self.parent_id,
-            "week_start_date": self.week_start_date.isoformat(),
-            "week_end_date": self.week_end_date.isoformat(),
+            "week_start_date": self.week_start_date.isoformat() if self.week_start_date else None,
+            "week_end_date": self.week_end_date.isoformat() if self.week_end_date else None,
             "week_number": self.week_number,
             "weekly_stories_completed": self.weekly_stories_completed,
             "weekly_study_minutes": self.weekly_study_minutes,
@@ -88,5 +88,5 @@ class WeeklyCoachingData(Base):
             "advice": self.advice,
             "parent_tip": self.parent_tip,
             "email_sent": self.email_sent.isoformat() if self.email_sent else None,
-            "analyzed_at": self.analyzed_at.isoformat(),
+            "analyzed_at": self.analyzed_at.isoformat() if self.analyzed_at else None,
         }
