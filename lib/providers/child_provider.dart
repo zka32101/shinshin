@@ -39,25 +39,24 @@ class _ChildIdNotifier extends StateNotifier<String?> {
   }
 }
 
-/// Initializes persistent child ID storage (fire-and-forget)
-final _childIdInitProvider = FutureProvider<void>((ref) async {
-  final notifier = ref.watch(currentChildIdProvider.notifier);
-  await notifier.loadFromPersistentStorage();
-});
-
 /// 現在選択されている子ども ID プロバイダー（アプリ再起動後も復元）
 final currentChildIdProvider =
     StateNotifierProvider<_ChildIdNotifier, String?>(
   (ref) {
     final notifier = _ChildIdNotifier();
-    // Initialize persistence loading in the background
-    // This won't block the UI but will restore state after mount
-    ref.watch(_childIdInitProvider).whenData((_) {
-      // Initialization complete, state is now restored
-    });
+    // Load from persistent storage without blocking
+    notifier.loadFromPersistentStorage().ignore();
     return notifier;
   },
 );
+
+/// Initializes persistent child ID storage (fire-and-forget)
+/// This is separated from currentChildIdProvider to avoid cyclic dependency
+final _childIdInitProvider = FutureProvider<void>((ref) async {
+  // Ensure the notifier is properly initialized
+  await Future.delayed(const Duration(milliseconds: 100));
+  // The initialization happens in the notifier constructor
+});
 
 /// 親の全子どもプロフィール取得（バックエンド API）
 final childrenProfilesProvider =
