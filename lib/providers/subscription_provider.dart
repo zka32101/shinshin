@@ -16,7 +16,7 @@ final paymentServiceProvider = Provider((ref) {
 
 // Get subscription info stream for current user
 final subscriptionInfoProvider = StreamProvider.autoDispose((ref) async* {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final subscriptionService = ref.watch(subscriptionServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -86,7 +86,7 @@ final daysRemainingInTrialProvider = FutureProvider.autoDispose((ref) async {
 
 // Purchase monthly subscription
 final purchaseMonthlyProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final paymentService = ref.watch(paymentServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -110,7 +110,7 @@ final purchaseMonthlyProvider = FutureProvider.autoDispose((ref) async {
 
 // Purchase yearly subscription
 final purchaseYearlyProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final paymentService = ref.watch(paymentServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -134,7 +134,7 @@ final purchaseYearlyProvider = FutureProvider.autoDispose((ref) async {
 
 // Cancel subscription
 final cancelSubscriptionProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final subscriptionService = ref.watch(subscriptionServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -179,7 +179,7 @@ final isYearlyPurchasedProvider = FutureProvider.autoDispose((ref) async {
 // Restore purchases
 final restorePurchasesProvider = FutureProvider.autoDispose((ref) async {
   final paymentService = ref.watch(paymentServiceProvider);
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
 
   final userId = auth.maybeWhen(
     data: (user) => user?.uid,

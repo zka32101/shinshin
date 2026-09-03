@@ -618,7 +618,7 @@ class ParentalConsentNotifier extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
     } catch (e, st) {
-      LoggerService().logError('Failed to submit parental consent', e, st);
+      LoggerService().logError('Failed to submit parental consent', error: e, stackTrace: st);
       state = AsyncValue.error(e, st);
     }
   }

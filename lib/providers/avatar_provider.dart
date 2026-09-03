@@ -28,7 +28,7 @@ final purchasableAvatarsProvider = FutureProvider.autoDispose((ref) async {
 
 // Get user's avatar info stream
 final userAvatarInfoProvider = StreamProvider.autoDispose((ref) async* {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final avatarService = ref.watch(avatarServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -62,7 +62,7 @@ final selectedAvatarProvider = FutureProvider.autoDispose((ref) async {
 // Get purchase history
 final avatarPurchaseHistoryProvider =
     FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final avatarService = ref.watch(avatarServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -80,7 +80,7 @@ final avatarPurchaseHistoryProvider =
 // Select avatar action
 final selectAvatarProvider =
     FutureProvider.family.autoDispose<void, String>((ref, avatarId) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final avatarService = ref.watch(avatarServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -101,7 +101,7 @@ final selectAvatarProvider =
 final purchaseAvatarProvider =
     FutureProvider.family.autoDispose<void, AvatarPurchaseParams>(
   (ref, params) async {
-    final auth = ref.watch(authProvider);
+    final auth = ref.watch(userAuthStateProvider);
     final avatarService = ref.watch(avatarServiceProvider);
 
     final userId = auth.maybeWhen(

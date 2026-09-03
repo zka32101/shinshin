@@ -43,7 +43,7 @@ void main() async {
 
     LoggerService().log('Firebase initialized successfully');
   } catch (e, stackTrace) {
-    LoggerService().logError('Firebase initialization error', e, stackTrace);
+    LoggerService().logError('Firebase initialization error', error: e, stackTrace: stackTrace);
 
     // Show error screen to user instead of crashing
     runApp(
