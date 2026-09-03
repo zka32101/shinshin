@@ -53,6 +53,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Flutter v2 embedding
+        // Required for compatibility with modern Flutter plugins
+        manifestPlaceholders += mapOf(
+            "flutterEmbedding" to "2"
+        )
     }
 
     buildTypes {
