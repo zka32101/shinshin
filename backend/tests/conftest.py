@@ -11,6 +11,8 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"  # also uppercase
 os.environ.setdefault("secret_key", "test-secret-key-not-for-production-use-12345678")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production-use-12345678")
 os.environ.setdefault("FIREBASE_PROJECT_ID", "test-project")
+# Disable rate limiting for tests to avoid 429 errors during rapid test execution
+os.environ.setdefault("RATE_LIMIT_PER_MINUTE", "10000")
 
 from httpx import AsyncClient, ASGITransport  # noqa: E402
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker  # noqa: E402
