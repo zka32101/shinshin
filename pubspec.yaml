@@ -42,7 +42,7 @@ dependencies:
   json_annotation: ^4.8.0
 
   # Audio & Narration
-  audioplayers: ^4.1.0
+  audioplayers: ^5.2.0
   flutter_tts: ^4.0.2
 
   # Charting (for radar chart in parent report)
