@@ -16,7 +16,7 @@ from app.schemas.ranking import RankingListResponse, RankingDetailResponse
 from app.security import get_current_user_id
 from app.services.ranking_service import RankingService
 
-router = APIRouter(prefix="/rankings", tags=["rankings"])
+router = APIRouter(tags=["rankings"])
 
 
 @router.get(
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/rankings", tags=["rankings"])
     response_model=RankingListResponse,
 )
 async def get_monthly_ranking(
-    ranking_month: date,
+    ranking_month: str,
     group_type: Literal["overall", "by_grade", "by_start_month", "combined"] = Query(
         "overall", description="グループ化タイプ"
     ),
@@ -46,9 +46,12 @@ async def get_monthly_ranking(
         RankingListResponse
     """
     try:
+        # Parse date string to date object
+        ranking_month_date = date.fromisoformat(ranking_month)
+
         rankings = await RankingService.get_ranking_for_month(
             db,
-            ranking_month=ranking_month,
+            ranking_month=ranking_month_date,
             group_type=group_type,
             group_value=group_value,
         )
