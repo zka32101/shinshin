@@ -69,6 +69,8 @@ jobs:
         run: |
           echo "Cleaning Flutter cache..."
           rm -rf pubspec.lock .dart_tool/ .packages
+          echo "Cleaning Android gradle cache..."
+          rm -rf android/.gradle android/app/build android/build
           echo "Cache cleaned, ready for fresh dependency resolution"
 
       - name: Install dependencies
@@ -201,6 +203,7 @@ jobs:
       - name: Clean Flutter cache
         run: |
           rm -rf pubspec.lock .dart_tool/ .packages
+          rm -rf android/.gradle android/app/build android/build
           echo "Cache cleaned"
 
       - name: Install dependencies
@@ -262,6 +265,7 @@ jobs:
       - name: Clean Flutter cache
         run: |
           rm -rf pubspec.lock .dart_tool/ .packages
+          rm -rf android/.gradle android/app/build android/build
           echo "Cache cleaned"
 
       - name: Install dependencies
