@@ -110,9 +110,9 @@ class ParentAnalyticsService:
         result = await self.db.execute(
             select(func.count(Progress.id)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
-                & (Progress.status == "completed")
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
+                & (Progress.action == "story_completed")
             )
         )
         return result.scalar() or 0
@@ -123,15 +123,17 @@ class ParentAnalyticsService:
         week_start: datetime,
         week_end: datetime,
     ) -> int:
-        """この週の学習時間を分単位で取得"""
+        """この週の学習時間を分単位で取得（進捗レコード数×5分で概算）"""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Progress.study_duration_minutes), 0)).where(
+            select(func.count(Progress.id)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
             )
         )
-        return int(result.scalar() or 0)
+        # 各進捗レコードを約5分として計算
+        count = result.scalar() or 0
+        return int(count * 5)
 
     async def _get_weekly_points_earned(
         self,
@@ -141,10 +143,10 @@ class ParentAnalyticsService:
     ) -> int:
         """この週に獲得したポイントを取得"""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Progress.points_earned), 0)).where(
+            select(func.coalesce(func.sum(Progress.points_delta), 0)).where(
                 (Progress.child_id == child_id)
-                & (Progress.completed_at >= week_start)
-                & (Progress.completed_at < week_end)
+                & (Progress.recorded_at >= week_start)
+                & (Progress.recorded_at < week_end)
             )
         )
         return int(result.scalar() or 0)
