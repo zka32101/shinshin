@@ -10,6 +10,9 @@ from app.security import verify_password, get_password_hash, create_access_token
 from app.config import get_settings
 import firebase_admin
 from firebase_admin import auth as firebase_auth
+import logging
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 router = APIRouter()
@@ -33,6 +36,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     )
     db.add(user)
     await db.flush()
+    await db.commit()
 
     token = create_access_token(
         {"sub": str(user.id)},
@@ -75,7 +79,23 @@ async def firebase_login(request: FirebaseLoginRequest, db: AsyncSession = Depen
     """Firebase IDトークンでログイン/登録"""
     try:
         decoded = firebase_auth.verify_id_token(request.firebase_token)
-    except Exception:
+    except ValueError as e:
+        # Invalid token format
+        logger.warning(f"Firebase: Invalid token format - {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Firebase tokenが無効です",
+        )
+    except firebase_admin.exceptions.FirebaseError as e:
+        # Firebase-specific errors (expired, revoked, invalid signature, etc.)
+        logger.warning(f"Firebase: Token verification failed - {type(e).__name__}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Firebase tokenが無効です",
+        )
+    except Exception as e:
+        # Unexpected errors - log but don't expose details
+        logger.error(f"Firebase: Unexpected error during token verification - {type(e).__name__}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Firebase tokenが無効です",
@@ -94,6 +114,7 @@ async def firebase_login(request: FirebaseLoginRequest, db: AsyncSession = Depen
         user = User(firebase_uid=firebase_uid, email=email, name=name)
         db.add(user)
         await db.flush()
+        await db.commit()
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(

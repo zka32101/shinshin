@@ -44,9 +44,23 @@ def event_loop():
 
 @pytest.fixture(autouse=True)
 async def setup_db():
-    """Reset DB tables before each test."""
+    """Reset DB tables and rate limiting before each test."""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Reset rate limiting middleware state
+    # Access the middleware stack and find RateLimitMiddleware instances
+    from app.middleware.security import RateLimitMiddleware
+
+    def find_and_reset_rate_limiter(middleware):
+        """Recursively find and reset RateLimitMiddleware instances"""
+        if isinstance(middleware, RateLimitMiddleware):
+            middleware.reset_requests()
+        if hasattr(middleware, 'app'):
+            find_and_reset_rate_limiter(middleware.app)
+
+    find_and_reset_rate_limiter(app.middleware_stack)
+
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)

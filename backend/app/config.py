@@ -119,9 +119,20 @@ class Settings(BaseSettings):
                 )
 
     def get_allowed_origins(self) -> list[str]:
-        """CORS許可オリジンを リスト化"""
+        """CORS許可オリジンを リスト化 - 開発環境では localhost のみ、本番では configured origins"""
         if self.environment == "development":
-            return ["*"]
+            # Development: Allow specific localhost origins only (not wildcard)
+            # This is more secure than * and still allows local development
+            return [
+                "http://localhost:3000",      # Flutter web dev server
+                "http://localhost:8080",      # Flutter web alternative port
+                "http://localhost:8081",      # iOS simulator
+                "http://localhost:8082",      # Android emulator
+                "http://127.0.0.1:3000",      # Localhost IP variant
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:8081",
+                "http://127.0.0.1:8082",
+            ]
         return [origin.strip() for origin in self.allowed_origins.split(",")]
 
 
