@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
-from app.api import auth, users, children, stories, quizzes, reports, progress, parent_coaching, rankings
+from app.api import auth, users, children, stories, quizzes, reports, progress, parent_coaching, rankings, coppa_compliance
 from app.api.v1.endpoints import scheduled_tasks
 from app.db.database import engine
 from app.db.base import Base
@@ -94,6 +94,7 @@ app.include_router(progress.router, prefix=f"{PREFIX}/progress", tags=["進捗"]
 app.include_router(rankings.router, prefix=f"{PREFIX}/rankings", tags=["ランキング"])
 app.include_router(scheduled_tasks.router, prefix=f"{PREFIX}/scheduled", tags=["スケジュール"])
 app.include_router(parent_coaching.router, prefix=PREFIX, tags=["親向けコーチング"])
+app.include_router(coppa_compliance.router, prefix=f"{PREFIX}/coppa", tags=["COPPA準拠"])
 
 
 @app.get("/health", tags=["ヘルスチェック"])
