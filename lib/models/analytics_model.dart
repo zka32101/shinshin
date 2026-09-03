@@ -5,6 +5,8 @@ part 'analytics_model.g.dart';
 
 @freezed
 class DailyStats with _$DailyStats {
+  const DailyStats._();
+
   const factory DailyStats({
     required String date, // YYYY-MM-DD
     required int questsCompleted,
@@ -21,6 +23,8 @@ class DailyStats with _$DailyStats {
 
 @freezed
 class MonthlyStats with _$MonthlyStats {
+  const MonthlyStats._();
+
   const factory MonthlyStats({
     required String month, // YYYY-MM
     required int totalQuestsCompleted,
