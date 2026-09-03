@@ -132,7 +132,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch distribution for $storyId', e);
+      _logger.logError('Failed to fetch distribution for $storyId', error: e);
       throw ApiException(
         'Failed to fetch distribution: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -163,7 +163,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch revisit stories for $userId', e);
+      _logger.logError('Failed to fetch revisit stories for $userId', error: e);
       throw ApiException(
         'Failed to fetch revisit stories: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -196,7 +196,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to answer revisit story: $revisitId', e);
+      _logger.logError('Failed to answer revisit story: $revisitId', error: e);
       throw ApiException(
         'Failed to answer revisit story: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -236,7 +236,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to answer parent-child story', e);
+      _logger.logError('Failed to answer parent-child story', error: e);
       throw ApiException(
         'Failed to answer parent-child story: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -273,7 +273,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch dialogue history', e);
+      _logger.logError('Failed to fetch dialogue history', error: e);
       throw ApiException(
         'Failed to fetch dialogue history: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -311,7 +311,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch mission for user: $userId', e);
+      _logger.logError('Failed to fetch mission for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch mission: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -350,7 +350,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to record kindness for user: $userId', e);
+      _logger.logError('Failed to record kindness for user: $userId', error: e);
       throw ApiException(
         'Failed to record kindness: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -379,7 +379,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch kindness map for user: $userId', e);
+      _logger.logError('Failed to fetch kindness map for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch kindness map: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -416,7 +416,7 @@ class ApiService {
         _logger.log('Reason analysis not found for user: $userId, month: $month');
         return null;
       }
-      _logger.logError('Failed to fetch reason analysis for user: $userId', e);
+      _logger.logError('Failed to fetch reason analysis for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch reason analysis: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -453,7 +453,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to submit creation for user: $userId', e);
+      _logger.logError('Failed to submit creation for user: $userId', error: e);
       throw ApiException(
         'Failed to submit creation: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -495,7 +495,7 @@ class ApiService {
         );
         return null;
       }
-      _logger.logError('Failed to fetch creation feedback for user: $userId', e);
+      _logger.logError('Failed to fetch creation feedback for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch creation feedback: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -541,7 +541,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch monthly ranking for $month', e);
+      _logger.logError('Failed to fetch monthly ranking for $month', error: e);
       throw ApiException(
         'Failed to fetch monthly ranking: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -571,7 +571,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Firebase login failed', e);
+      _logger.logError('Firebase login failed', error: e);
       throw ApiException(
         'Firebase login failed: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -607,7 +607,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch children profiles', e);
+      _logger.logError('Failed to fetch children profiles', error: e);
       throw ApiException(
         'Failed to fetch children profiles: ${e.message}',
         statusCode: e.response?.statusCode,

@@ -117,7 +117,7 @@ class AvatarService {
       avatars.sort((a, b) => a.order.compareTo(b.order));
       return avatars;
     } catch (e) {
-      _logger.logError('Failed to get avatars', e);
+      _logger.logError('Failed to get avatars', error: e);
       rethrow;
     }
   }
@@ -128,7 +128,7 @@ class AvatarService {
       final allAvatars = await getAllAvatars();
       return allAvatars.where((a) => a.isDefault).toList();
     } catch (e) {
-      _logger.logError('Failed to get default avatars', e);
+      _logger.logError('Failed to get default avatars', error: e);
       rethrow;
     }
   }
@@ -139,7 +139,7 @@ class AvatarService {
       final allAvatars = await getAllAvatars();
       return allAvatars.where((a) => a.isPurchasable).toList();
     } catch (e) {
-      _logger.logError('Failed to get purchasable avatars', e);
+      _logger.logError('Failed to get purchasable avatars', error: e);
       rethrow;
     }
   }
@@ -163,7 +163,7 @@ class AvatarService {
 
       _logger.log('Avatar info initialized for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to initialize avatar info for user: $userId', e);
+      _logger.logError('Failed to initialize avatar info for user: $userId', error: e);
       rethrow;
     }
   }
@@ -184,7 +184,7 @@ class AvatarService {
 
       return UserAvatarInfo.fromJson(doc.data()!);
     } catch (e) {
-      _logger.logError('Failed to get avatar info for user: $userId', e);
+      _logger.logError('Failed to get avatar info for user: $userId', error: e);
       rethrow;
     }
   }
@@ -211,7 +211,7 @@ class AvatarService {
       final userAvatarInfo = await getUserAvatarInfo(userId);
 
       if (userAvatarInfo == null) {
-        _logger.logError('User avatar info not found', Exception());
+        _logger.logError('User avatar info not found', error: Exception());
         throw Exception('ユーザーアバター情報が見つかりません');
       }
 
@@ -241,7 +241,7 @@ class AvatarService {
 
       _logger.log('Avatar selected: $avatarId for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to select avatar', e);
+      _logger.logError('Failed to select avatar', error: e);
       rethrow;
     }
   }
@@ -314,7 +314,7 @@ class AvatarService {
 
       _logger.log('Avatar purchased: $avatarId for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to purchase avatar', e);
+      _logger.logError('Failed to purchase avatar', error: e);
       rethrow;
     }
   }
@@ -334,7 +334,7 @@ class AvatarService {
           .map((doc) => AvatarPurchaseTransaction.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      _logger.logError('Failed to get purchase history for user: $userId', e);
+      _logger.logError('Failed to get purchase history for user: $userId', error: e);
       rethrow;
     }
   }

@@ -38,7 +38,7 @@ class PaymentService {
       _logger.log('IAP available: $_isAvailable');
       return _isAvailable;
     } catch (e) {
-      _logger.logError('Failed to check IAP availability', e);
+      _logger.logError('Failed to check IAP availability', error: e);
       return false;
     }
   }
@@ -51,7 +51,7 @@ class PaymentService {
       _logger.log('Product details fetched: ${response.productDetails.length}');
       return response;
     } catch (e) {
-      _logger.logError('Failed to get product details', e);
+      _logger.logError('Failed to get product details', error: e);
       rethrow;
     }
   }
@@ -94,7 +94,7 @@ class PaymentService {
       _logger.log('Purchase initiated for product: $productId');
       return true;
     } catch (e) {
-      _logger.logError('Failed to purchase product: $productId', e);
+      _logger.logError('Failed to purchase product: $productId', error: e);
       rethrow;
     }
   }
@@ -146,7 +146,7 @@ class PaymentService {
       } else if (purchaseDetails.status == PurchaseStatus.error) {
         _logger.logError(
             'Purchase error for product: ${purchaseDetails.productID}',
-            purchaseDetails.error.toString());
+            error: purchaseDetails.error);
       } else if (purchaseDetails.status == PurchaseStatus.canceled) {
         _logger.log('Purchase cancelled for product: ${purchaseDetails.productID}');
       }
@@ -156,7 +156,7 @@ class PaymentService {
         await _iap.completePurchase(purchaseDetails);
       }
     } catch (e) {
-      _logger.logError('Failed to handle purchase update', e);
+      _logger.logError('Failed to handle purchase update', error: e);
     }
   }
 
@@ -169,7 +169,7 @@ class PaymentService {
             'Purchase completed: ${purchaseDetails.purchaseID}');
       }
     } catch (e) {
-      _logger.logError('Failed to complete purchase', e);
+      _logger.logError('Failed to complete purchase', error: e);
       rethrow;
     }
   }
@@ -180,7 +180,7 @@ class PaymentService {
       await _iap.restorePurchases();
       _logger.log('Purchases restored');
     } catch (e) {
-      _logger.logError('Failed to restore purchases', e);
+      _logger.logError('Failed to restore purchases', error: e);
       rethrow;
     }
   }
@@ -192,7 +192,7 @@ class PaymentService {
       _logger.log('Found ${purchases.length} past purchases');
       return purchases;
     } catch (e) {
-      _logger.logError('Failed to get pending purchases', e);
+      _logger.logError('Failed to get pending purchases', error: e);
       return [];
     }
   }
@@ -206,7 +206,7 @@ class PaymentService {
           (purchase.status == PurchaseStatus.purchased ||
               purchase.status == PurchaseStatus.restored));
     } catch (e) {
-      _logger.logError('Failed to check if product is purchased', e);
+      _logger.logError('Failed to check if product is purchased', error: e);
       return false;
     }
   }

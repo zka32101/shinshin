@@ -42,7 +42,7 @@ class HiveService {
       _initialized = true;
       _logger.log('HiveService initialized with all boxes cached');
     } catch (e) {
-      _logger.logError('Failed to initialize HiveService', e);
+      _logger.logError('Failed to initialize HiveService', error: e);
       rethrow;
     }
   }
@@ -63,7 +63,7 @@ class HiveService {
       }
       _logger.log('Cached ${stories.length} stories');
     } catch (e) {
-      _logger.logError('Failed to cache stories', e);
+      _logger.logError('Failed to cache stories', error: e);
       rethrow;
     }
   }
@@ -77,7 +77,7 @@ class HiveService {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return Story.fromJson(json);
     } catch (e) {
-      _logger.logError('Failed to get cached story: $storyId', e);
+      _logger.logError('Failed to get cached story: $storyId', error: e);
       return null;
     }
   }
@@ -107,7 +107,7 @@ class HiveService {
       stories.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       return stories;
     } catch (e) {
-      _logger.logError('Failed to get cached stories', e);
+      _logger.logError('Failed to get cached stories', error: e);
       return [];
     }
   }
@@ -118,7 +118,7 @@ class HiveService {
       await _storiesBoxInstance.clear();
       _logger.log('Stories cache cleared');
     } catch (e) {
-      _logger.logError('Failed to clear stories cache', e);
+      _logger.logError('Failed to clear stories cache', error: e);
       rethrow;
     }
   }
@@ -130,7 +130,7 @@ class HiveService {
       await _progressBoxInstance.put(progress.id, jsonEncode(progress.toJson()));
       _logger.log('Progress cached: ${progress.id}');
     } catch (e) {
-      _logger.logError('Failed to cache progress', e);
+      _logger.logError('Failed to cache progress', error: e);
       rethrow;
     }
   }
@@ -145,7 +145,7 @@ class HiveService {
       }
       _logger.log('Cached ${items.length} progress items');
     } catch (e) {
-      _logger.logError('Failed to cache progress list', e);
+      _logger.logError('Failed to cache progress list', error: e);
       rethrow;
     }
   }
@@ -170,7 +170,7 @@ class HiveService {
 
       return progressList;
     } catch (e) {
-      _logger.logError('Failed to get cached progress', e);
+      _logger.logError('Failed to get cached progress', error: e);
       return [];
     }
   }
@@ -181,7 +181,7 @@ class HiveService {
       await _progressBoxInstance.clear();
       _logger.log('Progress cache cleared');
     } catch (e) {
-      _logger.logError('Failed to clear progress cache', e);
+      _logger.logError('Failed to clear progress cache', error: e);
       rethrow;
     }
   }
@@ -193,7 +193,7 @@ class HiveService {
       await _userBoxInstance.put('currentUserId', userId);
       _logger.log('User ID cached: $userId');
     } catch (e) {
-      _logger.logError('Failed to cache user ID', e);
+      _logger.logError('Failed to cache user ID', error: e);
       rethrow;
     }
   }
@@ -203,7 +203,7 @@ class HiveService {
     try {
       return _userBoxInstance.get('currentUserId');
     } catch (e) {
-      _logger.logError('Failed to get cached user ID', e);
+      _logger.logError('Failed to get cached user ID', error: e);
       return null;
     }
   }
@@ -214,7 +214,7 @@ class HiveService {
       await _userBoxInstance.clear();
       _logger.log('User cache cleared');
     } catch (e) {
-      _logger.logError('Failed to clear user cache', e);
+      _logger.logError('Failed to clear user cache', error: e);
       rethrow;
     }
   }
@@ -229,7 +229,7 @@ class HiveService {
       _logger.log('Report cached: $key');
       developer.log('Report cached: $key', name: 'HiveService');
     } catch (e) {
-      _logger.logError('Failed to cache monthly report', e);
+      _logger.logError('Failed to cache monthly report', error: e);
       rethrow;
     }
   }
@@ -246,7 +246,7 @@ class HiveService {
       if (jsonString == null) return null;
       return MonthlyReport.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
     } catch (e) {
-      _logger.logError('Report cache parse error for $childId', e);
+      _logger.logError('Report cache parse error for $childId', error: e);
       developer.log('Report cache parse error: $e', name: 'HiveService', error: e);
       return null;
     }
@@ -266,7 +266,7 @@ class HiveService {
       _logger.log('Pending quiz enqueued: $key');
       developer.log('Pending quiz enqueued: $key', name: 'HiveService');
     } catch (e) {
-      _logger.logError('Failed to enqueue pending quiz', e);
+      _logger.logError('Failed to enqueue pending quiz', error: e);
       rethrow;
     }
   }
@@ -286,7 +286,7 @@ class HiveService {
       }
       return items;
     } catch (e) {
-      _logger.logError('Failed to get pending sync items', e);
+      _logger.logError('Failed to get pending sync items', error: e);
       return [];
     }
   }
@@ -298,7 +298,7 @@ class HiveService {
       await _pendingSyncBoxInstance.delete(key);
       _logger.log('Pending sync item removed: $key');
     } catch (e) {
-      _logger.logError('Failed to remove pending sync item: $key', e);
+      _logger.logError('Failed to remove pending sync item: $key', error: e);
       rethrow;
     }
   }
@@ -308,7 +308,7 @@ class HiveService {
     try {
       return _pendingSyncBoxInstance.length;
     } catch (e) {
-      _logger.logError('Failed to get pending sync count', e);
+      _logger.logError('Failed to get pending sync count', error: e);
       return 0;
     }
   }
@@ -321,7 +321,7 @@ class HiveService {
       await _settingsBoxInstance.put(key, value);
       _logger.log('Setting saved: $key');
     } catch (e) {
-      _logger.logError('Failed to save setting: $key', e);
+      _logger.logError('Failed to save setting: $key', error: e);
       rethrow;
     }
   }
@@ -342,7 +342,7 @@ class HiveService {
       }
       return null;
     } catch (e) {
-      _logger.logError('Failed to get setting: $key', e);
+      _logger.logError('Failed to get setting: $key', error: e);
       return null;
     }
   }
@@ -370,7 +370,7 @@ class HiveService {
       _logger.log('All Hive data cleared');
       developer.log('All Hive data cleared', name: 'HiveService');
     } catch (e) {
-      _logger.logError('Failed to clear all Hive data', e);
+      _logger.logError('Failed to clear all Hive data', error: e);
       rethrow;
     }
   }
