@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 import os
 
-from app.db.base import get_db
+from app.db.database import get_db
 from app.services.parent_analytics_service import ParentAnalyticsService
 from app.services.gemini_coaching_service import GeminiCoachingService, CoachingMessage
 from app.services.email_service import EmailService
