@@ -317,8 +317,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('購入が完了しました')),
           );
-          AnalyticsService().logEvent('subscription_purchased',
-              {'plan_type': 'monthly'});
+          AnalyticsService().logEvent(
+            name: 'subscription_purchased',
+            parameters: {'plan_type': 'monthly'},
+          );
           Navigator.of(context).pop();
         }
       }
@@ -344,8 +346,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('購入が完了しました')),
           );
-          AnalyticsService().logEvent('subscription_purchased',
-              {'plan_type': 'yearly'});
+          AnalyticsService().logEvent(
+            name: 'subscription_purchased',
+            parameters: {'plan_type': 'yearly'},
+          );
           Navigator.of(context).pop();
         }
       }
@@ -370,7 +374,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('購入内容を復元しました')),
         );
-        AnalyticsService().logEvent('restore_purchases');
+        AnalyticsService().logEvent(name: 'restore_purchases');
       }
     } catch (e) {
       if (mounted) {

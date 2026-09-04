@@ -122,12 +122,12 @@ class PaymentService {
         if (Platform.isIOS) {
           verified = await _subscriptionService.verifyAppleReceipt(
             userId: userId,
-            receipt: purchaseDetails.serverVerificationData.localVerificationData,
+            receipt: purchaseDetails.verificationData.localVerificationData,
           );
         } else if (Platform.isAndroid) {
           verified = await _subscriptionService.verifyGooglePlayReceipt(
             userId: userId,
-            packageName: purchaseDetails.packageName,
+            packageName: 'jp.petitworks.shougaku_kore_doutoku',
             productId: purchaseDetails.productID,
             purchaseToken: purchaseDetails.verificationData.serverVerificationData,
           );
