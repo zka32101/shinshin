@@ -40,7 +40,7 @@ final generateMonthlyReportProvider = FutureProvider.autoDispose
       year: key.year,
       month: key.month,
     );
-    hive.cacheMonthlyReport(report).ignore();
+    unawaited(hive.cacheMonthlyReport(report));
     // Invalidate the cached report so it shows the new one
     ref.invalidate(monthlyReportProvider(key));
     return report;
