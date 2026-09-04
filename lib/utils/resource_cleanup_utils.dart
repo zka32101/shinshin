@@ -71,7 +71,7 @@ mixin AutoDisposeMixin {
 class ControllerCleanupHelper {
   /// Ensure AnimationControllers are properly disposed
   /// Call in State.dispose()
-  static Future<void> disposeAnimationControllers(
+  static void disposeAnimationControllers(
     List<AnimationController> controllers,
   ) {
     for (final controller in controllers) {

@@ -133,12 +133,12 @@ class PaymentService {
           );
         }
 
-        if (verified) {
+        if (verified && purchaseDetails.purchaseID != null) {
           // Update subscription in Firestore
           await _subscriptionService.activateSubscription(
             userId: userId,
             planType: planType,
-            transactionId: purchaseDetails.purchaseID,
+            transactionId: purchaseDetails.purchaseID!,
           );
 
           _logger.log('Purchase completed and verified for user: $userId');
@@ -152,8 +152,11 @@ class PaymentService {
       }
 
       // Mark purchase as processed
-      if (purchaseDetails.pendingCompleteMark) {
+      try {
         await _iap.completePurchase(purchaseDetails);
+      } catch (e) {
+        // Purchase might already be completed, ignore error
+        _logger.logError('Error completing purchase', error: e);
       }
     } catch (e) {
       _logger.logError('Failed to handle purchase update', error: e);
@@ -163,11 +166,9 @@ class PaymentService {
   /// Complete a purchase
   Future<void> completePurchase(PurchaseDetails purchaseDetails) async {
     try {
-      if (purchaseDetails.pendingCompleteMark) {
-        await _iap.completePurchase(purchaseDetails);
-        _logger.log(
-            'Purchase completed: ${purchaseDetails.purchaseID}');
-      }
+      await _iap.completePurchase(purchaseDetails);
+      _logger.log(
+          'Purchase completed: ${purchaseDetails.purchaseID}');
     } catch (e) {
       _logger.logError('Failed to complete purchase', error: e);
       rethrow;
@@ -188,7 +189,7 @@ class PaymentService {
   /// Get pending purchases
   Future<List<PurchaseDetails>> getPendingPurchases() async {
     try {
-      final purchases = await _iap.queryPastPurchases();
+      final purchases = await _iap.queryPreviousPurchases();
       _logger.log('Found ${purchases.length} past purchases');
       return purchases;
     } catch (e) {

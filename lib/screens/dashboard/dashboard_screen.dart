@@ -4,12 +4,10 @@ import '../../models/badge.dart';
 import '../../providers/child_provider.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/badge_provider.dart';
-import '../../providers/ranking_provider.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/common_states.dart';
-import '../../utils/logging_utils.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 
@@ -71,7 +69,6 @@ class _DashboardContent extends ConsumerWidget {
           ref.invalidate(currentChildProfileProvider);
           ref.invalidate(userProgressProvider(childId));
           ref.invalidate(earnedBadgesProvider(childId));
-          ref.invalidate(rankingProvider);
           // リフレッシュ完了待ち
           await Future.delayed(const Duration(milliseconds: 500));
         },

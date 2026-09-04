@@ -332,7 +332,7 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(authServiceProvider).signOut();
+              await ref.read(signOutProvider.future);
               // ログアウト後にルートを /login にリセット
               if (context.mounted) {
                 Navigator.of(context).pushNamedAndRemoveUntil(
