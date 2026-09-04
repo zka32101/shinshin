@@ -66,7 +66,7 @@ class AccessibilityUtils {
   }) {
     SemanticsService.announce(
       message,
-      textDirection: TextDirection.ltr,
+      TextDirection.ltr,
     );
   }
 

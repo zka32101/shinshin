@@ -106,8 +106,8 @@ class LoggingUtils {
     Object error,
     StackTrace stack,
   ) {
-    LoggingUtils.error(tag, message, error, stack);
-    rethrow;
+    LoggingUtils.error(tag, message, error: error, stack: stack);
+    throw error;
   }
 
   /// ユーザーアクションをログ
