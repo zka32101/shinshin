@@ -22,9 +22,23 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
+          flutter-version: '3.24.x'
           channel: 'stable'
           cache: true
+
+      - name: Setup Java & Android SDK environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Android SDK environment variables
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
+          echo "Android SDK Root: $ANDROID_SDK_ROOT"
 
       - name: Verify Flutter and Dart versions
         run: |
@@ -37,17 +51,32 @@ jobs:
           echo "=== Current pubspec.yaml ==="
           head -15 pubspec.yaml
 
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
+      - name: Initialize Android project
+        run: |
+          cd android
+          chmod +x gradlew 2>/dev/null || true
+          ./gradlew --version || true
+          cd ..
+
       - name: Clean Flutter cache and regenerate dependencies
         run: |
-          echo "Cleaning Flutter cache..."
-          rm -rf pubspec.lock .dart_tool/
+          echo "Cleaning Flutter cache with flutter clean..."
           flutter clean
-          echo "Cache cleaned, ready for fresh dependency resolution"
+          echo "Removed .dart_tool and build artifacts"
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
+          echo "Cleaned Android gradle and build cache"
 
       - name: Install dependencies
         run: |
           echo "=== Running flutter pub get (verbose) ==="
-          flutter pub get --verbose 2>&1 | tail -100
+          flutter pub get --verbose --no-offline 2>&1 | tail -100
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -146,12 +175,39 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
+          flutter-version: '3.24.x'
           channel: 'stable'
           cache: true
 
+      - name: Setup Java & Android SDK environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Android SDK environment variables
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
+          echo "Android SDK Root: $ANDROID_SDK_ROOT"
+
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
+      - name: Clean Flutter cache
+        run: |
+          flutter clean
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
+          echo "Cache cleaned"
+
       - name: Install dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get --verbose --no-offline
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -181,12 +237,39 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
+          flutter-version: '3.24.x'
           channel: 'stable'
           cache: true
 
+      - name: Setup Java & Android SDK environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Android SDK environment variables
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_GRADLE_JVM_ARGS=-Xmx2048m" >> $GITHUB_ENV
+          echo "FLUTTER_SUPPRESS_ANALYTICS=true" >> $GITHUB_ENV
+          echo "Android SDK Root: $ANDROID_SDK_ROOT"
+
+      - name: Create Android local.properties
+        run: |
+          cat > android/local.properties << 'PROPERTIES_EOF'
+          sdk.dir=$ANDROID_SDK_ROOT
+          flutter.sdk=$FLUTTER_HOME
+          PROPERTIES_EOF
+
+      - name: Clean Flutter cache
+        run: |
+          flutter clean
+          rm -rf android/.gradle android/app/build android/build pubspec.lock
+          echo "Cache cleaned"
+
       - name: Install dependencies
-        run: flutter pub get --verbose
+        run: flutter pub get --verbose --no-offline
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -237,7 +320,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
+          flutter-version: '3.24.x'
           channel: 'stable'
           cache: true
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,6 +22,9 @@ import 'services/logger_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 
+// Global navigator key for navigation from services (e.g., FCM notifications)
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -39,7 +43,7 @@ void main() async {
 
     LoggerService().log('Firebase initialized successfully');
   } catch (e, stackTrace) {
-    LoggerService().logError('Firebase initialization error', e, stackTrace);
+    LoggerService().logError('Firebase initialization error', error: e, stackTrace: stackTrace);
 
     // Show error screen to user instead of crashing
     runApp(
@@ -160,6 +164,7 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
 
     return MaterialApp(
       title: '小学コレ！道徳',
+      navigatorKey: navigatorKey,
       theme: lightTheme(),
       darkTheme: darkTheme(),
       themeMode: _themeModeToBrightness(brightness),

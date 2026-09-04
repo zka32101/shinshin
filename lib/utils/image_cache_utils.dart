@@ -58,7 +58,8 @@ class ImageCacheUtils {
   /// Clear image cache to free memory
   /// Use when needed to recover memory or explicitly switch contexts
   static void clearImageCache() {
-    imageCache.clearCache();
+    imageCache.clear();
+    imageCache.clearLiveImages();
   }
 
   /// Get current image cache statistics for debugging

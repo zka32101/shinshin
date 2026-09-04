@@ -10,7 +10,7 @@ final rankingServiceProvider = Provider((ref) {
 
 // Get user's ranking settings
 final rankingSettingsProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final rankingService = ref.watch(rankingServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -27,7 +27,7 @@ final rankingSettingsProvider = FutureProvider.autoDispose((ref) async {
 
 // Get user's ranking statistics in real-time
 final userRankingStatsProvider = StreamProvider.autoDispose((ref) async* {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final rankingService = ref.watch(rankingServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -70,7 +70,7 @@ final rankingEntriesStreamProvider =
 // Get user's rank in a specific ranking type
 final userRankInTypeProvider = FutureProvider.autoDispose
     .family<int?, RankingType>((ref, rankingType) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final rankingService = ref.watch(rankingServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -88,7 +88,7 @@ final userRankInTypeProvider = FutureProvider.autoDispose
 // Get nearby ranking entries (user's position ±5)
 final nearbyRankingEntriesProvider = FutureProvider.autoDispose
     .family<List<RankingEntry>, RankingType>((ref, rankingType) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final rankingService = ref.watch(rankingServiceProvider);
 
   final userId = auth.maybeWhen(
@@ -107,7 +107,7 @@ final nearbyRankingEntriesProvider = FutureProvider.autoDispose
 final updateRankingSettingsProvider = FutureProvider.family.autoDispose<
     void,
     UpdateRankingSettingsParams>((ref, params) async {
-  final auth = ref.watch(authProvider);
+  final auth = ref.watch(userAuthStateProvider);
   final rankingService = ref.watch(rankingServiceProvider);
 
   final userId = auth.maybeWhen(

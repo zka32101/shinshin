@@ -366,12 +366,12 @@ class _BadgeCardState extends ConsumerState<_BadgeCard>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
     _handleTap();
@@ -519,7 +519,7 @@ class _BadgeCardState extends ConsumerState<_BadgeCard>
                         widget.badge.emoji,
                         style: TextStyle(
                           fontSize: isEarned ? 36 : 28,
-                          opacity: isEarned ? 1.0 : 0.4,
+                          color: Colors.black.withOpacity(isEarned ? 1.0 : 0.4),
                         ),
                       ),
                       const SizedBox(height: 6),

@@ -116,6 +116,8 @@ async def complete_quiz(
     )
     db.add(progress)
 
+    await db.commit()
+
     return QuizCompleteResponse(
         session_id=session.id,
         story_id=session.story_id,

@@ -323,12 +323,12 @@ class _StatCardState extends State<_StatCard> with SingleTickerProviderStateMixi
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'logging_utils.dart';
 
 /// パフォーマンス計測データ
@@ -116,12 +117,14 @@ class PerformanceUtils {
   static void monitorFrameTime() {
     if (kDebugMode) {
       WidgetsBinding.instance.addTimingsCallback((timings) {
-        final duration = timings.totalSpan.inMilliseconds;
-        if (duration > 16) { // 60 FPS の時間枠
-          LoggingUtils.warning(
-            'FRAME_TIME',
-            'フレーム時間が長い: ${duration}ms',
-          );
+        for (final timing in timings) {
+          final duration = timing.totalSpan.inMilliseconds;
+          if (duration > 16) { // 60 FPS の時間枠
+            LoggingUtils.warning(
+              'FRAME_TIME',
+              'フレーム時間が長い: ${duration}ms',
+            );
+          }
         }
       });
     }

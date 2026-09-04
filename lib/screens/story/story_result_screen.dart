@@ -112,10 +112,10 @@ class _StoryResultScreenState extends ConsumerState<StoryResultScreen>
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: Colors.white.withOpacity(0.9),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: Colors.black.withOpacity(0.1),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -196,7 +196,7 @@ class _StoryResultScreenState extends ConsumerState<StoryResultScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -368,12 +368,12 @@ class _ResultActionButtonState extends State<_ResultActionButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
     widget.onPressed();
@@ -455,12 +455,12 @@ class _ResultOutlinedButtonState extends State<_ResultOutlinedButton>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
     widget.onPressed();

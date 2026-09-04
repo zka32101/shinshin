@@ -232,12 +232,12 @@ class _SummaryCardState extends State<_SummaryCard>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }
@@ -344,12 +344,12 @@ class _AICommentCardState extends State<_AICommentCard>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }
@@ -457,12 +457,12 @@ class _ReportRadarCardState extends State<_ReportRadarCard>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }
@@ -566,12 +566,12 @@ class _ParentMessageCardState extends State<_ParentMessageCard>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }

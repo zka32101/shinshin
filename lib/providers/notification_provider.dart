@@ -76,7 +76,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
     _persist().ignore();
     if (value) {
       _notificationService.scheduleDailyReminder(
-        time: TimeOfDay(hour: state.reminderHour, minute: state.reminderMinute),
+        hour: state.reminderHour,
+        minute: state.reminderMinute,
         title: '今日の道徳レッスン',
         body: '今日も心のレッスンをしよう！',
       );
@@ -95,7 +96,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
     _persist().ignore();
     if (state.dailyReminder) {
       _notificationService.scheduleDailyReminder(
-        time: TimeOfDay(hour: hour, minute: minute),
+        hour: hour,
+        minute: minute,
         title: '今日の道徳レッスン',
         body: '今日も心のレッスンをしよう！',
       );

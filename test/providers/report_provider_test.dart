@@ -44,14 +44,26 @@ class _FakeApiService extends ApiService {
   bool generateShouldFail = false;
 
   @override
-  Future<MonthlyReport?> fetchMonthlyReport({
+  Future<MonthlyReport> fetchMonthlyReport({
     required String childId,
-    required int year,
     required int month,
+    required int year,
   }) async {
     if (fetchShouldFail) throw Exception('network error');
-    return fetchResult;
+    return fetchResult ?? _makeEmptyReport();
   }
+
+  MonthlyReport _makeEmptyReport() => MonthlyReport(
+    id: 'report-1',
+    childId: 'child-1',
+    month: 1,
+    year: 2024,
+    generatedAt: DateTime.now(),
+    storiesCompleted: 0,
+    totalStudyMinutes: 0,
+    totalPointsEarned: 0,
+    topImpressions: const [],
+  );
 
   @override
   Future<MonthlyReport> generateMonthlyReport({

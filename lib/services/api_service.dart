@@ -1,10 +1,13 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import '../models/distribution_response.dart';
 import '../models/revisit_schedule.dart';
 import '../models/parent_child_comparison.dart';
 import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
 import '../models/ranking.dart';
+import '../models/child_profile.dart';
+import '../models/progress.dart';
+import '../models/report.dart';
 import 'logger_service.dart';
 
 /// Custom exception for API errors
@@ -131,7 +134,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch distribution for $storyId', e);
+      _logger.logError('Failed to fetch distribution for $storyId', error: e);
       throw ApiException(
         'Failed to fetch distribution: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -162,7 +165,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch revisit stories for $userId', e);
+      _logger.logError('Failed to fetch revisit stories for $userId', error: e);
       throw ApiException(
         'Failed to fetch revisit stories: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -195,7 +198,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to answer revisit story: $revisitId', e);
+      _logger.logError('Failed to answer revisit story: $revisitId', error: e);
       throw ApiException(
         'Failed to answer revisit story: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -235,7 +238,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to answer parent-child story', e);
+      _logger.logError('Failed to answer parent-child story', error: e);
       throw ApiException(
         'Failed to answer parent-child story: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -272,7 +275,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch dialogue history', e);
+      _logger.logError('Failed to fetch dialogue history', error: e);
       throw ApiException(
         'Failed to fetch dialogue history: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -310,7 +313,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch mission for user: $userId', e);
+      _logger.logError('Failed to fetch mission for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch mission: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -349,7 +352,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to record kindness for user: $userId', e);
+      _logger.logError('Failed to record kindness for user: $userId', error: e);
       throw ApiException(
         'Failed to record kindness: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -378,7 +381,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch kindness map for user: $userId', e);
+      _logger.logError('Failed to fetch kindness map for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch kindness map: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -415,7 +418,7 @@ class ApiService {
         _logger.log('Reason analysis not found for user: $userId, month: $month');
         return null;
       }
-      _logger.logError('Failed to fetch reason analysis for user: $userId', e);
+      _logger.logError('Failed to fetch reason analysis for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch reason analysis: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -452,7 +455,7 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to submit creation for user: $userId', e);
+      _logger.logError('Failed to submit creation for user: $userId', error: e);
       throw ApiException(
         'Failed to submit creation: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -494,7 +497,7 @@ class ApiService {
         );
         return null;
       }
-      _logger.logError('Failed to fetch creation feedback for user: $userId', e);
+      _logger.logError('Failed to fetch creation feedback for user: $userId', error: e);
       throw ApiException(
         'Failed to fetch creation feedback: ${e.message}',
         statusCode: e.response?.statusCode,
@@ -540,12 +543,161 @@ class ApiService {
     } on ApiException {
       rethrow;
     } on DioException catch (e) {
-      _logger.logError('Failed to fetch monthly ranking for $month', e);
+      _logger.logError('Failed to fetch monthly ranking for $month', error: e);
       throw ApiException(
         'Failed to fetch monthly ranking: ${e.message}',
         statusCode: e.response?.statusCode,
         originalError: e,
       );
     }
+  }
+
+  /// Firebase IDトークンをバックエンドJWTに交換
+  Future<Map<String, dynamic>> loginWithFirebase(String idToken) async {
+    try {
+      _validateParam(idToken, 'idToken');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/auth/login-firebase',
+          data: {'firebase_id_token': idToken},
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for Firebase login');
+      }
+
+      _logger.log('Firebase login successful');
+      return response.data as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Firebase login failed', error: e);
+      throw ApiException(
+        'Firebase login failed: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 認証トークンを設定
+  void setAuthToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+    _logger.log('Auth token set');
+  }
+
+  /// 子どもプロフィール一覧を取得
+  Future<List<ChildProfile>> fetchChildrenProfiles() async {
+    try {
+      final response = await _retryRequest(
+        () => _dio.get('/children/profiles'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for children profiles');
+      }
+
+      final List<dynamic> data = response.data['children'] ?? [];
+      if (data is! List) {
+        throw ApiException('Expected children to be a list');
+      }
+
+      _logger.log('Children profiles fetched: ${data.length} profiles');
+      return data.map((item) => ChildProfile.fromApiJson(item as Map<String, dynamic>)).toList();
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to fetch children profiles', error: e);
+      throw ApiException(
+        'Failed to fetch children profiles: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // Stub methods for features in development - TODO: Implement these endpoints
+  // ════════════════════════════════════════════════════════════════════════════
+
+  Future<ChildProfile> fetchChildProfile(String childId) async {
+    throw UnimplementedError('fetchChildProfile: Endpoint not yet implemented');
+  }
+
+  Future<ChildProfile> createChild({
+    required String name,
+    required int grade,
+    required String avatarEmoji,
+  }) async {
+    throw UnimplementedError('createChild: Endpoint not yet implemented');
+  }
+
+  Future<void> updateChild(String childId, Map<String, dynamic> updates) async {
+    throw UnimplementedError('updateChild: Endpoint not yet implemented');
+  }
+
+  Future<void> deleteChild(String childId) async {
+    throw UnimplementedError('deleteChild: Endpoint not yet implemented');
+  }
+
+  Future<Map<String, dynamic>> completeQuizSession({
+    required String sessionId,
+    required String chosenChoiceId,
+    required int timeSpentSeconds,
+    String? reflectionText,
+  }) async {
+    throw UnimplementedError('completeQuizSession: Endpoint not yet implemented');
+  }
+
+  Future<List<Progress>> fetchProgress(String childId) async {
+    throw UnimplementedError('fetchProgress: Endpoint not yet implemented');
+  }
+
+  Future<String> startQuizSession({
+    required String childId,
+    required String contentId,
+  }) async {
+    throw UnimplementedError('startQuizSession: Endpoint not yet implemented');
+  }
+
+  Future<List<Map<String, dynamic>>> fetchStories({
+    String? theme,
+    int? gradeLevel,
+  }) async {
+    throw UnimplementedError('fetchStories: Endpoint not yet implemented');
+  }
+
+  Future<Map<String, dynamic>> fetchWeeklyTheme() async {
+    throw UnimplementedError('fetchWeeklyTheme: Endpoint not yet implemented');
+  }
+
+  Future<Map<String, dynamic>> fetchStoryDetail(String storyId) async {
+    throw UnimplementedError('fetchStoryDetail: Endpoint not yet implemented');
+  }
+
+  Future<MonthlyReport> fetchMonthlyReport({
+    required String childId,
+    required int year,
+    required int month,
+  }) async {
+    throw UnimplementedError('fetchMonthlyReport: Endpoint not yet implemented');
+  }
+
+  Future<MonthlyReport> generateMonthlyReport({
+    required String childId,
+    required int year,
+    required int month,
+  }) async {
+    throw UnimplementedError('generateMonthlyReport: Endpoint not yet implemented');
+  }
+
+  Future<void> clearAuthToken() async {
+    throw UnimplementedError('clearAuthToken: Endpoint not yet implemented');
+  }
+
+  Future<void> updateUser({required String fcmToken}) async {
+    throw UnimplementedError('updateUser: Endpoint not yet implemented');
   }
 }

@@ -65,6 +65,16 @@ class LoggerService {
     );
   }
 
+  /// Instance method: log (general purpose)
+  void log(String message, {String? tag}) {
+    info(message, tag: tag);
+  }
+
+  /// Instance method: logError
+  void logError(String message, {String? tag, Object? error, StackTrace? stackTrace}) {
+    LoggerService.error(message, tag: tag, error: error, stackTrace: stackTrace);
+  }
+
   /// 内部ログ出力
   static void _log(
     LogLevel level,

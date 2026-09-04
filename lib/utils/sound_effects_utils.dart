@@ -5,7 +5,7 @@ import '../providers/audio_provider.dart';
 /// 効果音管理のユーティリティ
 /// Riverpodプロバイダーと連携して音声設定を尊重
 class SoundEffectsUtils {
-  final Ref ref;
+  final Ref<dynamic> ref;
 
   SoundEffectsUtils(this.ref);
 

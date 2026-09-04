@@ -7,6 +7,7 @@ from app.models.report import MonthlyReport
 from app.models.notification import Notification
 from app.models.weekly_coaching import WeeklyCoachingData
 from app.models.ranking import Ranking
+from app.models.coppa_compliance import COPPAConsent, COPPAPrivacyPolicy
 
 __all__ = [
     "User", "Child",
@@ -17,4 +18,6 @@ __all__ = [
     "Notification",
     "WeeklyCoachingData",
     "Ranking",
+    "COPPAConsent",
+    "COPPAPrivacyPolicy",
 ]

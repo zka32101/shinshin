@@ -281,12 +281,12 @@ class _RankingTileState extends State<_RankingTile>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails _) {
     setState(() => _isPressed = true);
     _controller.forward();
   }
 
-  void _onTapUp(TapUpDetails details) {
+  void _onTapUp(TapUpDetails _) {
     setState(() => _isPressed = false);
     _controller.reverse();
   }

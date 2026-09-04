@@ -75,7 +75,7 @@ async def test_generate_report_unauthorized(client, auth_headers):
     # Register a second user
     r = await client.post(
         "/api/v1/auth/register",
-        json={"email": "other@example.com", "password": "password123", "name": "Other"},
+        json={"email": "other@example.com", "password": "OtherPass123", "name": "Other"},
     )
     assert r.status_code == 201
     other_token = r.json()["accessToken"]
@@ -150,7 +150,7 @@ async def test_get_monthly_report_unauthorized(client, auth_headers):
     # Register a second user and create their child
     r = await client.post(
         "/api/v1/auth/register",
-        json={"email": "report_other@example.com", "password": "password123", "name": "Other"},
+        json={"email": "report_other@example.com", "password": "OtherPass123", "name": "Other"},
     )
     assert r.status_code == 201
     other_token = r.json()["accessToken"]

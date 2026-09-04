@@ -35,7 +35,7 @@ class RankingService {
 
       _logger.log('Ranking settings initialized for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to initialize ranking settings', e);
+      _logger.logError('Failed to initialize ranking settings', error: e);
       rethrow;
     }
   }
@@ -56,7 +56,7 @@ class RankingService {
 
       return RankingSettings.fromJson(doc.data()!);
     } catch (e) {
-      _logger.logError('Failed to get ranking settings', e);
+      _logger.logError('Failed to get ranking settings', error: e);
       rethrow;
     }
   }
@@ -86,7 +86,7 @@ class RankingService {
         'Ranking settings updated for user: $userId (isNamePublic: $isNamePublic)',
       );
     } catch (e) {
-      _logger.logError('Failed to update ranking settings', e);
+      _logger.logError('Failed to update ranking settings', error: e);
       rethrow;
     }
   }
@@ -112,7 +112,7 @@ class RankingService {
 
       return entries;
     } catch (e) {
-      _logger.logError('Failed to get ranking by type: $type', e);
+      _logger.logError('Failed to get ranking by type: $type', error: e);
       rethrow;
     }
   }
@@ -133,7 +133,7 @@ class RankingService {
 
       return RankingStats.fromJson(doc.data()!);
     } catch (e) {
-      _logger.logError('Failed to get ranking stats for user: $userId', e);
+      _logger.logError('Failed to get ranking stats for user: $userId', error: e);
       rethrow;
     }
   }
@@ -179,7 +179,7 @@ class RankingService {
 
       _logger.log('Ranking updated for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to update ranking', e);
+      _logger.logError('Failed to update ranking', error: e);
       rethrow;
     }
   }
@@ -204,7 +204,7 @@ class RankingService {
     } catch (e) {
       _logger.logError(
         'Failed to get user rank for type: $type',
-        e,
+        error: e,
       );
       rethrow;
     }
@@ -239,7 +239,7 @@ class RankingService {
     } catch (e) {
       _logger.logError(
         'Failed to get nearby ranking entries for type: $type',
-        e,
+        error: e,
       );
       rethrow;
     }
@@ -328,7 +328,7 @@ class RankingService {
           'Monthly ranking fetched: ${entries.length} entries for $rankingMonth ($groupTypeStr)');
       return entries;
     } catch (e) {
-      _logger.logError('Failed to get monthly ranking', e);
+      _logger.logError('Failed to get monthly ranking', error: e);
       rethrow;
     }
   }

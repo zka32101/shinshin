@@ -86,39 +86,72 @@ class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """シンプルなレート制限ミドルウェア"""
+    """Enhanced rate limiting with per-endpoint limits"""
+
+    # Per-endpoint rate limits (requests per minute)
+    ENDPOINT_LIMITS = {
+        "/api/v1/auth/login": 5,         # Strict limit on login
+        "/api/v1/auth/register": 5,      # Strict limit on registration
+        "/api/v1/auth/firebase": 10,     # Firebase login slightly more lenient
+    }
+    DEFAULT_LIMIT = 100  # Default for all other endpoints
 
     def __init__(self, app, requests_per_minute: int = 100):
         super().__init__(app)
-        self.requests_per_minute = requests_per_minute
+        self.default_limit = requests_per_minute
+        # Track requests by "ip:endpoint" key for per-endpoint limits
         self.requests: dict[str, list[datetime]] = defaultdict(list)
         self.window_duration = timedelta(minutes=1)
 
+    def _get_rate_limit(self, path: str) -> int:
+        """Get rate limit for specific endpoint"""
+        for endpoint_pattern, limit in self.ENDPOINT_LIMITS.items():
+            if path.startswith(endpoint_pattern):
+                return limit
+        return self.DEFAULT_LIMIT
+
+    def reset_requests(self):
+        """Reset all request tracking (for testing)"""
+        self.requests.clear()
+
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         client_ip = request.client.host if request.client else "unknown"
+        path = request.url.path
+
+        # Get the appropriate rate limit for this endpoint
+        rate_limit = self._get_rate_limit(path)
+
+        # Use composite key: IP:Endpoint for auth endpoints, IP only for others
+        if path.startswith("/api/v1/auth/"):
+            limit_key = f"{client_ip}:{path}"
+        else:
+            limit_key = client_ip
+
         now = datetime.now()
 
-        # 古いリクエストを削除
+        # Remove old requests outside the time window
         cutoff_time = now - self.window_duration
-        self.requests[client_ip] = [
-            req_time for req_time in self.requests[client_ip]
+        self.requests[limit_key] = [
+            req_time for req_time in self.requests[limit_key]
             if req_time > cutoff_time
         ]
 
-        # リクエスト数をチェック
-        if len(self.requests[client_ip]) >= self.requests_per_minute:
+        # Check if rate limit exceeded
+        if len(self.requests[limit_key]) >= rate_limit:
             logger.warning(
-                f"Rate limit exceeded for {client_ip}: "
-                f"{len(self.requests[client_ip])} requests"
+                f"SECURITY: Rate limit exceeded for {client_ip} on {path}: "
+                f"{len(self.requests[limit_key])}/{rate_limit} requests"
             )
+            # Suggest retry after 60 seconds for auth endpoints
+            retry_after = "60" if path.startswith("/api/v1/auth/") else "5"
             return PlainTextResponse(
-                "Rate limit exceeded",
+                "Rate limit exceeded. Please try again later.",
                 status_code=429,
-                headers={"Retry-After": "60"},
+                headers={"Retry-After": retry_after},
             )
 
-        # リクエストを記録
-        self.requests[client_ip].append(now)
+        # Record this request
+        self.requests[limit_key].append(now)
 
         return await call_next(request)
 

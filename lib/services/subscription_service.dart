@@ -48,7 +48,7 @@ class SubscriptionService {
 
       _logger.log('Trial initialized for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to initialize trial for user: $userId', e);
+      _logger.logError('Failed to initialize trial for user: $userId', error: e);
       rethrow;
     }
   }
@@ -69,7 +69,7 @@ class SubscriptionService {
 
       return _subscriptionFromFirestore(doc.data()!);
     } catch (e) {
-      _logger.logError('Failed to get subscription info for user: $userId', e);
+      _logger.logError('Failed to get subscription info for user: $userId', error: e);
       rethrow;
     }
   }
@@ -88,7 +88,7 @@ class SubscriptionService {
       }
       return _subscriptionFromFirestore(snapshot.data()!);
     }).handleError((error) {
-      _logger.logError('Stream error for subscription info: $userId', error);
+      _logger.logError('Stream error for subscription info: $userId', error: error);
     });
   }
 
@@ -123,7 +123,7 @@ class SubscriptionService {
       _logger.log('Subscription activated for user: $userId, plan: $planType');
     } catch (e) {
       _logger.logError(
-          'Failed to activate subscription for user: $userId', e);
+          'Failed to activate subscription for user: $userId', error: e);
       rethrow;
     }
   }
@@ -158,7 +158,7 @@ class SubscriptionService {
 
       _logger.log('Subscription renewed for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to renew subscription for user: $userId', e);
+      _logger.logError('Failed to renew subscription for user: $userId', error: e);
       rethrow;
     }
   }
@@ -178,7 +178,7 @@ class SubscriptionService {
 
       _logger.log('Subscription cancelled for user: $userId');
     } catch (e) {
-      _logger.logError('Failed to cancel subscription for user: $userId', e);
+      _logger.logError('Failed to cancel subscription for user: $userId', error: e);
       rethrow;
     }
   }
@@ -213,7 +213,7 @@ class SubscriptionService {
       }
     } catch (e) {
       _logger.logError(
-          'Failed to check and mark trial expired for user: $userId', e);
+          'Failed to check and mark trial expired for user: $userId', error: e);
       rethrow;
     }
   }
@@ -229,7 +229,7 @@ class SubscriptionService {
       _logger.log('Apple receipt verified for user: $userId');
       return true;
     } catch (e) {
-      _logger.logError('Failed to verify Apple receipt for user: $userId', e);
+      _logger.logError('Failed to verify Apple receipt for user: $userId', error: e);
       return false;
     }
   }
@@ -248,7 +248,7 @@ class SubscriptionService {
       return true;
     } catch (e) {
       _logger.logError(
-          'Failed to verify Google Play receipt for user: $userId', e);
+          'Failed to verify Google Play receipt for user: $userId', error: e);
       return false;
     }
   }

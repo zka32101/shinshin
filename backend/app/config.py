@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     # ========================================================================
     # Database設定
     # ========================================================================
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/shougaku"
+    # Must be set via DATABASE_URL env var. Default is empty to force explicit configuration.
+    # Do NOT hardcode credentials. Use environment variables in all environments.
+    database_url: str = ""
 
     # ========================================================================
     # JWT認証設定
@@ -87,7 +89,14 @@ class Settings(BaseSettings):
         self._validate_production_settings()
 
     def _validate_production_settings(self):
-        """本番環境設定の検証"""
+        """本番環境・開発環境設定の検証"""
+        # DATABASE_URL is required in all environments
+        if not self.database_url:
+            raise ValueError(
+                "DATABASE_URL environment variable must be set. "
+                "Do not hardcode database credentials in the application."
+            )
+
         if self.environment == "production":
             # SECRET_KEY チェック - Production requires long, random key
             if not self.secret_key or len(self.secret_key) < 64:
@@ -119,9 +128,20 @@ class Settings(BaseSettings):
                 )
 
     def get_allowed_origins(self) -> list[str]:
-        """CORS許可オリジンを リスト化"""
+        """CORS許可オリジンを リスト化 - 開発環境では localhost のみ、本番では configured origins"""
         if self.environment == "development":
-            return ["*"]
+            # Development: Allow specific localhost origins only (not wildcard)
+            # This is more secure than * and still allows local development
+            return [
+                "http://localhost:3000",      # Flutter web dev server
+                "http://localhost:8080",      # Flutter web alternative port
+                "http://localhost:8081",      # iOS simulator
+                "http://localhost:8082",      # Android emulator
+                "http://127.0.0.1:3000",      # Localhost IP variant
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:8081",
+                "http://127.0.0.1:8082",
+            ]
         return [origin.strip() for origin in self.allowed_origins.split(",")]
 
 

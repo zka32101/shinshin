@@ -51,29 +51,38 @@ class _FakeApiService extends ApiService {
   bool shouldFail = false;
 
   @override
-  Future<List<Story>> fetchStories({
+  Future<List<Map<String, dynamic>>> fetchStories({
     String? theme,
     int? gradeLevel,
-    bool? isPremium,
-    int offset = 0,
-    int limit = 20,
   }) async {
     if (shouldFail) throw Exception('network error');
-    return storiesResult;
+    return storiesResult.map((story) => _storyToJson(story)).toList();
   }
 
   @override
-  Future<Story> fetchStoryDetail(String storyId) async {
+  Future<Map<String, dynamic>> fetchStoryDetail(String storyId) async {
     if (shouldFail) throw Exception('network error');
     if (detailResult == null) throw Exception('not found');
-    return detailResult!;
+    return _storyToJson(detailResult!);
   }
 
   @override
-  Future<List<Story>> fetchWeeklyTheme(int weekNumber) async {
+  Future<Map<String, dynamic>> fetchWeeklyTheme() async {
     if (shouldFail) throw Exception('network error');
-    return weeklyResult;
+    return {
+      'theme': 'weekly',
+      'stories': weeklyResult.map((story) => _storyToJson(story)).toList(),
+    };
   }
+
+  Map<String, dynamic> _storyToJson(Story story) => {
+    'id': story.id,
+    'title': story.title,
+    'description': story.description,
+    'theme': story.theme,
+    'gradeLevel': story.gradeLevel,
+    'isPremium': story.isPremium,
+  };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
