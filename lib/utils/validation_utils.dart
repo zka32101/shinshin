@@ -27,9 +27,10 @@ class ValidationUtils {
 
   /// Removes script tags and other dangerous HTML
   static String _sanitizeText(String text) {
-    // Remove script tags and event handlers
+    // Remove script tags
     var result = text.replaceAll(RegExp(r'<script[^>]*>.*?</script>', caseSensitive: false), '');
-    result = result.replaceAll(RegExp(r'on\w+\s*=\s*["\']?.*?["\']?(?=\s|>)', caseSensitive: false), '');
+    // Remove event handlers (onclick, onload, etc.)
+    result = result.replaceAll(RegExp(r'on[a-z]+\s*=', caseSensitive: false), '');
 
     // Remove null bytes
     result = result.replaceAll('\x00', '');
