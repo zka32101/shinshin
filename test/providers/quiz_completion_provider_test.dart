@@ -25,7 +25,7 @@ class _FakeApiService extends ApiService {
   @override
   Future<String> startQuizSession({
     required String childId,
-    required String contentId,
+    required String storyId,
   }) async {
     if (startShouldFail) throw Exception('API error');
     return startReturnId ?? 'session-123';
