@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/validation_utils.dart';
 import 'story_provider.dart' show apiServiceProvider, hiveServiceProvider;
@@ -96,12 +97,12 @@ final quizCompleteProvider =
     // オフライン or API エラー → Hive に同期キューイングして後で再送
     // Sanitize reflection text before queuing offline
     final sanitizedReflection = ValidationUtils.validateReflectionText(key.reflectionText);
-    hive.enqueuePendingQuizCompletion({
+    unawaited(hive.enqueuePendingQuizCompletion({
       'sessionId': key.sessionId,
       'chosenChoiceId': key.chosenChoiceId,
       'timeSpentSeconds': key.timeSpentSeconds,
       if (sanitizedReflection != null) 'reflectionText': sanitizedReflection,
-    }).ignore();
+    }));
     return QuizCompleteResult.offline;
   }
 });
