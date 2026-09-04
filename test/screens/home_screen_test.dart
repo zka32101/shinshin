@@ -37,17 +37,14 @@ class _FakeApiService extends ApiService {
   }
 
   @override
-  Future<List<Story>> fetchStories({
+  Future<List<Map<String, dynamic>>> fetchStories({
     String? theme,
     int? gradeLevel,
-    bool? isPremium,
-    int offset = 0,
-    int limit = 20,
   }) async =>
       [];
 
   @override
-  Future<List<Story>> fetchWeeklyTheme(int weekNumber) async => [];
+  Future<Map<String, dynamic>> fetchWeeklyTheme() async => {};
 
   @override
   Future<List<Progress>> fetchProgress(String childId,
@@ -55,12 +52,24 @@ class _FakeApiService extends ApiService {
       [];
 
   @override
-  Future<MonthlyReport?> fetchMonthlyReport({
+  Future<MonthlyReport> fetchMonthlyReport({
     required String childId,
-    required int year,
     required int month,
+    required int year,
   }) async =>
-      null;
+      _makeEmptyReport();
+
+  MonthlyReport _makeEmptyReport() => const MonthlyReport(
+    month: '2024-01',
+    totalQuestsCompleted: 0,
+    totalCorrectAnswers: 0,
+    totalAnswers: 0,
+    accuracyRate: 0.0,
+    totalStudyMinutes: 0,
+    totalCoinsEarned: 0,
+    studyDaysCount: 0,
+    categoryStats: {},
+  );
 
   @override
   Future<Map<String, dynamic>> loginWithFirebase(String idToken) async =>
