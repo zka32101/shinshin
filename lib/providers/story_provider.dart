@@ -54,7 +54,7 @@ void _tryRegisterFcmToken(ApiService service, Ref ref) {
   // トークンがローテートされたときも再登録
   // Store subscription so we can cancel it on disposal
   final subscription = FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-    service.updateUser(fcmToken: newToken).catchError((_) => <String, dynamic>{});
+    service.updateUser(fcmToken: newToken).catchError((_) {});
   });
 
   // Cancel subscription when provider is disposed to prevent memory leak
