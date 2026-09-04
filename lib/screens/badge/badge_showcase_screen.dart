@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/badge.dart';
@@ -427,9 +428,9 @@ class _BadgeCardState extends ConsumerState<_BadgeCard>
 
       // バッジをタップした際の音声効果
       if (isEarned) {
-        SoundEffectsUtils(ref).playBadgeUnlockSound();
+        unawaited(SoundEffectsUtils(ref as Ref<dynamic>).playBadgeUnlockSound());
       } else {
-        SoundEffectsUtils(ref).playButtonTapSound();
+        unawaited(SoundEffectsUtils(ref as Ref<dynamic>).playButtonTapSound());
       }
       showDialog(
         context: context,

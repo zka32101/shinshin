@@ -187,11 +187,16 @@ class PaymentService {
   }
 
   /// Get pending purchases
+  /// Note: The in_app_purchase API does not provide a direct method to query all past purchases.
+  /// Purchase status is typically tracked via the purchase stream and local storage.
   Future<List<PurchaseDetails>> getPendingPurchases() async {
     try {
-      final purchases = await _iap.queryPreviousPurchases();
-      _logger.log('Found ${purchases.length} past purchases');
-      return purchases;
+      // In production, implement a call to the purchase stream or local storage
+      // to track previous purchases. For now, return empty list.
+      // The actual purchase verification happens through restorePurchases() and
+      // the purchaseStream listener.
+      _logger.log('Querying pending purchases');
+      return [];
     } catch (e) {
       _logger.logError('Failed to get pending purchases', error: e);
       return [];
