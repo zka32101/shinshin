@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/report.dart';
 import 'story_provider.dart'; // apiServiceProvider / hiveServiceProvider を再利用
@@ -18,7 +19,7 @@ final monthlyReportProvider = FutureProvider.autoDispose
         month: key.month,
       );
       if (report != null) {
-        hive.cacheMonthlyReport(report).ignore();
+        unawaited(hive.cacheMonthlyReport(report));
       }
       return report;
     } catch (_) {

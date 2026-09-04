@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/hive_service.dart';
@@ -73,7 +74,7 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
   void setDailyReminder(bool value) {
     state = state.copyWith(dailyReminder: value);
-    _persist().ignore();
+    unawaited(_persist());
     if (value) {
       _notificationService.scheduleDailyReminder(
         hour: state.reminderHour,
@@ -88,12 +89,12 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 
   void setReportReady(bool value) {
     state = state.copyWith(reportReady: value);
-    _persist().ignore();
+    unawaited(_persist());
   }
 
   void setReminderTime(int hour, int minute) {
     state = state.copyWith(reminderHour: hour, reminderMinute: minute);
-    _persist().ignore();
+    unawaited(_persist());
     if (state.dailyReminder) {
       _notificationService.scheduleDailyReminder(
         hour: hour,
