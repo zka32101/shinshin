@@ -47,7 +47,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 void _tryRegisterFcmToken(ApiService service, Ref ref) {
   FirebaseMessaging.instance.getToken().then((token) {
     if (token != null) {
-      service.updateUser(fcmToken: token).catchError((_) => <String, dynamic>{});
+      service.updateUser(fcmToken: token).catchError((_) {});
     }
   }).catchError((_) {});
 
