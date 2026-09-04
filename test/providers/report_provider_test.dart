@@ -53,16 +53,16 @@ class _FakeApiService extends ApiService {
     return fetchResult ?? _makeEmptyReport();
   }
 
-  MonthlyReport _makeEmptyReport() => const MonthlyReport(
-    month: '2024-01',
-    totalQuestsCompleted: 0,
-    totalCorrectAnswers: 0,
-    totalAnswers: 0,
-    accuracyRate: 0.0,
+  MonthlyReport _makeEmptyReport() => MonthlyReport(
+    id: 'report-1',
+    childId: 'child-1',
+    month: 1,
+    year: 2024,
+    generatedAt: DateTime.now(),
+    storiesCompleted: 0,
     totalStudyMinutes: 0,
-    totalCoinsEarned: 0,
-    studyDaysCount: 0,
-    categoryStats: {},
+    totalPointsEarned: 0,
+    topImpressions: const [],
   );
 
   @override
