@@ -6,6 +6,8 @@ import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
 import '../models/ranking.dart';
 import '../models/child_profile.dart';
+import '../models/progress.dart';
+import '../models/report.dart';
 import 'logger_service.dart';
 
 /// Custom exception for API errors
@@ -632,11 +634,7 @@ class ApiService {
     throw UnimplementedError('createChild: Endpoint not yet implemented');
   }
 
-  Future<void> updateChild({
-    required String childId,
-    required String name,
-    required int grade,
-  }) async {
+  Future<void> updateChild(String childId, Map<String, dynamic> updates) async {
     throw UnimplementedError('updateChild: Endpoint not yet implemented');
   }
 
@@ -644,11 +642,16 @@ class ApiService {
     throw UnimplementedError('deleteChild: Endpoint not yet implemented');
   }
 
-  Future<Map<String, dynamic>> completeQuizSession(String sessionId) async {
+  Future<Map<String, dynamic>> completeQuizSession({
+    required String sessionId,
+    required String chosenChoiceId,
+    required int timeSpentSeconds,
+    String? reflectionText,
+  }) async {
     throw UnimplementedError('completeQuizSession: Endpoint not yet implemented');
   }
 
-  Future<Map<String, dynamic>> fetchProgress(String childId) async {
+  Future<List<Progress>> fetchProgress(String childId) async {
     throw UnimplementedError('fetchProgress: Endpoint not yet implemented');
   }
 
@@ -659,7 +662,10 @@ class ApiService {
     throw UnimplementedError('startQuizSession: Endpoint not yet implemented');
   }
 
-  Future<List<Map<String, dynamic>>> fetchStories() async {
+  Future<List<Map<String, dynamic>>> fetchStories({
+    String? theme,
+    int? gradeLevel,
+  }) async {
     throw UnimplementedError('fetchStories: Endpoint not yet implemented');
   }
 
@@ -671,7 +677,7 @@ class ApiService {
     throw UnimplementedError('fetchStoryDetail: Endpoint not yet implemented');
   }
 
-  Future<Map<String, dynamic>> fetchMonthlyReport({
+  Future<MonthlyReport> fetchMonthlyReport({
     required String childId,
     required int year,
     required int month,
@@ -679,7 +685,7 @@ class ApiService {
     throw UnimplementedError('fetchMonthlyReport: Endpoint not yet implemented');
   }
 
-  Future<Map<String, dynamic>> generateMonthlyReport({
+  Future<MonthlyReport> generateMonthlyReport({
     required String childId,
     required int year,
     required int month,
@@ -691,7 +697,7 @@ class ApiService {
     throw UnimplementedError('clearAuthToken: Endpoint not yet implemented');
   }
 
-  Future<void> updateUser(Map<String, dynamic> userData) async {
+  Future<void> updateUser({required String fcmToken}) async {
     throw UnimplementedError('updateUser: Endpoint not yet implemented');
   }
 }
