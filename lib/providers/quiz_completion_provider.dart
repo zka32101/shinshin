@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../utils/validation_utils.dart';
 import 'story_provider.dart' show apiServiceProvider, hiveServiceProvider;
 
 /// クイズ完了結果
@@ -58,17 +59,32 @@ final quizStartProvider =
 
 /// POST /api/v1/quizzes/{sessionId}/complete — クイズ完了・スコア更新。
 /// オフライン時は QuizCompleteResult.offline を返す（pointsEarned == 0）。
+/// Input validation is performed to prevent injection attacks and sanitize child-provided text.
 final quizCompleteProvider =
     FutureProvider.autoDispose.family<QuizCompleteResult, QuizCompleteKey>(
         (ref, key) async {
   final api = ref.watch(apiServiceProvider);
   final hive = ref.read(hiveServiceProvider);
   try {
+    // Validate all inputs before sending to API
+    if (!ValidationUtils.isValidSessionId(key.sessionId)) {
+      throw ArgumentError('Invalid sessionId: ${key.sessionId}');
+    }
+    if (!ValidationUtils.isValidChoiceId(key.chosenChoiceId)) {
+      throw ArgumentError('Invalid chosenChoiceId: ${key.chosenChoiceId}');
+    }
+    if (!ValidationUtils.isValidTimeSpent(key.timeSpentSeconds)) {
+      throw ArgumentError('Invalid timeSpentSeconds: ${key.timeSpentSeconds}');
+    }
+
+    // Validate and sanitize reflection text
+    final sanitizedReflection = ValidationUtils.validateReflectionText(key.reflectionText);
+
     final data = await api.completeQuizSession(
       sessionId: key.sessionId,
       chosenChoiceId: key.chosenChoiceId,
       timeSpentSeconds: key.timeSpentSeconds,
-      reflectionText: key.reflectionText,
+      reflectionText: sanitizedReflection,
     );
     return QuizCompleteResult(
       pointsEarned: (data['pointsEarned'] as num?)?.toInt() ?? 0,
@@ -78,11 +94,13 @@ final quizCompleteProvider =
     );
   } catch (_) {
     // オフライン or API エラー → Hive に同期キューイングして後で再送
+    // Sanitize reflection text before queuing offline
+    final sanitizedReflection = ValidationUtils.validateReflectionText(key.reflectionText);
     hive.enqueuePendingQuizCompletion({
       'sessionId': key.sessionId,
       'chosenChoiceId': key.chosenChoiceId,
       'timeSpentSeconds': key.timeSpentSeconds,
-      if (key.reflectionText != null) 'reflectionText': key.reflectionText,
+      if (sanitizedReflection != null) 'reflectionText': sanitizedReflection,
     }).ignore();
     return QuizCompleteResult.offline;
   }

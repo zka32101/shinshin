@@ -6,6 +6,13 @@ import '../models/progress.dart';
 import '../models/report.dart';
 import 'logger_service.dart';
 
+/// Cache TTL configuration (in days)
+class CacheTTL {
+  static const int storiesCacheTTLDays = 7;
+  static const int reportsCacheTTLDays = 90;
+  static const int progressCacheTTLDays = 30;
+}
+
 class HiveService {
   static const String storiesBox = 'stories';
   static const String progressBox = 'progress';
@@ -25,6 +32,38 @@ class HiveService {
   final _logger = LoggerService();
   bool _initialized = false;
 
+  /// Wrapper to store cached data with timestamp for TTL validation
+  static Map<String, dynamic> _wrapWithTimestamp(dynamic data) => {
+        'data': data,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+  /// Unwrap cached data and check if it's still valid based on TTL
+  static dynamic _unwrapIfValid(String? jsonString, int ttlDays) {
+    if (jsonString == null) return null;
+
+    try {
+      final wrapped = jsonDecode(jsonString) as Map<String, dynamic>;
+      final timestamp = wrapped['timestamp'] as int?;
+      if (timestamp == null) {
+        // Legacy cache entry without timestamp, consider it expired
+        return null;
+      }
+
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(timestamp),
+      );
+
+      if (age.inDays > ttlDays) {
+        return null; // Cache expired
+      }
+
+      return wrapped['data'];
+    } catch (_) {
+      return null; // Corrupted cache entry
+    }
+  }
+
   Future<void> initialize() async {
     if (_initialized) return;
 
@@ -32,6 +71,8 @@ class HiveService {
       await Hive.initFlutter();
 
       // Open all boxes once during initialization
+      // Note: For production, enable encryption with HiveAesCipher
+      // final cipher = HiveAesCipher(yourEncryptionKey);
       _storiesBoxInstance = await Hive.openBox<String>(storiesBox);
       _progressBoxInstance = await Hive.openBox<String>(progressBox);
       _userBoxInstance = await Hive.openBox<String>(userBox);
@@ -59,7 +100,8 @@ class HiveService {
     _ensureInitialized();
     try {
       for (final story in stories) {
-        await _storiesBoxInstance.put(story.id, jsonEncode(story.toJson()));
+        final wrapped = _wrapWithTimestamp(story.toJson());
+        await _storiesBoxInstance.put(story.id, jsonEncode(wrapped));
       }
       _logger.log('Cached ${stories.length} stories');
     } catch (e) {
@@ -72,9 +114,10 @@ class HiveService {
     _ensureInitialized();
     try {
       final jsonString = _storiesBoxInstance.get(storyId);
-      if (jsonString == null) return null;
+      final data = _unwrapIfValid(jsonString, CacheTTL.storiesCacheTTLDays);
+      if (data == null) return null;
 
-      final json = jsonDecode(jsonString) as Map<String, dynamic>;
+      final json = data as Map<String, dynamic>;
       return Story.fromJson(json);
     } catch (e) {
       _logger.logError('Failed to get cached story: $storyId', error: e);
@@ -83,6 +126,7 @@ class HiveService {
   }
 
   /// キャッシュ済みストーリー一覧を返す。theme / gradeLevel / isPremium でフィルタ可。
+  /// Expired cache entries are automatically skipped.
   Future<List<Story>> getCachedStories({
     String? theme,
     int? gradeLevel,
@@ -93,7 +137,10 @@ class HiveService {
       final stories = <Story>[];
       for (final jsonString in _storiesBoxInstance.values) {
         try {
-          final json = jsonDecode(jsonString) as Map<String, dynamic>;
+          final data = _unwrapIfValid(jsonString, CacheTTL.storiesCacheTTLDays);
+          if (data == null) continue; // Skip expired entries
+
+          final json = data as Map<String, dynamic>;
           final story = Story.fromJson(json);
           if (theme != null && story.theme != theme) continue;
           if (gradeLevel != null && story.gradeLevel != gradeLevel) continue;
@@ -127,7 +174,8 @@ class HiveService {
   Future<void> cacheProgress(Progress progress) async {
     _ensureInitialized();
     try {
-      await _progressBoxInstance.put(progress.id, jsonEncode(progress.toJson()));
+      final wrapped = _wrapWithTimestamp(progress.toJson());
+      await _progressBoxInstance.put(progress.id, jsonEncode(wrapped));
       _logger.log('Progress cached: ${progress.id}');
     } catch (e) {
       _logger.logError('Failed to cache progress', error: e);
@@ -141,7 +189,8 @@ class HiveService {
     _ensureInitialized();
     try {
       for (final p in items) {
-        await _progressBoxInstance.put(p.id, jsonEncode(p.toJson()));
+        final wrapped = _wrapWithTimestamp(p.toJson());
+        await _progressBoxInstance.put(p.id, jsonEncode(wrapped));
       }
       _logger.log('Cached ${items.length} progress items');
     } catch (e) {
@@ -157,7 +206,10 @@ class HiveService {
 
       for (final entry in _progressBoxInstance.values) {
         try {
-          final json = jsonDecode(entry) as Map<String, dynamic>;
+          final data = _unwrapIfValid(entry, CacheTTL.progressCacheTTLDays);
+          if (data == null) continue; // Skip expired entries
+
+          final json = data as Map<String, dynamic>;
           final progress = Progress.fromJson(json);
           if (progress.childId == childId) {
             progressList.add(progress);
@@ -225,7 +277,8 @@ class HiveService {
     _ensureInitialized();
     try {
       final key = '${report.childId}_${report.year}_${report.month}';
-      await _reportsBoxInstance.put(key, jsonEncode(report.toJson()));
+      final wrapped = _wrapWithTimestamp(report.toJson());
+      await _reportsBoxInstance.put(key, jsonEncode(wrapped));
       _logger.log('Report cached: $key');
       developer.log('Report cached: $key', name: 'HiveService');
     } catch (e) {
@@ -243,8 +296,9 @@ class HiveService {
     try {
       final key = '${childId}_${year}_$month';
       final jsonString = _reportsBoxInstance.get(key);
-      if (jsonString == null) return null;
-      return MonthlyReport.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
+      final data = _unwrapIfValid(jsonString, CacheTTL.reportsCacheTTLDays);
+      if (data == null) return null;
+      return MonthlyReport.fromJson(data as Map<String, dynamic>);
     } catch (e) {
       _logger.logError('Report cache parse error for $childId', error: e);
       developer.log('Report cache parse error: $e', name: 'HiveService', error: e);
