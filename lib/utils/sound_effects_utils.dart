@@ -7,7 +7,7 @@ import '../providers/audio_provider.dart';
 class SoundEffectsUtils {
   final Ref<dynamic> ref;
 
-  SoundEffectsUtils(this.ref);
+  SoundEffectsUtils(Ref<dynamic> ref) : ref = ref;
 
   /// 効果音を再生（設定に応じて自動的に有効/無効を切り替え）
   Future<void> playSound(String soundName) async {

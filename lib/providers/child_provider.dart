@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/child_profile.dart';
@@ -45,7 +46,7 @@ final currentChildIdProvider =
   (ref) {
     final notifier = _ChildIdNotifier();
     // Load from persistent storage without blocking
-    notifier.loadFromPersistentStorage().ignore();
+    unawaited(notifier.loadFromPersistentStorage());
     return notifier;
   },
 );

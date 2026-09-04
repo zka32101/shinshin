@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 
 /// アクセシビリティ改善ユーティリティ
 class AccessibilityUtils {
@@ -65,7 +66,7 @@ class AccessibilityUtils {
   }) {
     SemanticsService.announce(
       message,
-      textDirection: TextDirection.ltr,
+      TextDirection.ltr,
     );
   }
 

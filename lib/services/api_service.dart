@@ -657,7 +657,7 @@ class ApiService {
 
   Future<String> startQuizSession({
     required String childId,
-    required String contentId,
+    required String storyId,
   }) async {
     throw UnimplementedError('startQuizSession: Endpoint not yet implemented');
   }

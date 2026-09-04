@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/story.dart';
@@ -46,14 +47,14 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 void _tryRegisterFcmToken(ApiService service, Ref ref) {
   FirebaseMessaging.instance.getToken().then((token) {
     if (token != null) {
-      service.updateUser(fcmToken: token).catchError((_) => <String, dynamic>{});
+      service.updateUser(fcmToken: token).catchError((_) {});
     }
   }).catchError((_) {});
 
   // トークンがローテートされたときも再登録
   // Store subscription so we can cancel it on disposal
   final subscription = FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-    service.updateUser(fcmToken: newToken).catchError((_) => <String, dynamic>{});
+    service.updateUser(fcmToken: newToken).catchError((_) {});
   });
 
   // Cancel subscription when provider is disposed to prevent memory leak
@@ -75,7 +76,7 @@ final storiesProvider = FutureProvider.autoDispose
         isPremium: filters.isPremium,
       );
       // キャッシュ更新（ブロックしない）
-      hive.cacheStories(stories).ignore();
+      unawaited(hive.cacheStories(stories));
       return stories;
     } catch (_) {
       // オフライン or サーバーエラー → キャッシュから返す
@@ -106,7 +107,7 @@ final storyDetailProvider = FutureProvider.autoDispose
   try {
     final story = await apiService.fetchStoryDetail(storyId);
     // 詳細（content 含む）をキャッシュ更新
-    hive.cacheStories([story]).ignore();
+    unawaited(hive.cacheStories([story]));
     return story;
   } catch (_) {
     final cached = await hive.getCachedStory(storyId);

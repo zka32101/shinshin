@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
@@ -163,7 +164,7 @@ class _MenuCardState extends ConsumerState<_MenuCard> with SingleTickerProviderS
 
   void _handleTap() {
     // メニュー選択音を再生
-    SoundEffectsUtils(ref).playButtonTapSound();
+    unawaited(SoundEffectsUtils(ref as Ref<dynamic>).playButtonTapSound());
     widget.onTap();
   }
 

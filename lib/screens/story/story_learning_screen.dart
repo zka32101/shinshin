@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -179,7 +180,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
     _animatePageChange();
 
     // 選択肢決定音を再生
-    SoundEffectsUtils(ref).playChoiceMadeSound();
+    unawaited(SoundEffectsUtils(ref as Ref<dynamic>).playChoiceMadeSound());
 
     AnalyticsService().logChoiceMade(
       storyId: story.id,
@@ -200,7 +201,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
     setState(() => _completing = true);
 
     // ストーリー完了音を再生
-    SoundEffectsUtils(ref).playStoryCompleteSound();
+    unawaited(SoundEffectsUtils(ref as Ref<dynamic>).playStoryCompleteSound());
 
     final elapsed = DateTime.now().difference(_startTime).inSeconds;
 

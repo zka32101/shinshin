@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import '../../providers/subscription_provider.dart';
 import '../../services/analytics_service.dart';
 
@@ -54,8 +55,7 @@ class TrialStatusScreen extends ConsumerWidget {
           }
 
           final daysRemaining = subscription.daysRemainingInTrial ?? 0;
-          analyticsService.logEvent('trial_status_viewed',
-              {'days_remaining': daysRemaining});
+          unawaited(analyticsService.logTrialStatusViewed(daysRemaining: daysRemaining));
 
           return SingleChildScrollView(
             child: Padding(

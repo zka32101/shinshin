@@ -122,23 +122,23 @@ class PaymentService {
         if (Platform.isIOS) {
           verified = await _subscriptionService.verifyAppleReceipt(
             userId: userId,
-            receipt: purchaseDetails.serverVerificationData.localVerificationData,
+            receipt: purchaseDetails.verificationData.localVerificationData,
           );
         } else if (Platform.isAndroid) {
           verified = await _subscriptionService.verifyGooglePlayReceipt(
             userId: userId,
-            packageName: purchaseDetails.packageName,
+            packageName: 'jp.petitworks.shougaku_kore_doutoku',
             productId: purchaseDetails.productID,
             purchaseToken: purchaseDetails.verificationData.serverVerificationData,
           );
         }
 
-        if (verified) {
+        if (verified && purchaseDetails.purchaseID != null) {
           // Update subscription in Firestore
           await _subscriptionService.activateSubscription(
             userId: userId,
             planType: planType,
-            transactionId: purchaseDetails.purchaseID,
+            transactionId: purchaseDetails.purchaseID!,
           );
 
           _logger.log('Purchase completed and verified for user: $userId');
@@ -152,8 +152,11 @@ class PaymentService {
       }
 
       // Mark purchase as processed
-      if (purchaseDetails.pendingCompleteMark) {
+      try {
         await _iap.completePurchase(purchaseDetails);
+      } catch (e) {
+        // Purchase might already be completed, ignore error
+        _logger.logError('Error completing purchase', error: e);
       }
     } catch (e) {
       _logger.logError('Failed to handle purchase update', error: e);
@@ -163,11 +166,9 @@ class PaymentService {
   /// Complete a purchase
   Future<void> completePurchase(PurchaseDetails purchaseDetails) async {
     try {
-      if (purchaseDetails.pendingCompleteMark) {
-        await _iap.completePurchase(purchaseDetails);
-        _logger.log(
-            'Purchase completed: ${purchaseDetails.purchaseID}');
-      }
+      await _iap.completePurchase(purchaseDetails);
+      _logger.log(
+          'Purchase completed: ${purchaseDetails.purchaseID}');
     } catch (e) {
       _logger.logError('Failed to complete purchase', error: e);
       rethrow;
@@ -186,11 +187,16 @@ class PaymentService {
   }
 
   /// Get pending purchases
+  /// Note: The in_app_purchase API does not provide a direct method to query all past purchases.
+  /// Purchase status is typically tracked via the purchase stream and local storage.
   Future<List<PurchaseDetails>> getPendingPurchases() async {
     try {
-      final purchases = await _iap.queryPastPurchases();
-      _logger.log('Found ${purchases.length} past purchases');
-      return purchases;
+      // In production, implement a call to the purchase stream or local storage
+      // to track previous purchases. For now, return empty list.
+      // The actual purchase verification happens through restorePurchases() and
+      // the purchaseStream listener.
+      _logger.log('Querying pending purchases');
+      return [];
     } catch (e) {
       _logger.logError('Failed to get pending purchases', error: e);
       return [];

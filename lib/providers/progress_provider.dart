@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/progress.dart';
 import '../models/story.dart';
@@ -20,7 +21,7 @@ final userProgressProvider = FutureProvider.autoDispose
   final hive = ref.read(hiveServiceProvider);
   try {
     final items = await api.fetchProgress(childId);
-    hive.cacheProgressList(items).ignore();
+    unawaited(hive.cacheProgressList(items));
     return items;
   } catch (_) {
     final cached = await hive.getCachedProgress(childId);

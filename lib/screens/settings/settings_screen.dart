@@ -119,7 +119,6 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: const Text('毎日の学習をお知らせ'),
             trailing: Switch(
               value: notifSettings.dailyReminder,
-              activeThumbColor: const Color(0xFF9B59B6),
               onChanged: (v) => ref
                   .read(notificationSettingsProvider.notifier)
                   .setDailyReminder(v),
@@ -132,7 +131,6 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: const Text('月次レポートが完成したとき'),
             trailing: Switch(
               value: notifSettings.reportReady,
-              activeThumbColor: const Color(0xFF9B59B6),
               onChanged: (v) => ref
                   .read(notificationSettingsProvider.notifier)
                   .setReportReady(v),
@@ -334,7 +332,7 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(authServiceProvider).signOut();
+              await ref.read(signOutProvider.future);
               // ログアウト後にルートを /login にリセット
               if (context.mounted) {
                 Navigator.of(context).pushNamedAndRemoveUntil(

@@ -168,7 +168,7 @@ class AvatarSelectionScreen extends ConsumerWidget {
           ? () async {
               try {
                 await ref.read(selectAvatarProvider(avatar.id).future);
-                if (mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${avatar.name}に変更しました'),
@@ -177,7 +177,7 @@ class AvatarSelectionScreen extends ConsumerWidget {
                   );
                 }
               } catch (e) {
-                if (mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('エラー: $e'),
