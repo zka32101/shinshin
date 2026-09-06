@@ -1,0 +1,112 @@
+name: Android Emulator Test
+
+on:
+  workflow_call:
+    inputs:
+      api-level:
+        required: false
+        type: number
+        default: 31
+        description: "Android API level for the emulator"
+      target:
+        required: false
+        type: string
+        default: "google_apis"
+        description: "Emulator target (google_apis, default, etc.)"
+      arch:
+        required: false
+        type: string
+        default: "x86_64"
+        description: "Emulator architecture (x86_64, arm64-v8a, etc.)"
+      build-command:
+        required: false
+        type: string
+        default: "flutter test integration_test/"
+        description: "Command to run on the emulator"
+
+env:
+  ANDROID_HOME: ${{ github.workspace }}/android
+  GRADLE_USER_HOME: ${{ github.workspace }}/gradle-cache
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "11"
+          cache: "gradle"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: stable
+          cache: true
+
+      - name: Make setup script executable
+        run: chmod +x ${{ github.workspace }}/scripts/setup-android-emulator.sh
+
+      - name: Setup Android Emulator
+        run: |
+          ${{ github.workspace }}/scripts/setup-android-emulator.sh \
+            --api-level ${{ inputs.api-level }} \
+            --target ${{ inputs.target }} \
+            --arch ${{ inputs.arch }}
+
+      - name: Start Android Emulator
+        run: |
+          EMULATOR="${ANDROID_HOME}/emulator/emulator"
+          EMU_ARGS="-avd flutter_test -no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -verbose"
+
+          nohup "${EMULATOR}" ${EMU_ARGS} &
+
+          # Wait for emulator to be ready
+          python3 -m pip install --upgrade pip
+          python3 -c "
+          import subprocess
+          import time
+
+          max_attempts = 120
+          for i in range(max_attempts):
+              try:
+                  result = subprocess.run(['${ANDROID_HOME}/platform-tools/adb', 'shell', 'getprop', 'sys.boot_completed'],
+                                        capture_output=True, timeout=5)
+                  if result.returncode == 0 and b'1' in result.stdout:
+                      print('Emulator is ready!')
+                      break
+              except Exception as e:
+                  pass
+
+              if i % 10 == 0:
+                  print(f'Waiting for emulator... ({i}s)')
+              time.sleep(1)
+          else:
+              print('Emulator startup timeout')
+              exit(1)
+          "
+
+      - name: Get emulator info
+        run: |
+          ${ANDROID_HOME}/platform-tools/adb devices
+          ${ANDROID_HOME}/platform-tools/adb shell getprop ro.build.version.release
+
+      - name: Run tests
+        run: |
+          export PATH="${ANDROID_HOME}/platform-tools:${PATH}"
+          ${{ inputs.build-command }}
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-test-reports
+          path: |
+            build/reports/
+            coverage/
+          retention-days: 7
