@@ -345,3 +345,50 @@ jobs:
           name: debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 7
+
+  # ========================================
+  # Google Drive にアップロード（オプション）
+  # ========================================
+  upload-debug-to-google-drive:
+    name: Upload Debug APK to Google Drive
+    needs: flutter-build
+    runs-on: ubuntu-latest
+    if: success() && secrets.GOOGLE_DRIVE_FOLDER_ID != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: debug-apk
+          path: debug-apk
+
+      - name: Setup rclone
+        run: |
+          sudo apt-get update && sudo apt-get install -y rclone
+
+      - name: Configure rclone
+        env:
+          GOOGLE_DRIVE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "$GOOGLE_DRIVE_SERVICE_ACCOUNT" > /tmp/sa.json
+          rclone config create gdrive drive service_account_file /tmp/sa.json
+
+      - name: Upload Debug APK to Google Drive
+        continue-on-error: true
+        run: |
+          APK_PATH="debug-apk/app-debug.apk"
+          if [ -f "$APK_PATH" ]; then
+            rclone copy "$APK_PATH" \
+              "gdrive:${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}/debug/" \
+              --progress
+            echo "✅ Debug APK uploaded to Google Drive"
+          else
+            echo "⚠️  APK not found at $APK_PATH"
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f /tmp/sa.json

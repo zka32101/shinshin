@@ -141,3 +141,62 @@ jobs:
           echo "  1. APK: Manual device testing"
           echo "  2. AAB: Upload to Google Play Console"
           echo "=================================================="
+
+  # ========================================
+  # Google Drive にアップロード
+  # ========================================
+  upload-to-google-drive:
+    name: Upload to Google Drive
+    needs: build-android
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-artifacts
+
+      - name: Setup rclone
+        run: |
+          sudo apt-get update && sudo apt-get install -y rclone
+
+      - name: Configure rclone
+        env:
+          GOOGLE_DRIVE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "$GOOGLE_DRIVE_SERVICE_ACCOUNT" > /tmp/sa.json
+          rclone config create gdrive drive service_account_file /tmp/sa.json
+
+      - name: Upload AAB to Google Drive
+        continue-on-error: true
+        run: |
+          AAB_PATH="build-artifacts/android-aab-release/app-release.aab"
+          if [ -f "$AAB_PATH" ]; then
+            rclone copy "$AAB_PATH" \
+              "gdrive:${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}/" \
+              --progress
+            echo "✅ AAB uploaded to Google Drive"
+          else
+            echo "⚠️  AAB not found at $AAB_PATH"
+          fi
+
+      - name: Upload APK to Google Drive
+        continue-on-error: true
+        run: |
+          APK_PATH="build-artifacts/android-apk-release/app-release.apk"
+          if [ -f "$APK_PATH" ]; then
+            rclone copy "$APK_PATH" \
+              "gdrive:${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}/" \
+              --progress
+            echo "✅ APK uploaded to Google Drive"
+          else
+            echo "⚠️  APK not found at $APK_PATH"
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f /tmp/sa.json
