@@ -24,3 +24,21 @@ jobs:
       
       - name: Upload APK
         run: echo "APK built and ready for deployment"
+
+  emulator-test:
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+      
+      - name: Run Android Emulator Tests
+        uses: zka32101/yourwish/.github/workflows/android-emulator-test.yml@main
+        with:
+          app-path: '.'
+          test-command: 'flutter test'
