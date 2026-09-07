@@ -60,11 +60,11 @@ jobs:
       # ========================================
       # Flutter 依存関係とコード生成
       # ========================================
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
       - name: Clean build directory
         run: flutter clean
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
 
       - name: Run code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
