@@ -99,16 +99,35 @@ jobs:
       # ========================================
       # Google Drive へアップロード
       # ========================================
+      - name: Setup rclone
+        run: |
+          sudo apt-get update && sudo apt-get install -y rclone
+
+      - name: Configure rclone
+        env:
+          GOOGLE_DRIVE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "$GOOGLE_DRIVE_SERVICE_ACCOUNT" > /tmp/sa.json
+          rclone config create gdrive drive service_account_file /tmp/sa.json
+
       - name: Upload APK to Google Drive
         continue-on-error: true
-        uses: adityak2211/google-drive-github-action@main
-        with:
-          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-          folder_id: ${{ inputs.google_drive_folder_id || secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          files_to_upload: 'build/app/outputs/apk/release/app-release.apk'
-          skip_subdirectories: 'true'
-          cleanup: 'false'
-          overwrite: 'false'
+        run: |
+          APK_PATH="build/app/outputs/apk/release/app-release.apk"
+          if [ -f "$APK_PATH" ]; then
+            rclone copy "$APK_PATH" \
+              "gdrive:${{ inputs.google_drive_folder_id || secrets.GOOGLE_DRIVE_FOLDER_ID }}/" \
+              --progress
+            echo "✅ APK uploaded to Google Drive"
+          else
+            echo "⚠️  APK not found at $APK_PATH"
+          fi
+
+      - name: Cleanup rclone config
+        if: always()
+        run: |
+          rm -f /tmp/sa.json
 
       # ========================================
       # Upload to GitHub Artifacts
