@@ -79,7 +79,8 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
-          GRADLE_OPTS: -Xmx384m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+          GRADLE_OPTS: -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dorg.gradle.workers.max=1
+          _JAVA_OPTIONS: -Xmx256m
 
       # ========================================
       # ビルド成功ログを出力
