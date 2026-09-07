@@ -73,7 +73,7 @@ jobs:
       # Android リリースビルド
       # ========================================
       - name: Build APK Release
-        run: flutter build apk --release --no-parallel
+        run: flutter build apk --release
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/android/app/release-keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
