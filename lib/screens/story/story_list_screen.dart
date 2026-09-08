@@ -116,11 +116,11 @@ class _FilterBar extends StatelessWidget {
                   isSelected: selectedTheme == null,
                   onTap: () => onThemeChanged(null),
                 ),
-                ...VirtueConstants.themes.entries.map((e) {
+                ...VirtueConstants.themes.map((theme) {
                   return _FilterChip(
-                    label: e.value,
-                    isSelected: selectedTheme == e.key,
-                    onTap: () => onThemeChanged(e.key),
+                    label: VirtueConstants.getVirtueLabel(theme),
+                    isSelected: selectedTheme == theme,
+                    onTap: () => onThemeChanged(theme),
                   );
                 }),
               ],
@@ -387,12 +387,11 @@ class _StoryCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getThemeColor(story.theme),
+                              color: VirtueConstants.getVirtueColor(story.theme),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              VirtueConstants.themes[story.theme] ??
-                                  story.theme,
+                              VirtueConstants.getVirtueLabel(story.theme),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -440,24 +439,6 @@ class _StoryCard extends StatelessWidget {
     );
   }
 
-  Color _getThemeColor(String theme) {
-    switch (theme) {
-      case 'kindness':
-        return Colors.pink[400]!;
-      case 'honesty':
-        return Colors.blue[400]!;
-      case 'courage':
-        return Colors.red[400]!;
-      case 'respect':
-        return Colors.purple[400]!;
-      case 'cooperation':
-        return Colors.green[400]!;
-      case 'responsibility':
-        return Colors.orange[400]!;
-      default:
-        return Colors.grey[400]!;
-    }
-  }
 }
 
 /// エラー表示

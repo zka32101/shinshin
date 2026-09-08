@@ -102,14 +102,11 @@ class _ThemeTab extends ConsumerWidget {
   final ValueChanged<String?> onThemeChanged;
   const _ThemeTab({required this.selectedTheme, required this.onThemeChanged});
 
-  static const _themes = <(String, String?)>[
+  static List<(String, String?)> get _themes => [
     ('すべて', null),
-    ('思いやり', 'kindness'),
-    ('正直さ', 'honesty'),
-    ('責任感', 'responsibility'),
-    ('勇気', 'courage'),
-    ('礼儀', 'respect'),
-    ('協調性', 'cooperation'),
+    ...VirtueConstants.themes.map(
+      (theme) => (VirtueConstants.getVirtueLabel(theme), theme),
+    ),
   ];
 
   @override
@@ -225,20 +222,11 @@ class _CompletedStoryCard extends StatelessWidget {
   final Story story;
   final String childId;
 
-  static const _themeColors = <String, Color>{
-    'kindness': Color(0xFF9B59B6),
-    'honesty': Color(0xFFF1C40F),
-    'responsibility': Color(0xFF3498DB),
-    'courage': Color(0xFFE74C3C),
-    'respect': Color(0xFF27AE60),
-    'cooperation': Color(0xFFE67E22),
-  };
-
   const _CompletedStoryCard({required this.story, required this.childId});
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = _themeColors[story.theme] ?? _primaryColor;
+    final themeColor = VirtueConstants.getVirtueColor(story.theme);
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -345,19 +333,6 @@ class _LibraryStoryCard extends StatefulWidget {
   final VoidCallback onTap;
   const _LibraryStoryCard({required this.story, required this.onTap});
 
-  static const _themeColors = <String, Color>{
-    'kindness': Color(0xFF9B59B6), 'honesty': Color(0xFFF1C40F),
-    'responsibility': Color(0xFF3498DB), 'courage': Color(0xFFE74C3C),
-    'respect': Color(0xFF2ECC71), 'cooperation': Color(0xFFE67E22),
-  };
-  static const _themeLabels = <String, String>{
-    'kindness': '思いやり', 'honesty': '正直さ', 'responsibility': '責任感',
-    'courage': '勇気', 'respect': '礼儀', 'cooperation': '協調性',
-  };
-  static const _themeEmojis = <String, String>{
-    'kindness': '💜', 'honesty': '💛', 'responsibility': '💙',
-    'courage': '❤️', 'respect': '💚', 'cooperation': '🧡',
-  };
 
   @override
   State<_LibraryStoryCard> createState() => _LibraryStoryCardState();
@@ -405,9 +380,9 @@ class _LibraryStoryCardState extends State<_LibraryStoryCard> with SingleTickerP
 
   @override
   Widget build(BuildContext context) {
-    final color = _LibraryStoryCard._themeColors[widget.story.theme] ?? _primaryColor;
-    final label = _LibraryStoryCard._themeLabels[widget.story.theme] ?? widget.story.theme;
-    final emoji = _LibraryStoryCard._themeEmojis[widget.story.theme] ?? '📖';
+    final color = VirtueConstants.getVirtueColor(widget.story.theme);
+    final label = VirtueConstants.getVirtueLabel(widget.story.theme);
+    final emoji = VirtueConstants.getVirtueEmoji(widget.story.theme);
 
     return ScaleTransition(
       scale: _scaleAnimation,
