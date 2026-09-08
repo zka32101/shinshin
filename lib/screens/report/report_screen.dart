@@ -128,44 +128,131 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 }
 
-class _MonthSelector extends StatelessWidget {
+class _MonthSelector extends StatefulWidget {
   final int year;
   final int month;
   final Function(int, int) onChanged;
   const _MonthSelector({required this.year, required this.month, required this.onChanged});
 
   @override
+  State<_MonthSelector> createState() => _MonthSelectorState();
+}
+
+class _MonthSelectorState extends State<_MonthSelector> {
+  bool _showMonthPicker = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: () {
-              final prev = DateTime(year, month - 1);
-              onChanged(prev.year, prev.month);
-            },
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: _cardColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
           ),
-          Text('$year年 $month月',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textPrimary)),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: DateTime(year, month).isAfter(DateTime.now())
-                ? null
-                : () {
-                    final next = DateTime(year, month + 1);
-                    onChanged(next.year, next.month);
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () {
+                  final prev = DateTime(widget.year, widget.month - 1);
+                  widget.onChanged(prev.year, prev.month);
+                },
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _showMonthPicker = !_showMonthPicker),
+                child: Row(
+                  children: [
+                    Text('${widget.year}年 ${widget.month}月',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textPrimary)),
+                    const SizedBox(width: 8),
+                    Icon(
+                      _showMonthPicker ? Icons.expand_less : Icons.expand_more,
+                      size: 20,
+                      color: _textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: DateTime(widget.year, widget.month).isAfter(DateTime.now())
+                    ? null
+                    : () {
+                        final next = DateTime(widget.year, widget.month + 1);
+                        widget.onChanged(next.year, next.month);
+                      },
+              ),
+            ],
+          ),
+        ),
+        if (_showMonthPicker) ...[
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: _cardColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.2,
+                  ),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 12,
+                  itemBuilder: (context, index) {
+                    final selectMonth = index + 1;
+                    final selectYear = widget.year;
+                    final isSelected = selectMonth == widget.month && selectYear == widget.year;
+                    final isFuture = DateTime(selectYear, selectMonth).isAfter(DateTime.now());
+
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: isFuture ? null : () {
+                          widget.onChanged(selectYear, selectMonth);
+                          setState(() => _showMonthPicker = false);
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected ? _primaryColor.withAlpha(40) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? _primaryColor : Colors.grey.shade200,
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$selectMonth月',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                color: isFuture ? Colors.grey.shade400 : _textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   },
+                ),
+              ],
+            ),
           ),
         ],
-      ),
+      ],
     );
   }
 }
