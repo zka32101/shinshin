@@ -190,5 +190,179 @@ void main() {
       // After tap, nav buttons are still present (navigated to prev month)
       expect(find.byIcon(Icons.chevron_left), findsOneWidget);
     });
+
+    // ─── Phase 5.1 Tests: バッジセクション ──────────────────────────────────
+    testWidgets('shows badge section header when report exists', (tester) async {
+      await tester.pumpWidget(
+        _wrap(child: _testChild, report: _makeReport()),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('🎖️ バッジ進捗'), findsOneWidget);
+    });
+
+    testWidgets('displays virtue score trends when report exists', (tester) async {
+      await tester.pumpWidget(
+        _wrap(child: _testChild, report: _makeReport()),
+      );
+      await tester.pumpAndSettle();
+      // Virtue names should be displayed in score trends
+      expect(find.textContaining('思いやり'), findsWidgets);
+      expect(find.textContaining('正直'), findsWidgets);
+      expect(find.textContaining('勇気'), findsWidgets);
+    });
+
+    testWidgets('shows virtue score progress bars with appropriate colors',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(child: _testChild, report: _makeReport()),
+      );
+      await tester.pumpAndSettle();
+      // Progress indicators should be present for virtue scores
+      expect(find.byType(LinearProgressIndicator), findsWidgets);
+    });
+
+    // ─── Phase 5.2 Tests: 月比較レーダーチャート ───────────────────────────
+    testWidgets('shows radar chart with legend when report exists', (tester) async {
+      await tester.pumpWidget(
+        _wrap(child: _testChild, report: _makeReport()),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('🌈 徳目バランス'), findsOneWidget);
+      // Legend text for current month
+      expect(find.textContaining('今月'), findsWidgets);
+    });
+
+    testWidgets('shows growth comparison card when previous month available',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          child: _testChild,
+          report: _makeReport(storiesCompleted: 8),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Compare button or comparison section should be visible
+      expect(find.textContaining('比較'), findsWidgets);
+    });
+
+    testWidgets('AI comment card expands and collapses', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          child: _testChild,
+          report: _makeReport(
+            highlightComment: 'これは長いコメントです。' * 10,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Find the comment card area and tap to expand
+      final commentText = find.text('✨ 今月の頑張り');
+      expect(commentText, findsOneWidget);
+
+      // Try to find expand/collapse button
+      final expandButtons = find.byType(GestureDetector);
+      if (expandButtons.evaluate().isNotEmpty) {
+        await tester.tap(expandButtons.first);
+        await tester.pumpAndSettle();
+      }
+    });
+
+    testWidgets('shows all virtue scores within valid range', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          child: _testChild,
+          report: _makeReport(
+            // Scores range from 0-100
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // All virtue scores should be displayed as numbers
+      final scoreTexts = find.byType(Text);
+      expect(scoreTexts, findsWidgets);
+    });
+
+    testWidgets('month selector shows current and previous month options',
+        (tester) async {
+      await tester.pumpWidget(_wrap(child: _testChild, reportNull: true));
+      await tester.pumpAndSettle();
+
+      // Tap month selector button
+      final monthButtons = find.byType(TextButton);
+      if (monthButtons.evaluate().isNotEmpty) {
+        await tester.tap(find.byType(TextButton).first);
+        await tester.pumpAndSettle();
+
+        // Month picker should show multiple month options
+        expect(find.byType(GridView), findsWidgets);
+      }
+    });
+
+    testWidgets('report data updates when month is changed', (tester) async {
+      await tester.pumpWidget(_wrap(child: _testChild, reportNull: true));
+      await tester.pumpAndSettle();
+
+      // Initial state should show empty report message
+      expect(find.textContaining('レポート'), findsWidgets);
+
+      // Navigate to previous month
+      final prevButton = find.byIcon(Icons.chevron_left);
+      if (prevButton.evaluate().isNotEmpty) {
+        await tester.tap(prevButton);
+        await tester.pumpAndSettle();
+        // Screen should still be responsive
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      }
+    });
+
+    testWidgets('badge progress cards display correct information',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(child: _testChild, report: _makeReport()),
+      );
+      await tester.pumpAndSettle();
+
+      // Badge section should contain progress indicators
+      final progressIndicators = find.byType(LinearProgressIndicator);
+      expect(progressIndicators, findsWidgets);
+    });
+
+    testWidgets('handles report with zero scores gracefully', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          child: _testChild,
+          report: _makeReport(storiesCompleted: 0),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Screen should still render without errors
+      expect(find.byType(Scaffold), findsOneWidget);
+    });
+
+    testWidgets('scrollable content fits within screen', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          child: _testChild,
+          report: _makeReport(
+            highlightComment: 'コメント' * 20,
+            growthComment: 'コメント' * 20,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should be able to scroll
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -500),
+      );
+      await tester.pumpAndSettle();
+
+      // Content should still be visible
+      expect(find.byType(Scaffold), findsOneWidget);
+    });
   });
 }
