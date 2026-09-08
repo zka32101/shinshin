@@ -46,3 +46,35 @@ final generateMonthlyReportProvider = FutureProvider.autoDispose
     return report;
   },
 );
+
+/// 前月レポート取得プロバイダー
+final previousMonthReportProvider = FutureProvider.autoDispose
+    .family<MonthlyReport?, MonthlyReportKey>(
+  (ref, key) async {
+    final apiService = ref.watch(apiServiceProvider);
+    final hive = ref.read(hiveServiceProvider);
+
+    // Calculate previous month
+    DateTime currentMonth = DateTime(key.year, key.month);
+    DateTime previousMonth = DateTime(currentMonth.year, currentMonth.month - 1);
+
+    try {
+      final report = await apiService.fetchMonthlyReport(
+        childId: key.childId,
+        year: previousMonth.year,
+        month: previousMonth.month,
+      );
+      if (report != null) {
+        unawaited(hive.cacheMonthlyReport(report));
+      }
+      return report;
+    } catch (_) {
+      // オフライン → キャッシュを返す
+      return hive.getCachedMonthlyReport(
+        key.childId,
+        previousMonth.year,
+        previousMonth.month,
+      );
+    }
+  },
+);

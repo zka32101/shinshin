@@ -49,9 +49,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   }
 
   Widget _buildReportContent(String childId) {
-    final reportAsync = ref.watch(
-      monthlyReportProvider((childId: childId, year: _selectedYear, month: _selectedMonth)),
-    );
+    final reportKey = (childId: childId, year: _selectedYear, month: _selectedMonth);
+    final reportAsync = ref.watch(monthlyReportProvider(reportKey));
+    final previousReportAsync = ref.watch(previousMonthReportProvider(reportKey));
 
     return CustomScrollView(
       slivers: [
@@ -105,7 +105,20 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                       delay: const Duration(milliseconds: 200),
                       child: _EmptyReportCard(year: _selectedYear, month: _selectedMonth, childId: childId),
                     )
-                    : _ReportContent(report: report),
+                    : previousReportAsync.when(
+                      data: (previousReport) => _ReportContent(
+                        report: report,
+                        previousReport: previousReport,
+                      ),
+                      loading: () => _ReportContent(
+                        report: report,
+                        previousReport: null,
+                      ),
+                      error: (_, __) => _ReportContent(
+                        report: report,
+                        previousReport: null,
+                      ),
+                    ),
               ),
             ),
           ),
@@ -159,7 +172,8 @@ class _MonthSelector extends StatelessWidget {
 
 class _ReportContent extends StatelessWidget {
   final MonthlyReport report;
-  const _ReportContent({required this.report});
+  final MonthlyReport? previousReport;
+  const _ReportContent({required this.report, this.previousReport});
 
   @override
   Widget build(BuildContext context) {
@@ -179,17 +193,25 @@ class _ReportContent extends StatelessWidget {
           child: _AICommentCard(report: report),
         ),
         const SizedBox(height: 16),
+        if (previousReport != null)
+          AnimatedSlideIn(
+            direction: SlideDirection.fromBottom,
+            duration: AnimationDurations.medium,
+            delay: const Duration(milliseconds: 350),
+            child: _GrowthComparisonCard(current: report, previous: previousReport!),
+          ),
+        if (previousReport != null) const SizedBox(height: 16),
         AnimatedSlideIn(
           direction: SlideDirection.fromBottom,
           duration: AnimationDurations.medium,
-          delay: const Duration(milliseconds: 400),
+          delay: const Duration(milliseconds: previousReport != null ? 400 : 350),
           child: _ReportRadarCard(report: report),
         ),
         const SizedBox(height: 16),
         AnimatedSlideIn(
           direction: SlideDirection.fromBottom,
           duration: AnimationDurations.medium,
-          delay: const Duration(milliseconds: 500),
+          delay: const Duration(milliseconds: previousReport != null ? 500 : 450),
           child: _VirtueScoreTrends(report: report),
         ),
         const SizedBox(height: 16),
@@ -197,7 +219,7 @@ class _ReportContent extends StatelessWidget {
           AnimatedSlideIn(
             direction: SlideDirection.fromBottom,
             duration: AnimationDurations.medium,
-            delay: const Duration(milliseconds: 600),
+            delay: const Duration(milliseconds: previousReport != null ? 600 : 550),
             child: _ParentMessageCard(message: report.parentMessage!),
           ),
         const SizedBox(height: 32),
@@ -609,6 +631,208 @@ class _ReportRadarCardState extends ConsumerState<_ReportRadarCard>
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Growth comparison between current and previous month
+class _GrowthComparisonCard extends StatefulWidget {
+  final MonthlyReport current;
+  final MonthlyReport previous;
+  const _GrowthComparisonCard({required this.current, required this.previous});
+
+  @override
+  State<_GrowthComparisonCard> createState() => _GrowthComparisonCardState();
+}
+
+class _GrowthComparisonCardState extends State<_GrowthComparisonCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  double _getScoreDiff(String virtue) {
+    final currentScore = _getCurrentScore(virtue);
+    final previousScore = _getPreviousScore(virtue);
+    return currentScore - previousScore;
+  }
+
+  double _getCurrentScore(String virtue) {
+    switch (virtue) {
+      case 'kindness':
+        return widget.current.kindnessScore;
+      case 'honesty':
+        return widget.current.honestyScore;
+      case 'responsibility':
+        return widget.current.responsibilityScore;
+      case 'courage':
+        return widget.current.courageScore;
+      case 'respect':
+        return widget.current.respectScore;
+      case 'cooperation':
+        return widget.current.cooperationScore;
+      default:
+        return 50.0;
+    }
+  }
+
+  double _getPreviousScore(String virtue) {
+    switch (virtue) {
+      case 'kindness':
+        return widget.previous.kindnessScore;
+      case 'honesty':
+        return widget.previous.honestyScore;
+      case 'responsibility':
+        return widget.previous.responsibilityScore;
+      case 'courage':
+        return widget.previous.courageScore;
+      case 'respect':
+        return widget.previous.respectScore;
+      case 'cooperation':
+        return widget.previous.cooperationScore;
+      default:
+        return 50.0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('📈 先月からの成長',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _GrowthIndicator(
+                    label: '学習時間',
+                    current: widget.current.totalStudyMinutes,
+                    previous: widget.previous.totalStudyMinutes,
+                    unit: '分',
+                  ),
+                  _GrowthIndicator(
+                    label: 'ストーリー',
+                    current: widget.current.storiesCompleted,
+                    previous: widget.previous.storiesCompleted,
+                    unit: '個',
+                  ),
+                  _GrowthIndicator(
+                    label: 'ポイント',
+                    current: widget.current.totalPointsEarned,
+                    previous: widget.previous.totalPointsEarned,
+                    unit: 'pt',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GrowthIndicator extends StatelessWidget {
+  final String label;
+  final int current;
+  final int previous;
+  final String unit;
+
+  const _GrowthIndicator({
+    required this.label,
+    required this.current,
+    required this.previous,
+    required this.unit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final diff = current - previous;
+    final isGrowth = diff >= 0;
+
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _textSecondary)),
+        const SizedBox(height: 6),
+        RichText(
+          text: TextSpan(children: [
+            TextSpan(
+              text: '$current',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textPrimary),
+            ),
+            TextSpan(text: unit, style: const TextStyle(fontSize: 12, color: _textSecondary)),
+          ]),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isGrowth ? Icons.trending_up : Icons.trending_down,
+              size: 14,
+              color: isGrowth ? Colors.green : Colors.orange,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${isGrowth ? '+' : ''}$diff',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: isGrowth ? Colors.green : Colors.orange,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
