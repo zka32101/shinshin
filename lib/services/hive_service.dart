@@ -4,6 +4,10 @@ import 'dart:developer' as developer;
 import '../models/story.dart';
 import '../models/progress.dart';
 import '../models/report.dart';
+import '../models/badge.dart';
+import '../models/cached_story.dart';
+import '../models/cached_report.dart';
+import '../models/cached_badge.dart';
 import 'logger_service.dart';
 
 /// Cache TTL configuration (in days)
@@ -11,6 +15,7 @@ class CacheTTL {
   static const int storiesCacheTTLDays = 7;
   static const int reportsCacheTTLDays = 90;
   static const int progressCacheTTLDays = 30;
+  static const int badgesCacheTTLDays = 30;
 }
 
 class HiveService {
@@ -18,6 +23,7 @@ class HiveService {
   static const String progressBox = 'progress';
   static const String userBox = 'user';
   static const String reportsBox = 'reports';
+  static const String badgesBox = 'badges';
   static const String pendingSyncBox = 'pending_sync';
   static const String settingsBox = 'settings';
 
@@ -26,6 +32,7 @@ class HiveService {
   late Box<String> _progressBoxInstance;
   late Box<String> _userBoxInstance;
   late Box<String> _reportsBoxInstance;
+  late Box<String> _badgesBoxInstance;
   late Box<String> _pendingSyncBoxInstance;
   late Box<dynamic> _settingsBoxInstance;
 
@@ -77,6 +84,7 @@ class HiveService {
       _progressBoxInstance = await Hive.openBox<String>(progressBox);
       _userBoxInstance = await Hive.openBox<String>(userBox);
       _reportsBoxInstance = await Hive.openBox<String>(reportsBox);
+      _badgesBoxInstance = await Hive.openBox<String>(badgesBox);
       _pendingSyncBoxInstance = await Hive.openBox<String>(pendingSyncBox);
       _settingsBoxInstance = await Hive.openBox<dynamic>(settingsBox);
 
@@ -401,6 +409,208 @@ class HiveService {
     }
   }
 
+  // ============ バッジキャッシュ ============
+
+  /// 子どものバッジデータをキャッシュ
+  Future<void> cacheBadgeData(String childId, List<EarnedBadge> badges) async {
+    _ensureInitialized();
+    try {
+      final badgeData = CachedBadgeData(
+        id: 'badges_$childId',
+        childId: childId,
+        earned: badges.map((b) => CachedBadge(
+          badgeId: b.badgeId,
+          earnedAt: b.earnedAt,
+        )).toList(),
+        cachedAt: DateTime.now(),
+      );
+      final wrapped = _wrapWithTimestamp(badgeData.toJson());
+      await _badgesBoxInstance.put(childId, jsonEncode(wrapped));
+      _logger.log('Badge data cached for child: $childId (${badges.length} badges)');
+    } catch (e) {
+      _logger.logError('Failed to cache badge data for $childId', error: e);
+      rethrow;
+    }
+  }
+
+  /// 子どものキャッシュされたバッジデータを取得
+  Future<List<CachedBadge>> getCachedBadges(String childId) async {
+    _ensureInitialized();
+    try {
+      final jsonString = _badgesBoxInstance.get(childId);
+      final data = _unwrapIfValid(jsonString, CacheTTL.badgesCacheTTLDays);
+      if (data == null) return [];
+
+      final badgeData = CachedBadgeData.fromJson(data as Map<String, dynamic>);
+      return badgeData.earned;
+    } catch (e) {
+      _logger.logError('Failed to get cached badges for $childId', error: e);
+      return [];
+    }
+  }
+
+  Future<void> clearBadgesCache() async {
+    _ensureInitialized();
+    try {
+      await _badgesBoxInstance.clear();
+      _logger.log('Badges cache cleared');
+    } catch (e) {
+      _logger.logError('Failed to clear badges cache', error: e);
+      rethrow;
+    }
+  }
+
+  // ============ キャッシュ管理 ============
+
+  /// キャッシュサイズ情報を取得（各カテゴリ）
+  Future<Map<String, String>> getCacheSizeInfo() async {
+    _ensureInitialized();
+    try {
+      // 簡易的なサイズ計算（JSON文字列の長さから推定）
+      int storiesSize = 0;
+      int reportsSize = 0;
+      int badgesSize = 0;
+
+      for (final entry in _storiesBoxInstance.values) {
+        storiesSize += entry.length;
+      }
+
+      for (final entry in _reportsBoxInstance.values) {
+        reportsSize += entry.length;
+      }
+
+      for (final entry in _badgesBoxInstance.values) {
+        badgesSize += entry.length;
+      }
+
+      // Bytes から MB に変換
+      final storiesMB = (storiesSize / (1024 * 1024)).toStringAsFixed(2);
+      final reportsMB = (reportsSize / (1024 * 1024)).toStringAsFixed(2);
+      final badgesMB = (badgesSize / (1024 * 1024)).toStringAsFixed(2);
+      final totalMB = ((storiesSize + reportsSize + badgesSize) / (1024 * 1024)).toStringAsFixed(2);
+
+      _logger.log('Cache size: stories=${storiesMB}MB, reports=${reportsMB}MB, badges=${badgesMB}MB, total=${totalMB}MB');
+
+      return {
+        'stories': '${storiesMB} MB',
+        'reports': '${reportsMB} MB',
+        'badges': '${badgesMB} MB',
+        'total': '${totalMB} MB',
+      };
+    } catch (e) {
+      _logger.logError('Failed to get cache size info', error: e);
+      return {'error': 'Unable to calculate cache size'};
+    }
+  }
+
+  /// 指定した期間より古いキャッシュをクリア
+  Future<void> clearCacheByAge(Duration age) async {
+    _ensureInitialized();
+    try {
+      final now = DateTime.now();
+      int storiesCleared = 0;
+      int reportsCleared = 0;
+      int badgesCleared = 0;
+
+      // Stories キャッシュから期限切れを削除
+      final storiesToDelete = <String>[];
+      for (final entry in _storiesBoxInstance.toMap().entries) {
+        try {
+          final data = _unwrapIfValid(entry.value, CacheTTL.storiesCacheTTLDays);
+          if (data == null) {
+            storiesToDelete.add(entry.key);
+          } else {
+            final json = data as Map<String, dynamic>;
+            final story = Story.fromJson(json);
+            if (now.difference(story.updatedAt) > age) {
+              storiesToDelete.add(entry.key);
+            }
+          }
+        } catch (_) {
+          storiesToDelete.add(entry.key);
+        }
+      }
+      for (final key in storiesToDelete) {
+        await _storiesBoxInstance.delete(key);
+        storiesCleared++;
+      }
+
+      // Reports キャッシュから期限切れを削除
+      final reportsToDelete = <String>[];
+      for (final entry in _reportsBoxInstance.toMap().entries) {
+        try {
+          final data = _unwrapIfValid(entry.value, CacheTTL.reportsCacheTTLDays);
+          if (data == null) {
+            reportsToDelete.add(entry.key);
+          } else {
+            final json = data as Map<String, dynamic>;
+            final report = MonthlyReport.fromJson(json);
+            if (now.difference(report.generatedAt) > age) {
+              reportsToDelete.add(entry.key);
+            }
+          }
+        } catch (_) {
+          reportsToDelete.add(entry.key);
+        }
+      }
+      for (final key in reportsToDelete) {
+        await _reportsBoxInstance.delete(key);
+        reportsCleared++;
+      }
+
+      // Badges キャッシュから期限切れを削除
+      final badgesToDelete = <String>[];
+      for (final entry in _badgesBoxInstance.toMap().entries) {
+        try {
+          final data = _unwrapIfValid(entry.value, CacheTTL.badgesCacheTTLDays);
+          if (data == null) {
+            badgesToDelete.add(entry.key);
+          } else {
+            final json = data as Map<String, dynamic>;
+            final badgeData = CachedBadgeData.fromJson(json);
+            if (now.difference(badgeData.cachedAt) > age) {
+              badgesToDelete.add(entry.key);
+            }
+          }
+        } catch (_) {
+          badgesToDelete.add(entry.key);
+        }
+      }
+      for (final key in badgesToDelete) {
+        await _badgesBoxInstance.delete(key);
+        badgesCleared++;
+      }
+
+      _logger.log('Cache cleared: stories=$storiesCleared, reports=$reportsCleared, badges=$badgesCleared');
+    } catch (e) {
+      _logger.logError('Failed to clear cache by age', error: e);
+      rethrow;
+    }
+  }
+
+  /// オフラインモードかどうかを保存
+  Future<void> setOfflineMode(bool isOffline) async {
+    _ensureInitialized();
+    try {
+      await _settingsBoxInstance.put('isOfflineMode', isOffline);
+      _logger.log('Offline mode set to: $isOffline');
+    } catch (e) {
+      _logger.logError('Failed to set offline mode', error: e);
+      rethrow;
+    }
+  }
+
+  /// オフラインモード状態を取得
+  Future<bool> isOfflineModeEnabled() async {
+    _ensureInitialized();
+    try {
+      return _settingsBoxInstance.get('isOfflineMode', defaultValue: false) as bool;
+    } catch (e) {
+      _logger.logError('Failed to get offline mode status', error: e);
+      return false;
+    }
+  }
+
   // ============ 全クリア ============
 
   Future<void> clearAll() async {
@@ -409,6 +619,7 @@ class HiveService {
       if (_progressBoxInstance.isOpen) await _progressBoxInstance.clear();
       if (_reportsBoxInstance.isOpen) await _reportsBoxInstance.clear();
       if (_userBoxInstance.isOpen) await _userBoxInstance.clear();
+      if (_badgesBoxInstance.isOpen) await _badgesBoxInstance.clear();
       if (_pendingSyncBoxInstance.isOpen) await _pendingSyncBoxInstance.clear();
       if (_settingsBoxInstance.isOpen) await _settingsBoxInstance.clear();
 
@@ -417,6 +628,7 @@ class HiveService {
       await Hive.deleteBoxFromDisk(progressBox);
       await Hive.deleteBoxFromDisk(reportsBox);
       await Hive.deleteBoxFromDisk(userBox);
+      await Hive.deleteBoxFromDisk(badgesBox);
       await Hive.deleteBoxFromDisk(pendingSyncBox);
       await Hive.deleteBoxFromDisk(settingsBox);
 
