@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/audio_provider.dart';
@@ -5,6 +6,8 @@ import '../../providers/locale_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/offline_sync_provider.dart';
+import '../../providers/offline_provider.dart';
+import '../../services/hive_service.dart';
 import '../profile/profile_management_screen.dart';
 import '../ranking/ranking_settings_screen.dart';
 import 'help_screen.dart';
@@ -235,6 +238,25 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
+          // ─── キャッシュ管理セクション ───
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'ストレージ',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _CacheSizeWidget(),
+          const Divider(height: 0),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.orange),
+            title: const Text('キャッシュをクリア'),
+            subtitle: const Text('オフラインデータを削除'),
+            onTap: () => _showClearCacheConfirmation(context),
+          ),
+
           // アカウント・その他セクション
           const SizedBox(height: 24),
           const Padding(
@@ -318,6 +340,49 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _showClearCacheConfirmation(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('キャッシュをクリア'),
+        content: const Text('ダウンロード済みのオフラインデータをすべて削除しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                final hive = HiveService();
+                await hive.initialize();
+                await hive.clearStoriesCache();
+                await hive.clearBadgesCache();
+                // Reports キャッシュは保持（参考用）
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('キャッシュをクリアしました')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('エラー: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'クリア',
+              style: TextStyle(color: Colors.orange),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -348,6 +413,73 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// キャッシュサイズ表示ウィジェット
+class _CacheSizeWidget extends ConsumerStatefulWidget {
+  const _CacheSizeWidget();
+
+  @override
+  ConsumerState<_CacheSizeWidget> createState() => _CacheSizeWidgetState();
+}
+
+class _CacheSizeWidgetState extends ConsumerState<_CacheSizeWidget> {
+  late Future<Map<String, String>> _cacheSizeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCacheSize();
+  }
+
+  void _loadCacheSize() {
+    _cacheSizeFuture = () async {
+      final hive = HiveService();
+      await hive.initialize();
+      return hive.getCacheSizeInfo();
+    }();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, String>>(
+      future: _cacheSizeFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ListTile(
+            leading: Icon(Icons.storage),
+            title: Text('キャッシュサイズ'),
+            subtitle: Text('計算中...'),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const ListTile(
+            leading: Icon(Icons.storage),
+            title: Text('キャッシュサイズ'),
+            subtitle: Text('計算できませんでした'),
+          );
+        }
+
+        final cacheInfo = snapshot.data ?? {};
+        final total = cacheInfo['total'] ?? '-';
+
+        return ListTile(
+          leading: const Icon(Icons.storage),
+          title: const Text('キャッシュサイズ'),
+          subtitle: Text(total),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh, size: 20),
+            onPressed: () {
+              setState(() {
+                _loadCacheSize();
+              });
+            },
+          ),
+        );
+      },
     );
   }
 }

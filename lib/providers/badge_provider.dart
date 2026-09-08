@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/badge.dart';
 import '../models/story.dart';
@@ -66,11 +67,14 @@ final _badgeStatsComputationProvider = FutureProvider.autoDispose
 
 /// 子どもが獲得したバッジ一覧プロバイダー
 /// 完了したストーリーとその徳目に基づいてバッジ獲得を計算
+/// オフライン時は Hive キャッシュから取得
 ///
 /// Optimization: Now uses cached computation from _badgeStatsComputationProvider
 /// to avoid duplicate progress/story data fetching
 final earnedBadgesProvider = FutureProvider.autoDispose
     .family<List<EarnedBadge>, String>((ref, childId) async {
+  final hive = ref.read(hiveServiceProvider);
+
   try {
     // Use cached computation result
     final cache = await ref.watch(_badgeStatsComputationProvider(childId).future);
@@ -99,11 +103,21 @@ final earnedBadgesProvider = FutureProvider.autoDispose
     }
 
     // EarnedBadge オブジェクトに変換
-    return earnedBadgeIds
+    final earnedBadges = earnedBadgeIds
         .map((id) => EarnedBadge(badgeId: id, earnedAt: now))
         .toList();
+
+    // キャッシュに保存（バックグラウンド）
+    unawaited(hive.cacheBadgeData(childId, earnedBadges));
+
+    return earnedBadges;
   } catch (_) {
-    return [];
+    // オフライン → キャッシュから取得
+    final cachedBadges = await hive.getCachedBadges(childId);
+    return cachedBadges.map((cb) => EarnedBadge(
+      badgeId: cb.badgeId,
+      earnedAt: cb.earnedAt,
+    )).toList();
   }
 });
 
