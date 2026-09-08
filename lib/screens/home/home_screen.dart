@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
 import '../../widgets/avatar_display_widget.dart';
+import '../../widgets/offline_banner.dart';
 import '../../utils/sound_effects_utils.dart';
 import '../../utils/accessibility_utils.dart';
 import '../../utils/animation_constants.dart';
@@ -44,15 +45,19 @@ class HomeScreen extends ConsumerWidget {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      body: AnimatedFadeInScale(
-        duration: AnimationDurations.medium,
-        beginScale: 0.95,
-        endScale: 1.0,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(
+            child: AnimatedFadeInScale(
+              duration: AnimationDurations.medium,
+              beginScale: 0.95,
+              endScale: 1.0,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
                 // Avatar panel in header
                 AnimatedSlideIn(
                   direction: SlideDirection.fromBottom,
@@ -95,10 +100,13 @@ class HomeScreen extends ConsumerWidget {
                 ),
 
                 const SizedBox(height: 32),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
