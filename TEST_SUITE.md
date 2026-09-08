@@ -286,8 +286,24 @@ flutter test test/performance_test.dart
 
 ## 今後の改善予定
 
-- [ ] E2E テストの充実（Golden テスト）
+- [x] E2E テストの充実（Golden テスト） - Phase 5.5 で実装
 - [ ] Dart 静的解析の厳格化
 - [ ] カバレッジレポートの可視化
 - [ ] パフォーマンス回帰検出の自動化
 - [ ] テストドキュメント生成の自動化
+
+## 📸 Golden テスト (Phase 5.5)
+
+### バッジショーケーススクリーンテスト
+- ✅ `test/screens/badge/badge_showcase_screen_golden_test.dart` (5テスト)
+  - 初期状態、獲得バッジ、混合プログレス、全獲得、スクロール状態
+
+### レポートスクリーンテスト
+- ✅ `test/screens/report_screen_golden_test.dart` (8テスト)
+  - 未生成、標準、低スコア、高スコア、月比較、保護者メッセージ、スクロール、不均衡
+
+### Golden テスト管理
+- ✅ `test/GOLDEN_TEST_GUIDE.md` - Golden テスト実装ガイド
+  - 実行方法、保守フロー、ベストプラクティス、CI/CD 統合
+
+**合計**: 13 Golden テスト、視覚的回帰検出カバレッジ
