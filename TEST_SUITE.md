@@ -50,7 +50,7 @@
 #### スクリーンテスト
 - ✅ `test/screens/home_screen_test.dart` (既存)
 - ✅ `test/screens/library_screen_test.dart` (既存)
-- ✅ `test/screens/report_screen_test.dart` (既存)
+- ✅ `test/screens/report_screen_test.dart` (既存＆Phase 5.4拡張)
 - ✅ `test/screens/splash_screen_test.dart` (既存)
 - ✅ `test/screens/settings_screen_test.dart` (既存)
 - ✅ `test/screens/story_learning_screen_test.dart` (既存)
@@ -58,6 +58,7 @@
 - ✅ `test/screens/growth_screen_test.dart` (既存)
 - ✅ `test/screens/help_screen_test.dart` (既存)
 - ✅ `test/screens/privacy_policy_screen_test.dart` (既存)
+- ✅ `test/screens/badge/badge_showcase_screen_test.dart` (新規 Phase 5.4)
 
 #### 認証スクリーンテスト
 - ✅ `test/screens/auth/login_screen_test.dart` (既存)
@@ -72,6 +73,7 @@
 #### ウィジェットテスト
 - ✅ `test/widgets/animated_option_card_test.dart` (既存)
 - ✅ `test/widgets/animated_progress_bar_test.dart` (既存)
+- ✅ `test/widgets/badge_card_test.dart` (新規 Phase 5.4)
 
 ### 🔗 統合テスト
 
@@ -79,6 +81,10 @@
   - ログイン → 子ども登録 → ホーム画面
 - ✅ `test/integration_tests/firebase_integration_test.dart` (既存)
   - Firebase 認証と Firestore 連携
+- ✅ `test/integration_tests/badge_report_flow_test.dart` (新規 Phase 5.4)
+  - バッジと月次レポート統合フロー
+  - ストーリー完了とバッジ獲得の連動
+  - 月比較でのバッジ進捗表示
 
 ### ⚡ パフォーマンステスト
 
@@ -138,6 +144,56 @@
 ✅ API 呼び出し < 2秒
 ✅ スクリーン遷移スムーズ性（60 FPS）
 ✅ パフォーマンス測定メカニズム
+```
+
+### ウィジェットテスト (`Phase 5.4 追加)
+
+#### バッジショーケーススクリーンテスト (`badge_showcase_screen_test.dart`)
+```
+✅ AppBar タイトル表示
+✅ ローディング表示
+✅ 全体完了率表示
+✅ バッジグリッド表示
+✅ 進捗バー表示
+✅ 獲得/未獲得の視覚的区別
+✅ バッジ絵文字表示
+✅ バッジ名前表示
+✅ 獲得日表示
+✅ スクロール対応（20テスト）
+```
+
+#### バッジカードウィジェットテスト (`badge_card_test.dart`)
+```
+✅ 絵文字表示
+✅ 名前表示
+✅ 説明表示
+✅ 進捗バー（未獲得時）
+✅ 獲得日表示（獲得時）
+✅ パーセンテージ計算検証
+✅ テーマ対応
+✅ レスポンシブレイアウト（15テスト）
+```
+
+#### レポートスクリーン拡張テスト (`report_screen_test.dart` 拡張)
+```
+✅ バッジセクションヘッダー
+✅ 徳目スコアトレンド
+✅ 進捗バーの色分け
+✅ 月比較レーダーチャート
+✅ AI コメント展開/折りたたみ
+✅ スクロール対応（15テスト追加）
+```
+
+#### 統合テスト (`badge_report_flow_test.dart`)
+```
+✅ レポート表示＋バッジ情報
+✅ バッジショーケースの獲得表示
+✅ 徳目スコア更新
+✅ ストーリー完了とバッジ連動
+✅ 月比較でのバッジ変化
+✅ 完了率の更新
+✅ 絵文字の表示確認
+✅ スクロール時の状態保持（10テスト）
 ```
 
 ## テスト実行方法
