@@ -173,10 +173,10 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
   }
 
   void _selectChoice(Story story, StoryChoice choice) {
-    setState(() {
-      _selectedChoice = choice;
-      _currentPhase = AppConstants.phaseBranching;
-    });
+    // 選択肢が既に選択されていれば無視
+    if (_selectedChoice != null) return;
+
+    setState(() => _selectedChoice = choice);
     _animatePageChange();
 
     // 選択肢決定音を再生
@@ -187,6 +187,13 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
       choiceOrder: story.content?.choices.indexOf(choice) ?? -1,
       isRecommended: false,
     );
+
+    // 選択確認アニメーション後に自動的に分岐ストーリーに遷移
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted && _selectedChoice != null) {
+        setState(() => _currentPhase = AppConstants.phaseBranching);
+      }
+    });
   }
 
   /// Move to reflection phase after showing the branching story
@@ -330,6 +337,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
                       isLastReadPage
                   ? _ChoiceView(
                       story: story,
+                      selectedChoice: _selectedChoice,
                       fadeAnim: _fadeAnim,
                       onChoiceSelected: (c) => _selectChoice(story, c),
                     )
@@ -588,6 +596,7 @@ class _NarrativePageView extends StatelessWidget {
 
 class _ChoiceView extends StatelessWidget {
   final Story story;
+  final StoryChoice? selectedChoice;
   final Animation<double> fadeAnim;
   final ValueChanged<StoryChoice> onChoiceSelected;
 
@@ -595,6 +604,7 @@ class _ChoiceView extends StatelessWidget {
     required this.story,
     required this.fadeAnim,
     required this.onChoiceSelected,
+    this.selectedChoice,
   });
 
   @override
@@ -647,14 +657,33 @@ class _ChoiceView extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-            const Text(
-              'どれを選ぶ？',
-              style: TextStyle(
-                fontSize: AppStyles.fontSizeMedium,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+            if (selectedChoice == null)
+              const Text(
+                'どれを選ぶ？',
+                style: TextStyle(
+                  fontSize: AppStyles.fontSizeMedium,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              )
+            else
+              AnimatedSlideIn(
+                direction: SlideDirection.fromBottom,
+                duration: AnimationDurations.medium,
+                delay: Duration(milliseconds: 100),
+                child: Row(
+                  children: [
+                    const Text(
+                      '✅ 選択完了！',
+                      style: TextStyle(
+                        fontSize: AppStyles.fontSizeMedium,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             const SizedBox(height: 12),
 
             // 選択肢
@@ -662,6 +691,8 @@ class _ChoiceView extends StatelessWidget {
               final labels = ['A', 'B', 'C', 'D'];
               final label = e.key < labels.length ? labels[e.key] : '${e.key + 1}';
               final virtueColor = VirtueConstants.getVirtueColor(e.value.value);
+              final isSelected = selectedChoice?.id == e.value.id;
+              final isEnabled = selectedChoice == null;
               return AnimatedSlideIn(
                 direction: SlideDirection.fromBottom,
                 duration: AnimationDurations.medium,
@@ -672,10 +703,11 @@ class _ChoiceView extends StatelessWidget {
                     key: ValueKey(e.value.id),
                     label: label,
                     text: e.value.text,
-                    isSelected: false,
+                    isSelected: isSelected,
                     isCorrect: false,
                     showFeedback: false,
                     customColor: virtueColor,
+                    isEnabled: isEnabled,
                     onTap: () => onChoiceSelected(e.value),
                   ),
                 ),
@@ -921,24 +953,24 @@ class _ReflectionView extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.reflectionBg,
+                    color: virtueColor.withAlpha(15),
                     borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
-                    border: Border.all(color: AppColors.reflectionBorder),
+                    border: Border.all(color: virtueColor.withAlpha(100)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Text('💭',
-                              style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
-                          SizedBox(width: 8),
+                          Text(virtueEmoji,
+                              style: const TextStyle(fontSize: AppStyles.fontSizeTitle)),
+                          const SizedBox(width: 8),
                           Text(
-                            'ふりかえり',
+                            'ふりかえり — ${VirtueConstants.getVirtueLabel(choice.value)}',
                             style: TextStyle(
                               fontSize: AppStyles.fontSizeMedium,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.reflectionText,
+                              color: virtueColor,
                             ),
                           ),
                         ],
@@ -946,10 +978,11 @@ class _ReflectionView extends StatelessWidget {
                       const SizedBox(height: 10),
                       Text(
                         choice.reflection,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: AppStyles.fontSizeMedium,
-                          color: AppColors.reflectionText,
+                          color: virtueColor.withAlpha(220),
                           height: 1.7,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

@@ -72,6 +72,10 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
   Color _getBackgroundColor() {
     final color = widget.customColor ?? Colors.blue;
 
+    if (!widget.isEnabled) {
+      return Colors.grey.shade50;
+    }
+
     if (widget.showFeedback) {
       if (widget.isCorrect) {
         return Colors.green.shade50;
@@ -90,6 +94,10 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
   Color _getBorderColor() {
     final color = widget.customColor ?? Colors.blue;
 
+    if (!widget.isEnabled) {
+      return Colors.grey.shade300;
+    }
+
     if (widget.showFeedback) {
       if (widget.isCorrect) {
         return Colors.green.shade400;
@@ -107,8 +115,10 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
 
   @override
   Widget build(BuildContext context) {
+    final opacity = widget.isEnabled ? _fadeAnimation : AlwaysStoppedAnimation(0.5);
+
     return FadeTransition(
-      opacity: _fadeAnimation,
+      opacity: opacity,
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: GestureDetector(
