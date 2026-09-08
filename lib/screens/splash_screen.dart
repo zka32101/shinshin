@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/story_provider.dart';
 import '../providers/child_provider.dart';
+import '../utils/image_cache_utils.dart';
+import '../utils/performance_utils.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -17,6 +19,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Precache common assets and run startup flow
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    // Precache common UI assets while splash is visible
+    try {
+      if (mounted) {
+        await ImageCacheUtils.precacheCommonAssets(context);
+      }
+    } catch (_) {
+      // Non-blocking, continue with startup
+    }
+
     // スプラッシュを最低 1.5 秒は表示してから起動フロー開始
     Future.delayed(const Duration(milliseconds: 1500), _runStartupFlow);
   }

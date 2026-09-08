@@ -19,6 +19,7 @@ import 'screens/learning/color_learning_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'services/logger_service.dart';
+import 'utils/image_cache_utils.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 
@@ -26,9 +27,15 @@ import 'providers/theme_provider.dart';
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  final stopwatch = Stopwatch()..start();
+
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize image caching early for better performance
+    ImageCacheUtils.configureImageCache();
+    LoggerService().log('Image cache configured');
+
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     ).timeout(
@@ -42,6 +49,7 @@ void main() async {
     );
 
     LoggerService().log('Firebase initialized successfully');
+    LoggerService().log('App initialization time: ${stopwatch.elapsedMilliseconds}ms');
   } catch (e, stackTrace) {
     LoggerService().logError('Firebase initialization error', error: e, stackTrace: stackTrace);
 
