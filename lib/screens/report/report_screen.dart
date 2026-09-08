@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/child_provider.dart';
+import '../../providers/badge_provider.dart';
 import '../../models/report.dart';
+import '../../models/badge.dart';
+import '../../constants/virtue_constants.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 
@@ -271,6 +274,13 @@ class _ReportContent extends StatelessWidget {
           duration: AnimationDurations.medium,
           delay: const Duration(milliseconds: 200),
           child: _SummaryCard(report: report),
+        ),
+        const SizedBox(height: 16),
+        AnimatedSlideIn(
+          direction: SlideDirection.fromBottom,
+          duration: AnimationDurations.medium,
+          delay: const Duration(milliseconds: 250),
+          child: _BadgeSectionForReport(childId: report.childId),
         ),
         const SizedBox(height: 16),
         AnimatedSlideIn(
@@ -718,6 +728,312 @@ class _ReportRadarCardState extends ConsumerState<_ReportRadarCard>
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Badge section for report screen
+class _BadgeSectionForReport extends ConsumerWidget {
+  final String childId;
+  const _BadgeSectionForReport({required this.childId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final earnedBadgesAsync = ref.watch(earnedBadgesProvider(childId));
+    final badgeCompletionRateAsync = ref.watch(badgeCompletionRateProvider(childId));
+    final badgeProgressAsync = ref.watch(badgeProgressProvider(childId));
+
+    return earnedBadgesAsync.when(
+      data: (earnedBadges) => badgeCompletionRateAsync.when(
+        data: (completionRate) => badgeProgressAsync.when(
+          data: (badgeProgress) => _BadgeCard(
+            earnedBadges: earnedBadges,
+            completionRate: completionRate,
+            badgeProgress: badgeProgress,
+          ),
+          loading: () => const _BadgeCardSkeleton(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+        loading: () => const _BadgeCardSkeleton(),
+        error: (_, __) => const SizedBox.shrink(),
+      ),
+      loading: () => const _BadgeCardSkeleton(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Badge display card with progress and earned badges
+class _BadgeCard extends StatefulWidget {
+  final List<EarnedBadge> earnedBadges;
+  final double completionRate;
+  final Map<String, double> badgeProgress;
+
+  const _BadgeCard({
+    required this.earnedBadges,
+    required this.completionRate,
+    required this.badgeProgress,
+  });
+
+  @override
+  State<_BadgeCard> createState() => _BadgeCardState();
+}
+
+class _BadgeCardState extends State<_BadgeCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AnimationDurations.short,
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+      CurvedAnimation(parent: _controller, curve: AnimationCurves.snappyEasing),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final earnedCount = widget.earnedBadges.length;
+    final totalCount = kDoutokuBadges.length;
+
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('🏆 バッジ進捗',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _primaryColor.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$earnedCount/$totalCount',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: _primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: widget.completionRate,
+                  minHeight: 8,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    widget.completionRate < 0.3
+                        ? Colors.orange
+                        : widget.completionRate < 0.7
+                            ? _primaryColor
+                            : Colors.green,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Earned badges display
+              if (widget.earnedBadges.isNotEmpty) ...[
+                const Text(
+                  '獲得済みバッジ',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _textSecondary),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: widget.earnedBadges.take(6).map((badge) {
+                    final definition = findBadge(badge.badgeId);
+                    return definition != null
+                        ? Tooltip(
+                            message: definition.name,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withAlpha(20),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.amber.withAlpha(100)),
+                              ),
+                              child: Text(
+                                definition.emoji,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink();
+                  }).toList(),
+                ),
+                if (widget.earnedBadges.length > 6) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '+${widget.earnedBadges.length - 6} more',
+                    style: const TextStyle(fontSize: 11, color: _textSecondary),
+                  ),
+                ],
+              ] else
+                const Text(
+                  'まだバッジを獲得していません',
+                  style: TextStyle(fontSize: 12, color: _textSecondary),
+                ),
+              const SizedBox(height: 12),
+              // Next badge hint
+              _NextBadgeHint(badgeProgress: widget.badgeProgress),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton loader for badge card
+class _BadgeCardSkeleton extends StatelessWidget {
+  const _BadgeCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 20,
+            width: 100,
+            color: Colors.grey.shade200,
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 8,
+            color: Colors.grey.shade200,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Next badge hint widget
+class _NextBadgeHint extends StatelessWidget {
+  final Map<String, double> badgeProgress;
+
+  const _NextBadgeHint({required this.badgeProgress});
+
+  @override
+  Widget build(BuildContext context) {
+    // Find the badge closest to completion that hasn't been earned yet
+    String? nextBadgeId;
+    double maxProgress = 0;
+
+    for (final entry in badgeProgress.entries) {
+      if (entry.value < 1.0 && entry.value > maxProgress) {
+        nextBadgeId = entry.key;
+        maxProgress = entry.value;
+      }
+    }
+
+    if (nextBadgeId == null) {
+      return const Text(
+        'すべてのバッジを獲得しました！',
+        style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600),
+      );
+    }
+
+    final badge = findBadge(nextBadgeId);
+    if (badge == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '次のバッジ',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _textSecondary),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Text(badge.emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    badge.name,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _textPrimary),
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: maxProgress,
+                      minHeight: 4,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(_primaryColor.withAlpha(150)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${(maxProgress * 100).toInt()}%',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _primaryColor),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
