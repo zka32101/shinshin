@@ -7,6 +7,7 @@ import '../../providers/badge_provider.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
 import '../../constants/app_constants.dart';
+import '../../constants/virtue_constants.dart';
 import '../../widgets/common_states.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
@@ -666,34 +667,9 @@ class _VirtueScoresSection extends ConsumerWidget {
     return progress.when(
       data: (progressList) {
         // 徳目別に完了数をカウント
-        final virtueColors = {
-          'kindness': Colors.pink,
-          'honesty': Colors.blue,
-          'courage': Colors.red,
-          'respect': Colors.green,
-          'cooperation': Colors.orange,
-          'responsibility': Colors.purple,
-        };
-
-        final virtueLabels = {
-          'kindness': '思いやり',
-          'honesty': '正直',
-          'courage': '勇気',
-          'respect': '礼儀',
-          'cooperation': '協力',
-          'responsibility': '責任',
-        };
-
-        final virtueEmojis = {
-          'kindness': '💜',
-          'honesty': '💛',
-          'courage': '❤️',
-          'respect': '💚',
-          'cooperation': '🧡',
-          'responsibility': '💙',
-        };
-
-        final virtueEntries = virtueColors.entries.toList();
+        final virtueEntries = VirtueConstants.themes
+            .map((theme) => MapEntry(theme, VirtueConstants.getVirtueColor(theme)))
+            .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,7 +708,7 @@ class _VirtueScoresSection extends ConsumerWidget {
                     child: Row(
                       children: [
                         Text(
-                          virtueEmojis[virtue] ?? '⭐',
+                          VirtueConstants.getVirtueEmoji(virtue),
                           style: const TextStyle(fontSize: 20),
                         ),
                         const SizedBox(width: 12),
@@ -741,7 +717,7 @@ class _VirtueScoresSection extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                virtueLabels[virtue] ?? virtue,
+                                VirtueConstants.getVirtueLabel(virtue),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
