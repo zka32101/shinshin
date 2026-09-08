@@ -59,6 +59,65 @@ flutter run
 
 詳細は [docs/firebase-setup.md](docs/firebase-setup.md) をご参照ください。
 
+### APK/AAB ビルド（ローカル必須）
+
+**⚠️ 重要**: GitHub Actions ubuntu-latest runner のメモリ制約により、CI での APK/AAB ビルドは不可能です。以下の手順でローカル環境で生成してください。
+
+#### Android APK リリースビルド
+
+```bash
+# 前提: Keystore ファイルを準備（lib/config/release-keystore.jks）
+export KEYSTORE_PATH="path/to/release-keystore.jks"
+export KEYSTORE_PASSWORD="your-keystore-password"
+export KEYSTORE_ALIAS="your-key-alias"
+export KEYSTORE_KEY_PASSWORD="your-key-password"
+
+# APK 生成
+flutter build apk --release
+
+# 出力場所
+# → build/app/outputs/apk/release/app-release.apk
+```
+
+#### Android AAB (App Bundle) リリースビルド
+
+```bash
+# AAB 生成（Google Play Console アップロード用）
+flutter build appbundle --release
+
+# 出力場所
+# → build/app/outputs/bundle/release/app-release.aab
+```
+
+#### iOS ビルド
+
+```bash
+# iOS リリースビルド
+flutter build ios --release
+
+# CocoaPods 経由のビルド
+cd ios
+xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release
+```
+
+#### ビルド前の確認事項
+
+- ✅ `android/gradle.properties` に署名情報が設定済み
+- ✅ `android/app/build.gradle.kts` でリリース署名が有効化
+- ✅ Firebase `google-services.json` が配置済み
+- ✅ 環境変数が設定済み（APK の場合）
+
+#### GitHub Actions での検証
+
+CI は軽量なコード品質チェックのみを実行します（ビルドは除外）：
+
+```bash
+# GitHub Actions で実行される内容
+flutter analyze          # 静的解析
+dart format --check lib/ # コード形式チェック
+flutter test            # ユニットテスト
+```
+
 ### サブスクリプション・トライアルセットアップ
 
 In-App Purchase 統合、2週間無料トライアル、課金機能の実装手順：
