@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/story.dart';
+import '../../models/badge.dart';
+import '../../providers/badge_provider.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 
@@ -267,6 +271,11 @@ class _StoryResultScreenState extends ConsumerState<StoryResultScreen>
                       ),
                     ),
 
+                    const SizedBox(height: 32),
+
+                    // バッジセクション
+                    _BadgeSection(childId: widget.childId),
+
                     const Spacer(),
 
                     // アクションボタン
@@ -497,6 +506,139 @@ class _ResultOutlinedButtonState extends State<_ResultOutlinedButton>
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── バッジセクション ──────────────────────────────
+
+/// バッジ獲得状況を表示するセクション
+class _BadgeSection extends ConsumerWidget {
+  final String childId;
+
+  const _BadgeSection({required this.childId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final earnedBadgesAsync = ref.watch(earnedBadgesProvider(childId));
+    final totalCountAsync = ref.watch(totalEarnedBadgesCountProvider(childId));
+    final totalAvailable = ref.watch(totalAvailableBadgesCountProvider);
+
+    return earnedBadgesAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (earnedBadges) => totalCountAsync.when(
+        loading: () => const SizedBox.shrink(),
+        error: (_, __) => const SizedBox.shrink(),
+        data: (earnedCount) => AnimatedSlideIn(
+          direction: SlideDirection.fromBottom,
+          duration: AnimationDurations.medium,
+          delay: const Duration(milliseconds: 500),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primary.withAlpha(50),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        '🏆 バッジ進捗',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$earnedCount/$totalAvailable',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // プログレスバー
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      minHeight: 6,
+                      value: totalAvailable > 0
+                          ? (earnedCount / totalAvailable).clamp(0, 1).toDouble()
+                          : 0,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                    ),
+                  ),
+                  if (earnedBadges.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...earnedBadges.take(3).map((badge) {
+                          final def = findBadge(badge.badgeId);
+                          return Tooltip(
+                            message: def?.name ?? 'Badge',
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(20),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.primary.withAlpha(100),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  def?.emoji ?? '🏆',
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        if (earnedBadges.length > 3)
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '+${earnedBadges.length - 3}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
