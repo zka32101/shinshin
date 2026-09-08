@@ -8,6 +8,7 @@ class AnimatedOptionCard extends StatefulWidget {
   final bool showFeedback;
   final VoidCallback onTap;
   final bool isEnabled;
+  final Color? customColor;
 
   const AnimatedOptionCard({
     super.key,
@@ -18,6 +19,7 @@ class AnimatedOptionCard extends StatefulWidget {
     required this.showFeedback,
     required this.onTap,
     this.isEnabled = true,
+    this.customColor,
   });
 
   @override
@@ -68,6 +70,8 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
   }
 
   Color _getBackgroundColor() {
+    final color = widget.customColor ?? Colors.blue;
+
     if (widget.showFeedback) {
       if (widget.isCorrect) {
         return Colors.green.shade50;
@@ -77,13 +81,15 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
     }
 
     if (widget.isSelected) {
-      return Colors.blue.shade50;
+      return color.withAlpha(30);
     }
 
     return Colors.white;
   }
 
   Color _getBorderColor() {
+    final color = widget.customColor ?? Colors.blue;
+
     if (widget.showFeedback) {
       if (widget.isCorrect) {
         return Colors.green.shade400;
@@ -93,7 +99,7 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
     }
 
     if (widget.isSelected) {
-      return Colors.blue.shade400;
+      return color.withAlpha(200);
     }
 
     return Colors.grey.shade300;
@@ -124,7 +130,7 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade400,
+                    color: widget.customColor ?? Colors.blue.shade400,
                     shape: BoxShape.circle,
                   ),
                   child: Center(

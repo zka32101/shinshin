@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'app_colors.dart';
+
 /// 徳目（virtue）定義と関連データの定数
 class VirtueConstants {
   // 徳目の種類
@@ -28,6 +31,25 @@ class VirtueConstants {
     cooperation: '協力',
   };
 
+  /// 徳目の色マッピング — テーマカラー統一
+  static const Map<String, Color> virtueColorMap = {
+    kindness: AppColors.virtueKindness,
+    honesty: AppColors.virtueHonesty,
+    courage: AppColors.virtueCourage,
+    respect: AppColors.virtueRespect,
+    cooperation: AppColors.virtueCooperation,
+    responsibility: AppColors.virtueResponsibility,
+  };
+
+  static const List<String> themes = [
+    kindness,
+    honesty,
+    responsibility,
+    courage,
+    respect,
+    cooperation,
+  ];
+
   /// 徳目のemoji を取得（デフォルト⭐）
   static String getVirtueEmoji(String? value) {
     return virtueEmojiMap[value] ?? '⭐';
@@ -36,5 +58,10 @@ class VirtueConstants {
   /// 徳目の日本語ラベルを取得
   static String getVirtueLabel(String? value) {
     return virtueLabelMap[value] ?? value ?? '不明';
+  }
+
+  /// 徳目の色を取得（デフォルト primary）
+  static Color getVirtueColor(String? value) {
+    return virtueColorMap[value] ?? AppColors.primary;
   }
 }

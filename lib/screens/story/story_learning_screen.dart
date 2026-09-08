@@ -661,6 +661,7 @@ class _ChoiceView extends StatelessWidget {
             ...?story.content?.choices.asMap().entries.map((e) {
               final labels = ['A', 'B', 'C', 'D'];
               final label = e.key < labels.length ? labels[e.key] : '${e.key + 1}';
+              final virtueColor = VirtueConstants.getVirtueColor(e.value.value);
               return AnimatedSlideIn(
                 direction: SlideDirection.fromBottom,
                 duration: AnimationDurations.medium,
@@ -674,6 +675,7 @@ class _ChoiceView extends StatelessWidget {
                     isSelected: false,
                     isCorrect: false,
                     showFeedback: false,
+                    customColor: virtueColor,
                     onTap: () => onChoiceSelected(e.value),
                   ),
                 ),
@@ -705,6 +707,8 @@ class _BranchingStoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final virtueColor = VirtueConstants.getVirtueColor(choice.value);
+
     return FadeTransition(
       opacity: fadeAnim,
       child: SlideTransition(
@@ -723,12 +727,10 @@ class _BranchingStoryView extends StatelessWidget {
                   padding: const EdgeInsets.all(14),
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: AppColors.primary
-                        .withAlpha(AppConstants.alphaVeryLight),
+                    color: virtueColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
                     border: Border.all(
-                        color: AppColors.primary
-                            .withAlpha(AppConstants.alphaDark)),
+                        color: virtueColor.withAlpha(AppConstants.alphaDark)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,10 +746,10 @@ class _BranchingStoryView extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         choice.text,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: AppStyles.fontSizeMedium,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                          color: virtueColor,
                         ),
                       ),
                     ],
@@ -766,29 +768,27 @@ class _BranchingStoryView extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary
-                            .withAlpha(AppConstants.alphaLight),
-                        AppColors.primary
-                            .withAlpha(AppConstants.alphaVeryLight)
+                        virtueColor.withAlpha(AppConstants.alphaLight),
+                        virtueColor.withAlpha(AppConstants.alphaVeryLight)
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
                     borderRadius: BorderRadius.circular(AppStyles.radiusSmall),
                     border: Border.all(
-                        color: AppColors.primary
+                        color: virtueColor
                             .withAlpha(AppConstants.alphaMedium)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('📖', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
-                      SizedBox(width: 8),
+                      const Text('📖', style: TextStyle(fontSize: AppStyles.fontSizeTitle)),
+                      const SizedBox(width: 8),
                       Text(
                         'その後のおはなし',
                         style: TextStyle(
                           fontSize: AppStyles.fontSizeBase,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                          color: virtueColor,
                         ),
                       ),
                     ],
@@ -853,6 +853,7 @@ class _ReflectionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final virtueEmoji = VirtueConstants.getVirtueEmoji(choice.value);
+    final virtueColor = VirtueConstants.getVirtueColor(choice.value);
 
     return FadeTransition(
       opacity: fadeAnim,
@@ -892,20 +893,19 @@ class _ReflectionView extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.primary
-                        .withAlpha(AppConstants.alphaVeryLight),
+                    color: virtueColor.withAlpha(AppConstants.alphaVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppStyles.radiusMedium),
                     border: Border.all(
-                        color: AppColors.primary
+                        color: virtueColor
                             .withAlpha(AppConstants.alphaDark)),
                   ),
                   child: Text(
                     choice.text,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: AppStyles.fontSizeTitle,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: virtueColor,
                     ),
                   ),
                 ),
