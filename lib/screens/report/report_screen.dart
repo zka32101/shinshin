@@ -186,11 +186,18 @@ class _ReportContent extends StatelessWidget {
           child: _ReportRadarCard(report: report),
         ),
         const SizedBox(height: 16),
+        AnimatedSlideIn(
+          direction: SlideDirection.fromBottom,
+          duration: AnimationDurations.medium,
+          delay: const Duration(milliseconds: 500),
+          child: _VirtueScoreTrends(report: report),
+        ),
+        const SizedBox(height: 16),
         if (report.parentMessage != null)
           AnimatedSlideIn(
             direction: SlideDirection.fromBottom,
             duration: AnimationDurations.medium,
-            delay: const Duration(milliseconds: 500),
+            delay: const Duration(milliseconds: 600),
             child: _ParentMessageCard(message: report.parentMessage!),
           ),
         const SizedBox(height: 32),
@@ -324,6 +331,9 @@ class _AICommentCardState extends State<_AICommentCard>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
+  bool _expandedHighlight = false;
+  bool _expandedGrowth = false;
+  bool _expandedAdvice = false;
 
   @override
   void initState() {
@@ -381,19 +391,89 @@ class _AICommentCardState extends State<_AICommentCard>
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
               const SizedBox(height: 12),
               if (widget.report.highlightComment != null)
-                _CommentBlock(emoji: '🌟', label: '今月のハイライト', text: widget.report.highlightComment!),
+                _ExpandableCommentBlock(
+                  emoji: '🌟',
+                  label: '今月のハイライト',
+                  text: widget.report.highlightComment!,
+                  isExpanded: _expandedHighlight,
+                  onToggle: () => setState(() => _expandedHighlight = !_expandedHighlight),
+                ),
               if (widget.report.growthComment != null) ...[
                 const SizedBox(height: 10),
-                _CommentBlock(emoji: '📈', label: '成長ポイント', text: widget.report.growthComment!),
+                _ExpandableCommentBlock(
+                  emoji: '📈',
+                  label: '成長ポイント',
+                  text: widget.report.growthComment!,
+                  isExpanded: _expandedGrowth,
+                  onToggle: () => setState(() => _expandedGrowth = !_expandedGrowth),
+                ),
               ],
               if (widget.report.adviceComment != null) ...[
                 const SizedBox(height: 10),
-                _CommentBlock(emoji: '💡', label: '来月へのアドバイス', text: widget.report.adviceComment!),
+                _ExpandableCommentBlock(
+                  emoji: '💡',
+                  label: '来月へのアドバイス',
+                  text: widget.report.adviceComment!,
+                  isExpanded: _expandedAdvice,
+                  onToggle: () => setState(() => _expandedAdvice = !_expandedAdvice),
+                ),
               ],
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ExpandableCommentBlock extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final String text;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _ExpandableCommentBlock({
+    required this.emoji,
+    required this.label,
+    required this.text,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: onToggle,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(children: [
+                Text(emoji),
+                const SizedBox(width: 6),
+                Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _primaryColor)),
+              ]),
+              Icon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                size: 20,
+                color: _textSecondary,
+              ),
+            ],
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(left: 20, top: 8),
+            child: Text(text, style: const TextStyle(fontSize: 14, color: _textPrimary, height: 1.5)),
+          ),
+          crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 300),
+        ),
+      ],
     );
   }
 }
@@ -424,15 +504,15 @@ class _CommentBlock extends StatelessWidget {
   }
 }
 
-class _ReportRadarCard extends StatefulWidget {
+class _ReportRadarCard extends ConsumerStatefulWidget {
   final MonthlyReport report;
   const _ReportRadarCard({required this.report});
 
   @override
-  State<_ReportRadarCard> createState() => _ReportRadarCardState();
+  ConsumerState<_ReportRadarCard> createState() => _ReportRadarCardState();
 }
 
-class _ReportRadarCardState extends State<_ReportRadarCard>
+class _ReportRadarCardState extends ConsumerState<_ReportRadarCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -529,6 +609,100 @@ class _ReportRadarCardState extends State<_ReportRadarCard>
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Virtue score trends display
+class _VirtueScoreTrends extends ConsumerWidget {
+  final MonthlyReport report;
+  const _VirtueScoreTrends({required this.report});
+
+  double _getVirtueScore(String virtue) {
+    switch (virtue) {
+      case 'kindness':
+        return report.kindnessScore;
+      case 'honesty':
+        return report.honestyScore;
+      case 'responsibility':
+        return report.responsibilityScore;
+      case 'courage':
+        return report.courageScore;
+      case 'respect':
+        return report.respectScore;
+      case 'cooperation':
+        return report.cooperationScore;
+      default:
+        return 50.0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('📊 徳目スコア詳細',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
+          const SizedBox(height: 16),
+          ...[
+            ('思いやり', 'kindness'),
+            ('正直さ', 'honesty'),
+            ('責任感', 'responsibility'),
+            ('勇気', 'courage'),
+            ('礼儀', 'respect'),
+            ('協調性', 'cooperation'),
+          ].map((virtue) {
+            final score = _getVirtueScore(virtue.$2);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _ScoreBar(label: virtue.$1, score: score.toInt()),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Individual score bar with progress indicator
+class _ScoreBar extends StatelessWidget {
+  final String label;
+  final int score;
+  const _ScoreBar({required this.label, required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textPrimary)),
+            Text('$score/100', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _primaryColor)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: score / 100.0,
+            minHeight: 6,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              score < 40 ? Colors.red : score < 60 ? Colors.orange : Colors.green,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -677,12 +677,44 @@ class ApiService {
     throw UnimplementedError('fetchStoryDetail: Endpoint not yet implemented');
   }
 
-  Future<MonthlyReport> fetchMonthlyReport({
+  Future<MonthlyReport?> fetchMonthlyReport({
     required String childId,
     required int year,
     required int month,
   }) async {
-    throw UnimplementedError('fetchMonthlyReport: Endpoint not yet implemented');
+    try {
+      _validateParam(childId, 'childId');
+
+      final response = await _retryRequest(
+        () => _dio.get('/reports/$childId/$year/$month'),
+      );
+
+      // No content - report not yet generated
+      if (response.statusCode == 204) {
+        _logger.log('No report found for $childId: $year-$month');
+        return null;
+      }
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for monthly report');
+      }
+
+      _logger.log('Monthly report fetched for $childId: $year-$month');
+      return MonthlyReport.fromJson(response.data as Map<String, dynamic>);
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        _logger.log('Report not found for $childId: $year-$month');
+        return null;
+      }
+      _logger.logError('Failed to fetch monthly report for $childId', error: e);
+      throw ApiException(
+        'Failed to fetch monthly report: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
   }
 
   Future<MonthlyReport> generateMonthlyReport({
@@ -690,7 +722,35 @@ class ApiService {
     required int year,
     required int month,
   }) async {
-    throw UnimplementedError('generateMonthlyReport: Endpoint not yet implemented');
+    try {
+      _validateParam(childId, 'childId');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/reports/$childId/$year/$month/generate',
+          data: {
+            'year': year,
+            'month': month,
+          },
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for generated report');
+      }
+
+      _logger.log('Monthly report generated for $childId: $year-$month');
+      return MonthlyReport.fromJson(response.data as Map<String, dynamic>);
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to generate monthly report for $childId', error: e);
+      throw ApiException(
+        'Failed to generate monthly report: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
   }
 
   Future<void> clearAuthToken() async {
