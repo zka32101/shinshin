@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/child_profile.dart';
 import '../../providers/child_provider.dart';
+import '../../constants/virtue_constants.dart';
+import '../../constants/app_colors.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 import 'profile_edit_screen.dart';
@@ -211,60 +213,84 @@ class _ProfileCardState extends State<ProfileCard>
         onTapCancel: _onTapCancel,
         child: Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.blue.shade100,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  widget.profile.avatarEmoji,
-                  style: const TextStyle(fontSize: 28),
-                ),
-              ),
-            ),
-            title: Text(
-              widget.profile.name,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              widget.profile.gradeDisplayName,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            trailing: PopupMenuButton(
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  onTap: widget.onEdit,
-                  child: const Row(
-                    children: [
-                      Icon(Icons.edit, size: 20),
-                      SizedBox(width: 8),
-                      Text('編集'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  onTap: widget.onDelete,
-                  child: const Row(
-                    children: [
-                      Icon(Icons.delete, size: 20, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text(
-                        '削除',
-                        style: TextStyle(color: Colors.red),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // プロフィールヘッダー
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        shape: BoxShape.circle,
                       ),
-                    ],
-                  ),
+                      child: Center(
+                        child: Text(
+                          widget.profile.avatarEmoji,
+                          style: const TextStyle(fontSize: 28),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.profile.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.profile.gradeDisplayName,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          onTap: widget.onEdit,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.edit, size: 20),
+                              SizedBox(width: 8),
+                              Text('編集'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          onTap: widget.onDelete,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.delete, size: 20, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                '削除',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 12),
+
+                // 徳目スコアバー
+                _VirtueScoresBar(profile: widget.profile),
               ],
             ),
           ),
@@ -364,6 +390,85 @@ class _AddProfileButtonState extends State<_AddProfileButton>
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── 徳目スコアバー ──────────────────────────────
+
+/// ProfileCard に表示する徳目スコアのミニバー
+class _VirtueScoresBar extends StatelessWidget {
+  final ChildProfile profile;
+
+  const _VirtueScoresBar({required this.profile});
+
+  double _getVirtueScore(String virtue) {
+    switch (virtue) {
+      case 'kindness':
+        return profile.kindnessScore;
+      case 'honesty':
+        return profile.honestyScore;
+      case 'courage':
+        return profile.courageScore;
+      case 'respect':
+        return profile.respectScore;
+      case 'cooperation':
+        return profile.cooperationScore;
+      case 'responsibility':
+        return profile.responsibilityScore;
+      default:
+        return 50.0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '徳目スコア',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: VirtueConstants.themes.map((virtue) {
+            final score = _getVirtueScore(virtue);
+            final color = VirtueConstants.getVirtueColor(virtue);
+            final emoji = VirtueConstants.getVirtueEmoji(virtue);
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withAlpha(20),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: color.withAlpha(100)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(emoji, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${score.toInt()}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
