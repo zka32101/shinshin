@@ -302,7 +302,10 @@ class _ReportContent extends StatelessWidget {
           direction: SlideDirection.fromBottom,
           duration: AnimationDurations.medium,
           delay: const Duration(milliseconds: previousReport != null ? 400 : 350),
-          child: _ReportRadarCard(report: report),
+          child: _ReportRadarCard(
+            report: report,
+            previousReport: previousReport,
+          ),
         ),
         const SizedBox(height: 16),
         AnimatedSlideIn(
@@ -625,7 +628,8 @@ class _CommentBlock extends StatelessWidget {
 
 class _ReportRadarCard extends ConsumerStatefulWidget {
   final MonthlyReport report;
-  const _ReportRadarCard({required this.report});
+  final MonthlyReport? previousReport;
+  const _ReportRadarCard({required this.report, this.previousReport});
 
   @override
   ConsumerState<_ReportRadarCard> createState() => _ReportRadarCardState();
@@ -689,8 +693,39 @@ class _ReportRadarCardState extends ConsumerState<_ReportRadarCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('🌈 徳目バランス',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('🌈 徳目バランス',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _textPrimary)),
+                  if (widget.previousReport != null)
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: _primaryColor.withAlpha(50),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text('今月', style: TextStyle(fontSize: 10, color: _textSecondary)),
+                        const SizedBox(width: 12),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withAlpha(50),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text('先月', style: TextStyle(fontSize: 10, color: _textSecondary)),
+                      ],
+                    ),
+                ],
+              ),
               const SizedBox(height: 16),
               SizedBox(
                 height: 240,
@@ -711,6 +746,21 @@ class _ReportRadarCardState extends ConsumerState<_ReportRadarCard>
                           RadarEntry(value: widget.report.cooperationScore),
                         ],
                       ),
+                      if (widget.previousReport != null)
+                        RadarDataSet(
+                          fillColor: Colors.grey.withAlpha(30),
+                          borderColor: Colors.grey.withAlpha(200),
+                          borderWidth: 2,
+                          entryRadius: 3,
+                          dataEntries: [
+                            RadarEntry(value: widget.previousReport!.kindnessScore),
+                            RadarEntry(value: widget.previousReport!.honestyScore),
+                            RadarEntry(value: widget.previousReport!.responsibilityScore),
+                            RadarEntry(value: widget.previousReport!.courageScore),
+                            RadarEntry(value: widget.previousReport!.respectScore),
+                            RadarEntry(value: widget.previousReport!.cooperationScore),
+                          ],
+                        ),
                     ],
                     // radarMaxValue removed (not in fl_chart 0.68.0)
                     tickCount: 4,
