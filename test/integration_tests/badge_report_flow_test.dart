@@ -10,6 +10,8 @@ import '../helpers/child_id_override.dart';
 import 'package:shougaku_kore_doutoku/providers/report_provider.dart';
 import 'package:shougaku_kore_doutoku/screens/badge/badge_showcase_screen.dart';
 import 'package:shougaku_kore_doutoku/screens/report/report_screen.dart';
+import '../helpers/fake_hive_service.dart';
+import 'package:shougaku_kore_doutoku/providers/story_provider.dart';
 
 // ─── Test Fixtures ──────────────────────────────────────────────────────────
 
@@ -66,6 +68,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               selectedChildProvider
                   .overrideWith((ref) => Future.value(_testChild)),
               monthlyReportProvider
@@ -109,6 +112,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               childIdOverride('child-badge-flow'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value(earnedBadges);
@@ -145,6 +149,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               selectedChildProvider
                   .overrideWith((ref) => Future.value(_testChild)),
               monthlyReportProvider
@@ -177,6 +182,7 @@ void main() {
           await tester.pumpWidget(
             ProviderScope(
               overrides: [
+                hiveServiceProvider.overrideWithValue(FakeHiveService()),
                 childIdOverride('child-badge-flow'),
                 badgeProgressProvider.overrideWith((ref, _) {
                   return Future.value(badgeProgress);
@@ -243,6 +249,7 @@ void main() {
           await tester.pumpWidget(
             ProviderScope(
               overrides: [
+                hiveServiceProvider.overrideWithValue(FakeHiveService()),
                 childIdOverride('child-badge-flow'),
                 earnedBadgesProvider.overrideWith((ref, _) {
                   return Future.value(earnedBadges);
@@ -271,6 +278,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               childIdOverride('child-badge-flow'),
               earnedBadgesProvider
                   .overrideWith((ref, _) => Future.value([])),
@@ -303,6 +311,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               childIdOverride('child-badge-flow'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value(earnedBadges);
@@ -327,6 +336,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              hiveServiceProvider.overrideWithValue(FakeHiveService()),
               childIdOverride('child-badge-flow'),
               earnedBadgesProvider
                   .overrideWith((ref, _) => Future.value([])),

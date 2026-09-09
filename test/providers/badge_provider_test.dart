@@ -8,13 +8,18 @@ import 'package:shougaku_kore_doutoku/models/story.dart';
 import 'package:shougaku_kore_doutoku/providers/badge_provider.dart';
 import 'package:shougaku_kore_doutoku/providers/progress_provider.dart';
 import 'package:shougaku_kore_doutoku/providers/story_provider.dart';
+import '../helpers/fake_hive_service.dart';
 
 void main() {
   group('Badge Provider Tests', () {
     late ProviderContainer container;
 
     setUp(() {
-      container = ProviderContainer();
+      container = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(FakeHiveService()),
+        ],
+      );
     });
 
     test('earnedBadgesProvider returns empty list when no stories completed', () async {

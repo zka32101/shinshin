@@ -7,6 +7,8 @@ import 'package:shougaku_kore_doutoku/models/report.dart';
 import 'package:shougaku_kore_doutoku/providers/child_provider.dart';
 import 'package:shougaku_kore_doutoku/providers/report_provider.dart';
 import 'package:shougaku_kore_doutoku/screens/report/report_screen.dart';
+import '../helpers/fake_hive_service.dart';
+import 'package:shougaku_kore_doutoku/providers/story_provider.dart';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -60,6 +62,7 @@ Widget _wrap({
 }) {
   return ProviderScope(
     overrides: [
+      hiveServiceProvider.overrideWithValue(FakeHiveService()),
       selectedChildProvider.overrideWith((ref) => Future.value(child)),
       monthlyReportProvider.overrideWith((ref, param) {
         if (reportNull) return Future.value(null);
@@ -79,6 +82,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            hiveServiceProvider.overrideWithValue(FakeHiveService()),
             selectedChildProvider.overrideWith((ref) => completer.future),
             monthlyReportProvider.overrideWith(
                 (ref, _) => Future.value(null)),
