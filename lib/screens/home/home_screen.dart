@@ -19,6 +19,7 @@ import '../learning/physical_education_screen.dart';
 import '../learning/color_learning_screen.dart';
 import '../badge/badge_showcase_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../lesson/lesson_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -27,6 +28,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final menuItems = [
       (icon: '📖', title: 'ストーリー', subtitle: '道徳の学習', screen: const LibraryScreen()),
+      (icon: '📘', title: '学ぶ', subtitle: '道徳の解説記事', screen: const LessonScreen()),
       (icon: '🏆', title: 'ランキング', subtitle: '成績を確認', screen: const RankingScreen()),
       (icon: '📈', title: 'ダッシュボード', subtitle: '学習統計', screen: const DashboardScreen()),
       (icon: '🎖️', title: 'バッジ図鑑', subtitle: 'バッジを集める', screen: const BadgeShowcaseScreen()),
