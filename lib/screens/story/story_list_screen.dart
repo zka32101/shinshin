@@ -63,7 +63,7 @@ class _StoryListScreenState extends ConsumerState<StoryListScreen> {
                   Expanded(
                     child: _StoryListContent(
                       childId: childData.id,
-                      gradeLevel: childData.gradeLevel,
+                      gradeLevel: childData.grade,
                       selectedTheme: _selectedTheme,
                       selectedDifficulty: _selectedDifficulty,
                     ),
@@ -457,7 +457,7 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'エラーが発生しました',
-            style: AppStyles.headlineSmall,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(

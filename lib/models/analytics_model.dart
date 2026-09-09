@@ -4,7 +4,7 @@ part 'analytics_model.freezed.dart';
 part 'analytics_model.g.dart';
 
 @freezed
-class DailyStats with _$DailyStats {
+abstract class DailyStats with _$DailyStats {
   const DailyStats._();
 
   const factory DailyStats({
@@ -22,7 +22,7 @@ class DailyStats with _$DailyStats {
 }
 
 @freezed
-class MonthlyStats with _$MonthlyStats {
+abstract class MonthlyStats with _$MonthlyStats {
   const MonthlyStats._();
 
   const factory MonthlyStats({

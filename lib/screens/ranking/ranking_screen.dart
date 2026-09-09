@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_core/shared_core.dart'
-    show globalRankingProvider, GlobalRankingEntry, missionProvider;
 import '../../models/ranking.dart';
 import '../../services/ranking_service.dart';
 import '../../providers/ranking_provider.dart';
@@ -64,7 +62,7 @@ class _GlobalRankingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final globalRanking = ref.watch(globalRankingProvider);
+    final globalRanking = ref.watch(monthlyRankingProvider(RankingGroupType.overall));
 
     return globalRanking.when(
       data: (entries) => _buildRankingList(entries),
@@ -77,29 +75,21 @@ class _GlobalRankingTab extends ConsumerWidget {
 }
 
 /// 道徳ランキングタブ（教科別）
+///
+/// 本アプリは道徳のみを扱うため、教科別ランキングは全体ランキングと同一データを表示する。
 class _MoralityRankingTab extends ConsumerWidget {
   const _MoralityRankingTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // subject_id: 'morality' で教科別ランキングを取得
-    final subjectRanking = ref.watch(
-      globalRankingProvider.notifier
-          .select((notifier) => notifier.fetchSubjectRanking('morality')),
-    );
+    final subjectRanking = ref.watch(monthlyRankingProvider(RankingGroupType.overall));
 
-    return FutureBuilder<List<GlobalRankingEntry>>(
-      future: subjectRanking,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('エラー: ${snapshot.error}'));
-        }
-        final entries = snapshot.data ?? [];
-        return _buildRankingList(entries);
-      },
+    return subjectRanking.when(
+      data: (entries) => _buildRankingList(entries),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(
+        child: Text('エラー: $err'),
+      ),
     );
   }
 }
@@ -145,7 +135,7 @@ class _FriendRankingTab extends ConsumerWidget {
 }
 
 /// グローバルランキングリストをビルド
-Widget _buildRankingList(List<GlobalRankingEntry> entries) {
+Widget _buildRankingList(List<RankingEntry> entries) {
   if (entries.isEmpty) {
     return const Center(child: Text('ランキングデータがありません'));
   }
@@ -183,7 +173,7 @@ Widget _buildFriendRankingList(List<RankingEntry> entries) {
 /// グローバルランキングエントリカード
 class _RankEntryCard extends StatelessWidget {
   final int rank;
-  final GlobalRankingEntry entry;
+  final RankingEntry entry;
 
   const _RankEntryCard({
     required this.rank,
@@ -239,7 +229,7 @@ class _RankEntryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    entry.displayName ?? 'ユーザー',
+                    entry.getDisplayName(),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -248,7 +238,7 @@ class _RankEntryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${entry.score ?? 0} pt',
+                    '${entry.score} pt',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF999999),
@@ -264,7 +254,7 @@ class _RankEntryCard extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Text(
-                '${entry.score ?? 0}',
+                '${entry.score}',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -338,7 +328,7 @@ class _FriendRankCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    entry.userName ?? 'ユーザー',
+                    entry.getDisplayName(),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

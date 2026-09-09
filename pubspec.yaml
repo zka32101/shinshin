@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.8.0
 
 dependencies:
   flutter:
@@ -22,12 +22,11 @@ dependencies:
 
   # State Management
   flutter_riverpod: ^2.4.0
-  riverpod_annotation: ^2.3.0
 
   # Firebase
   firebase_core: ^3.15.2
   cloud_firestore: ^5.6.12
-  purchases_flutter: ^8.2.0  # Phase 4.2: RevenueCat SDK
+  purchases_flutter: ^10.11.0  # Phase 4.2: RevenueCat SDK
   firebase_auth: ^5.7.0
   firebase_analytics: ^11.6.0
   firebase_messaging: ^15.2.10
@@ -46,8 +45,8 @@ dependencies:
 
   # JSON Serialization
   json_serializable: ^6.7.0
-  json_annotation: ^4.8.0
-  freezed_annotation: ^2.4.0
+  json_annotation: ^4.12.0
+  freezed_annotation: ^3.1.0
 
   # Audio & Narration
   audioplayers: ^5.2.0
@@ -81,16 +80,14 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
 
   # Code Generation
-  build_runner: ^2.4.0
-  riverpod_generator: ^2.3.0
-  freezed: ^2.4.0
+  build_runner: ^2.16.1
+  freezed: ^4.0.1
 
   # Test helpers
   path_provider_platform_interface: ^2.1.0
   plugin_platform_interface: ^2.1.0
   mockito: ^5.4.4
   fake_cloud_firestore: ^3.1.0
-  purchases_flutter: ^8.2.0  # Phase 4.2: RevenueCat SDK
   firebase_auth_mocks: ^0.14.2
 
 flutter:

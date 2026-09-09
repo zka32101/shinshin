@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shinshin/utils/performance_utils.dart';
+import 'package:shougaku_kore_doutoku/utils/performance_utils.dart';
 
 void main() {
   group('Performance Benchmarks', () {

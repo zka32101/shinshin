@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shougaku_kore_doutoku/models/badge.dart';
 import 'package:shougaku_kore_doutoku/providers/badge_provider.dart';
 import 'package:shougaku_kore_doutoku/providers/child_provider.dart';
+import '../../helpers/child_id_override.dart';
 import 'package:shougaku_kore_doutoku/screens/badge/badge_showcase_screen.dart';
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -17,7 +18,7 @@ Widget _wrapBadgeShowcase({
 }) {
   return ProviderScope(
     overrides: [
-      selectedChildIdProvider.overrideWith((ref) => childId),
+      childIdOverride(childId),
       earnedBadgesProvider.overrideWith((ref, cid) {
         if (earnedBadges != null) {
           return Future.value(earnedBadges);

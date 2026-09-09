@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shougaku_kore_doutoku/models/badge.dart';
 import 'package:shougaku_kore_doutoku/providers/badge_provider.dart';
 import 'package:shougaku_kore_doutoku/providers/child_provider.dart';
+import '../../helpers/child_id_override.dart';
 import 'package:shougaku_kore_doutoku/screens/badge/badge_showcase_screen.dart';
 
 void main() {
@@ -11,14 +12,14 @@ void main() {
     testWidgets(
       'golden: badge showcase initial state',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              selectedChildIdProvider.overrideWith((ref) => 'test-child'),
+              childIdOverride('test-child'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value([]);
               }),
@@ -48,7 +49,7 @@ void main() {
     testWidgets(
       'golden: badge showcase with earned badges',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -70,7 +71,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              selectedChildIdProvider.overrideWith((ref) => 'test-child'),
+              childIdOverride('test-child'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value(earnedBadges);
               }),
@@ -107,7 +108,7 @@ void main() {
     testWidgets(
       'golden: badge showcase with mixed progress',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -125,7 +126,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              selectedChildIdProvider.overrideWith((ref) => 'test-child'),
+              childIdOverride('test-child'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value(earnedBadges);
               }),
@@ -166,7 +167,7 @@ void main() {
     testWidgets(
       'golden: badge showcase all badges earned',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -174,7 +175,7 @@ void main() {
         final earnedBadges = kDoutokuBadges.map((badge) {
           return EarnedBadge(
             badgeId: badge.id,
-            earnedAt: DateTime(2024, 1, (earnedBadges.length % 28) + 1),
+            earnedAt: DateTime(2024, 1, (kDoutokuBadges.indexOf(badge) % 28) + 1),
           );
         }).toList();
 
@@ -185,7 +186,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              selectedChildIdProvider.overrideWith((ref) => 'test-child'),
+              childIdOverride('test-child'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value(earnedBadges);
               }),
@@ -215,14 +216,14 @@ void main() {
     testWidgets(
       'golden: badge showcase scrolled state',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              selectedChildIdProvider.overrideWith((ref) => 'test-child'),
+              childIdOverride('test-child'),
               earnedBadgesProvider.overrideWith((ref, _) {
                 return Future.value([]);
               }),

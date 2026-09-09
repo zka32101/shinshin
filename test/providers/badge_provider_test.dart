@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:matcher/expect.dart' show greaterThan;
 import 'package:mockito/mockito.dart';
-import 'package:shinshin/models/badge.dart';
-import 'package:shinshin/models/progress.dart';
-import 'package:shinshin/models/story.dart';
-import 'package:shinshin/providers/badge_provider.dart';
-import 'package:shinshin/providers/progress_provider.dart';
-import 'package:shinshin/providers/story_provider.dart';
+import 'package:shougaku_kore_doutoku/models/badge.dart';
+import 'package:shougaku_kore_doutoku/models/progress.dart';
+import 'package:shougaku_kore_doutoku/models/story.dart';
+import 'package:shougaku_kore_doutoku/providers/badge_provider.dart';
+import 'package:shougaku_kore_doutoku/providers/progress_provider.dart';
+import 'package:shougaku_kore_doutoku/providers/story_provider.dart';
 
 void main() {
   group('Badge Provider Tests', () {
@@ -49,7 +50,7 @@ void main() {
     test('totalAvailableBadgesCountProvider returns correct count', () {
       final count = container.read(totalAvailableBadgesCountProvider);
       expect(count, equals(kDoutokuBadges.length));
-      expect(count, isGreaterThan(0));
+      expect(count, greaterThan(0));
     });
 
     test('badgeCompletionRateProvider returns 0.0 initially', () async {
@@ -71,7 +72,7 @@ void main() {
         expect(badge.name, isNotEmpty);
         expect(badge.emoji, isNotEmpty);
         expect(badge.theme, isNotEmpty);
-        expect(badge.requiredCompletions, isGreaterThan(0));
+        expect(badge.requiredCompletions, greaterThan(0));
       }
     });
 
