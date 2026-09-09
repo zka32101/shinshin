@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/audio_provider.dart';
 import '../../providers/locale_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/offline_sync_provider.dart';
 import '../../providers/offline_provider.dart';
@@ -303,17 +302,6 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
           ),
-          const Divider(height: 0),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'ログアウト',
-              style: TextStyle(color: Colors.red),
-            ),
-            onTap: () {
-              _showLogoutConfirmation(context, ref);
-            },
-          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -383,38 +371,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('ログアウト'),
-        content: const Text('ログアウトしますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(signOutProvider.future);
-              // ログアウト後にルートを /login にリセット
-              if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text(
-              'ログアウト',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// キャッシュサイズ表示ウィジェット

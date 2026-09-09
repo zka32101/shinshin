@@ -50,10 +50,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     final user = authState.asData?.value;
     if (user == null) {
-      // 未ログイン → ログイン画面へ
-      _navigated = true;
-      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
-      return;
+      // 未ログイン → 匿名認証で自動サインイン
+      try {
+        await ref.read(firebaseServiceProvider).signInAnonymously();
+      } catch (_) {
+        // 匿名認証に失敗（オフライン等）→ ゲストモードでホームへ
+        _navigated = true;
+        if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+        return;
+      }
+      // authStateChanges の反映を待って起動フローを再試行
+      await Future.delayed(const Duration(milliseconds: 300));
+      return _runStartupFlow();
     }
 
     // Firebase ID トークンをバックエンド JWT に交換
@@ -66,9 +74,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         if (jwt != null) api.setAuthToken(jwt);
       }
     } catch (_) {
-      // JWT 取得失敗 → 再ログインを促す
+      // JWT 取得失敗（ネットワーク不調等）→ ゲストモードでホームへ
       _navigated = true;
-      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
       return;
     }
 
