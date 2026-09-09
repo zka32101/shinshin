@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/avatar.dart';
@@ -189,7 +190,7 @@ class AvatarSelectionScreen extends ConsumerWidget {
               }
             }
           : null,
-      child: Card(
+      child: AppCard(
         elevation: isSelected ? 8 : 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

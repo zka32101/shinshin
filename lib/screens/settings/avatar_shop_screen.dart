@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/avatar.dart';
@@ -69,7 +70,7 @@ class AvatarShopScreen extends ConsumerWidget {
     Avatar avatar,
     bool isPurchased,
   ) {
-    return Card(
+    return AppCard(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),

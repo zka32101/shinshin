@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
@@ -199,7 +200,7 @@ class _MenuCardState extends ConsumerState<_MenuCard> with SingleTickerProviderS
           label: widget.title,
           hint: widget.subtitle,
           onPressed: _handleTap,
-          child: Card(
+          child: AppCard(
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppStyles.radiusMedium),

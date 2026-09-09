@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -128,7 +129,7 @@ class _NotificationSettingsScreenState
         padding: const EdgeInsets.all(16),
         children: [
           // Email notifications 有効/無効
-          Card(
+          AppCard(
             child: SwitchListTile(
               title: const Text('メール配信を有効にする'),
               subtitle: const Text('親向けの週間学習レポートをメール配信します'),
@@ -144,7 +145,7 @@ class _NotificationSettingsScreenState
           // 以下のオプションはメール配信有効時のみ表示
           if (_prefs.emailNotificationsEnabled) ...[
             // 配信周期
-            Card(
+            AppCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -218,7 +219,7 @@ class _NotificationSettingsScreenState
 
             // Custom Days 選択
             if (_prefs.emailFrequency == 'custom')
-              Card(
+              AppCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -278,7 +279,7 @@ class _NotificationSettingsScreenState
             const SizedBox(height: 16),
 
             // 配信時刻
-            Card(
+            AppCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -326,7 +327,7 @@ class _NotificationSettingsScreenState
             const SizedBox(height: 16),
 
             // タイムゾーン
-            Card(
+            AppCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

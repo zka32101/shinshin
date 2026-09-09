@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
@@ -96,7 +97,7 @@ class _LessonCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isRead = ref.watch(lessonProvider).contains(lesson.id);
 
-    return Card(
+    return AppCard(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
       shape: RoundedRectangleBorder(

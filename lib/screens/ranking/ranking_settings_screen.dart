@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/ranking.dart';
@@ -140,7 +141,7 @@ class _RankingSettingsScreenState extends ConsumerState<RankingSettingsScreen> {
             ),
           ),
         ),
-        Card(
+        AppCard(
           margin: const EdgeInsets.only(bottom: 16),
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -202,7 +203,7 @@ class _RankingSettingsScreenState extends ConsumerState<RankingSettingsScreen> {
             ),
           ),
         ),
-        Card(
+        AppCard(
           margin: const EdgeInsets.only(bottom: 24),
           elevation: 0,
           shape: RoundedRectangleBorder(

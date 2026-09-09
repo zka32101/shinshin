@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/story.dart';
@@ -228,7 +229,7 @@ class _CompletedStoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeColor = VirtueConstants.getVirtueColor(story.theme);
-    return Card(
+    return AppCard(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),

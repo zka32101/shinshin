@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_card.dart';
 import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/subscription_provider.dart';
@@ -76,7 +77,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 error: (error, stack) => Text('エラー: $error'),
               ),
               const SizedBox(height: 16),
-              // Yearly Plan Card (Recommended)
+              // Yearly Plan AppCard(Recommended)
               yearlyProduct.when(
                 data: (product) {
                   if (product == null) {
