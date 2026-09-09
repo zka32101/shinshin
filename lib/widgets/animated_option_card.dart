@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/furigana_text.dart';
 
 class AnimatedOptionCard extends StatefulWidget {
   final String label;
@@ -159,7 +160,7 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      FuriganaText(
                         widget.text,
                         style: TextStyle(
                           fontSize: 16,

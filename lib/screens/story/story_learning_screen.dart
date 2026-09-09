@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_core/widgets/furigana_text.dart';
 import '../../models/story.dart';
 import '../../providers/story_provider.dart';
 import '../../providers/audio_provider.dart';
@@ -572,7 +573,7 @@ class _NarrativePageView extends StatelessWidget {
                         ],
                       ),
                     ),
-                  Text(
+                  FuriganaText(
                     pages[index],
                     style: const TextStyle(
                       fontSize: AppStyles.fontSizeLargeTitle,
@@ -644,7 +645,7 @@ class _ChoiceView extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Text(
+                  FuriganaText(
                     story.content?.dilemmaScene ?? '',
                     style: const TextStyle(
                       fontSize: AppStyles.fontSizeLarge,
@@ -776,7 +777,7 @@ class _BranchingStoryView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(
+                      FuriganaText(
                         choice.text,
                         style: TextStyle(
                           fontSize: AppStyles.fontSizeMedium,
@@ -829,7 +830,7 @@ class _BranchingStoryView extends StatelessWidget {
               ),
 
               // 分岐ストーリーテキスト
-              Text(
+              FuriganaText(
                 choice.branchContent,
                 style: const TextStyle(
                   fontSize: AppStyles.fontSizeLarge,
@@ -932,7 +933,7 @@ class _ReflectionView extends StatelessWidget {
                         color: virtueColor
                             .withAlpha(AppConstants.alphaDark)),
                   ),
-                  child: Text(
+                  child: FuriganaText(
                     choice.text,
                     style: TextStyle(
                       fontSize: AppStyles.fontSizeTitle,
@@ -976,7 +977,7 @@ class _ReflectionView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Text(
+                      FuriganaText(
                         choice.reflection,
                         style: TextStyle(
                           fontSize: AppStyles.fontSizeMedium,

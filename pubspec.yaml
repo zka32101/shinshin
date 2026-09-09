@@ -11,6 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Shared Core (FuriganaText widget)
+  shared_core:
+    git:
+      url: https://github.com/org-zka32101/shared_core.git
+      ref: main
+
   # UI & Material Design
   cupertino_icons: ^1.0.8
 
@@ -21,6 +27,7 @@ dependencies:
   # Firebase
   firebase_core: ^2.13.0
   cloud_firestore: ^4.8.0
+  purchases_flutter: ^8.2.0  # Phase 4.2: RevenueCat SDK
   firebase_auth: ^4.6.0
   firebase_analytics: ^10.4.0
   firebase_messaging: ^14.7.0
@@ -83,6 +90,7 @@ dev_dependencies:
   plugin_platform_interface: ^2.1.0
   mockito: ^5.4.4
   fake_cloud_firestore: ^2.0.0
+  purchases_flutter: ^8.2.0  # Phase 4.2: RevenueCat SDK
   firebase_auth_mocks: ^0.13.0
 
 flutter:
