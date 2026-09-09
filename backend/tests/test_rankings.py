@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from datetime import date
+from uuid import UUID
 
 
 @pytest.mark.asyncio
@@ -49,3 +50,77 @@ async def test_get_child_current_ranking_not_found(
     )
     # Should return 200 with None (no ranking exists yet)
     assert response.status_code == 200 or response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_monthly_ranking_anonymizes_name_by_default(
+    client: AsyncClient, auth_headers: dict, test_child: dict, db_session
+):
+    """isNamePublic が false（デフォルト）の場合、実名ではなく匿名表示名を返す"""
+    from app.models.ranking import Ranking
+    from app.models.child import Child
+    from sqlalchemy import select
+
+    child_id = UUID(test_child["id"])
+    child = (
+        await db_session.execute(select(Child).where(Child.id == child_id))
+    ).scalar_one()
+    assert child.is_name_public is False
+
+    db_session.add(
+        Ranking(
+            child_id=child_id,
+            ranking_month=date(2026, 9, 1),
+            group_type="overall",
+            group_value=None,
+            rank=1,
+            total_answers=5,
+            total_growth_score=100,
+        )
+    )
+    await db_session.commit()
+
+    response = await client.get(
+        "/api/v1/rankings/month/2026-09-01",
+        params={"group_type": "overall"},
+        headers=auth_headers,
+    )
+    data = response.json()
+    assert data["rankings"][0]["child_name"] == "ユーザー"
+    assert data["rankings"][0]["child_name"] != child.name
+
+
+@pytest.mark.asyncio
+async def test_monthly_ranking_shows_name_when_public(
+    client: AsyncClient, auth_headers: dict, test_child: dict, db_session
+):
+    """isNamePublic が true の場合、実名を返す"""
+    from app.models.ranking import Ranking
+    from app.models.child import Child
+    from sqlalchemy import select
+
+    child_id = UUID(test_child["id"])
+    child = (
+        await db_session.execute(select(Child).where(Child.id == child_id))
+    ).scalar_one()
+    child.is_name_public = True
+    db_session.add(
+        Ranking(
+            child_id=child_id,
+            ranking_month=date(2026, 9, 1),
+            group_type="overall",
+            group_value=None,
+            rank=1,
+            total_answers=5,
+            total_growth_score=100,
+        )
+    )
+    await db_session.commit()
+
+    response = await client.get(
+        "/api/v1/rankings/month/2026-09-01",
+        params={"group_type": "overall"},
+        headers=auth_headers,
+    )
+    data = response.json()
+    assert data["rankings"][0]["child_name"] == child.name

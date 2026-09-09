@@ -18,6 +18,14 @@ from app.services.ranking_service import RankingService
 
 router = APIRouter(tags=["rankings"])
 
+# フロントエンド (lib/models/ranking.dart の getDisplayName()) と同じ匿名表示名
+ANONYMOUS_DISPLAY_NAME = "ユーザー"
+
+
+def _display_name(child: Child) -> str:
+    """isNamePublic 設定に従い、公開可能な表示名を返す（COPPA対応）"""
+    return child.name if child.is_name_public else ANONYMOUS_DISPLAY_NAME
+
 
 @router.get(
     "/month/{ranking_month}",
@@ -69,7 +77,7 @@ async def get_monthly_ranking(
                     RankingDetailResponse(
                         rank=ranking.rank,
                         child_id=ranking.child_id,
-                        child_name=child.name,
+                        child_name=_display_name(child),
                         avatar_emoji=child.avatar_emoji,
                         total_answers=ranking.total_answers,
                         total_growth_score=ranking.total_growth_score,
@@ -151,6 +159,8 @@ async def get_child_current_ranking(
             # Return 200 with null response when no ranking exists
             return None
 
+        # 自分の子どものランキング情報なので、実名をそのまま返す
+        # （isNamePublic は「他ユーザーへの公開ランキング」にのみ適用される）
         return RankingDetailResponse(
             rank=ranking.rank,
             child_id=ranking.child_id,

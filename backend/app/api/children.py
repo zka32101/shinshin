@@ -40,6 +40,7 @@ async def create_child(
         name=body.name,
         avatar_emoji=body.avatar_emoji,
         grade=body.grade,
+        is_name_public=body.is_name_public,
     )
     db.add(child)
     await db.flush()
@@ -84,6 +85,8 @@ async def update_child(
         child.avatar_emoji = body.avatar_emoji
     if body.grade is not None:
         child.grade = body.grade
+    if body.is_name_public is not None:
+        child.is_name_public = body.is_name_public
 
     await db.commit()
     await db.refresh(child)

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Float
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Float, Boolean
 from sqlalchemy_utils import UUIDType
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -16,6 +16,8 @@ class Child(Base):
     avatar_emoji = Column(String(10), default="🌟", nullable=False)
     grade = Column(Integer, nullable=False)  # 3 or 4 (小学3-4年生)
     level = Column(Integer, default=1, nullable=False)
+    # ランキングで実名を公表するか（COPPA対応: デフォルトは非公表＝匿名）
+    is_name_public = Column(Boolean, default=False, server_default="false", nullable=False)
     total_points = Column(Integer, default=0, nullable=False)
     # 徳目スコア (moral virtue scores 0-100)
     kindness_score = Column(Float, default=50.0)      # 思いやり
