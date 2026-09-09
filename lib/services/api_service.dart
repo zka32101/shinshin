@@ -648,6 +648,110 @@ class ApiService {
     }
   }
 
+  /// Google Play購読の購入トークンをバックエンドで検証する
+  Future<Map<String, dynamic>> verifyGooglePlayPurchase({
+    required String productId,
+    required String purchaseToken,
+    String? packageName,
+  }) async {
+    try {
+      _validateParam(productId, 'productId');
+      _validateParam(purchaseToken, 'purchaseToken');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/purchases/verify/google',
+          data: {
+            'productId': productId,
+            'purchaseToken': purchaseToken,
+            if (packageName != null) 'packageName': packageName,
+          },
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for Google Play purchase verification');
+      }
+
+      _logger.log('Google Play purchase verified for product: $productId');
+      return response.data as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to verify Google Play purchase: $productId', error: e);
+      throw ApiException(
+        e.response?.data is Map && (e.response?.data as Map)['detail'] != null
+            ? (e.response!.data as Map)['detail'].toString()
+            : 'Failed to verify Google Play purchase: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// App Storeのトランザクションをバックエンドで検証する
+  Future<Map<String, dynamic>> verifyApplePurchase({
+    required String productId,
+    required String transactionId,
+  }) async {
+    try {
+      _validateParam(productId, 'productId');
+      _validateParam(transactionId, 'transactionId');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/purchases/verify/apple',
+          data: {
+            'productId': productId,
+            'transactionId': transactionId,
+          },
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for Apple purchase verification');
+      }
+
+      _logger.log('Apple purchase verified for product: $productId');
+      return response.data as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to verify Apple purchase: $productId', error: e);
+      throw ApiException(
+        e.response?.data is Map && (e.response?.data as Map)['detail'] != null
+            ? (e.response!.data as Map)['detail'].toString()
+            : 'Failed to verify Apple purchase: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 現在のプレミアム購読状態を取得する
+  Future<Map<String, dynamic>> getPurchaseStatus() async {
+    try {
+      final response = await _retryRequest(
+        () => _dio.get('/purchases/status'),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for purchase status');
+      }
+
+      return response.data as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to fetch purchase status', error: e);
+      throw ApiException(
+        'Failed to fetch purchase status: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
   /// Firebase IDトークンをバックエンドJWTに交換
   Future<Map<String, dynamic>> loginWithFirebase(String idToken) async {
     try {

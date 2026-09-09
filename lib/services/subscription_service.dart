@@ -1,14 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user.dart';
+import 'api_service.dart';
 import 'logger_service.dart';
 
 class SubscriptionService {
   late final FirebaseFirestore _firestore;
   late final FirebaseAuth _auth;
+  final ApiService _apiService;
   final LoggerService _logger = LoggerService();
 
-  SubscriptionService() {
+  SubscriptionService({ApiService? apiService}) : _apiService = apiService ?? ApiService() {
     _firestore = FirebaseFirestore.instance;
     _auth = FirebaseAuth.instance;
   }
@@ -218,23 +220,46 @@ class SubscriptionService {
     }
   }
 
-  /// Verify receipt with backend (iOS)
+  /// Verify a StoreKit2 transaction with the backend (iOS).
+  ///
+  /// [transactionId] is the App Store transaction identifier
+  /// (`PurchaseDetails.purchaseID` from the `in_app_purchase` package),
+  /// which the backend looks up via the App Store Server API.
+  /// On success, the backend-verified subscription state (plan/expiry) is
+  /// written to Firestore so the client's cached subscription reflects only
+  /// server-verified data — the app never trusts a client-reported "verified"
+  /// flag on its own.
   Future<bool> verifyAppleReceipt({
     required String userId,
-    required String receipt,
+    required String productId,
+    required String transactionId,
   }) async {
     try {
-      // This would call your backend endpoint
-      // For now, returning true as placeholder
-      _logger.log('Apple receipt verified for user: $userId');
-      return true;
+      final result = await _apiService.verifyApplePurchase(
+        productId: productId,
+        transactionId: transactionId,
+      );
+
+      final verified = result['verified'] == true && result['isPremium'] == true;
+      if (verified) {
+        await _applyVerifiedSubscription(userId: userId, result: result);
+        _logger.log('Apple receipt verified for user: $userId');
+      } else {
+        _logger.log('Apple receipt verification did not grant premium for user: $userId');
+      }
+      return verified;
     } catch (e) {
       _logger.logError('Failed to verify Apple receipt for user: $userId', error: e);
       return false;
     }
   }
 
-  /// Verify receipt with backend (Android)
+  /// Verify a Google Play purchase token with the backend (Android).
+  ///
+  /// The backend calls the Google Play Developer API
+  /// (`purchases.subscriptions.get`) with a service account and only then
+  /// marks the subscription active — the app never trusts the client's own
+  /// "verified" claim.
   Future<bool> verifyGooglePlayReceipt({
     required String userId,
     required String packageName,
@@ -242,15 +267,56 @@ class SubscriptionService {
     required String purchaseToken,
   }) async {
     try {
-      // This would call your backend endpoint
-      // For now, returning true as placeholder
-      _logger.log('Google Play receipt verified for user: $userId');
-      return true;
+      final result = await _apiService.verifyGooglePlayPurchase(
+        productId: productId,
+        purchaseToken: purchaseToken,
+        packageName: packageName,
+      );
+
+      final verified = result['verified'] == true && result['isPremium'] == true;
+      if (verified) {
+        await _applyVerifiedSubscription(userId: userId, result: result);
+        _logger.log('Google Play receipt verified for user: $userId');
+      } else {
+        _logger.log('Google Play receipt verification did not grant premium for user: $userId');
+      }
+      return verified;
     } catch (e) {
       _logger.logError(
           'Failed to verify Google Play receipt for user: $userId', error: e);
       return false;
     }
+  }
+
+  /// Writes the backend-verified subscription state to Firestore.
+  /// Only ever called with data returned by the backend's purchase
+  /// verification endpoints — never with client-supplied values.
+  Future<void> _applyVerifiedSubscription({
+    required String userId,
+    required Map<String, dynamic> result,
+  }) async {
+    final planType = result['planType'] as String? ?? 'monthly';
+    final transactionId = result['transactionId'] as String? ?? '';
+    final expiresAtRaw = result['expiresAt'] as String?;
+    final now = DateTime.now();
+    final subscriptionEndDate =
+        expiresAtRaw != null ? DateTime.parse(expiresAtRaw) : now.add(const Duration(days: 30));
+
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('subscription')
+        .doc('info')
+        .set({
+      'status': 'active',
+      'plan': planType,
+      'planType': planType,
+      'subscriptionStartDate': Timestamp.fromDate(now),
+      'subscriptionEndDate': Timestamp.fromDate(subscriptionEndDate),
+      'lastPaymentDate': Timestamp.fromDate(now),
+      'autoRenewalEnabled': true,
+      'transactionId': transactionId,
+    }, SetOptions(merge: true));
   }
 
   /// Helper: Convert Firestore document to SubscriptionInfo

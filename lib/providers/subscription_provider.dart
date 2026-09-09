@@ -4,14 +4,18 @@ import '../services/subscription_service.dart';
 import '../services/payment_service.dart';
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
+import 'story_provider.dart' show apiServiceProvider;
 
 // Service providers
+// バックエンドでの購入検証には認証済みJWTが必要なため、Firebaseログイン後に
+// setAuthToken() が呼ばれる共有の apiServiceProvider インスタンスを注入する
+// （個別に ApiService() を生成すると未認証のままリクエストされてしまう）。
 final subscriptionServiceProvider = Provider((ref) {
-  return SubscriptionService();
+  return SubscriptionService(apiService: ref.watch(apiServiceProvider));
 });
 
 final paymentServiceProvider = Provider((ref) {
-  return PaymentService();
+  return PaymentService(subscriptionService: ref.watch(subscriptionServiceProvider));
 });
 
 // Get subscription info stream for current user
