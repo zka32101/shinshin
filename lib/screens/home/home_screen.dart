@@ -22,6 +22,8 @@ import '../learning/color_learning_screen.dart';
 import '../badge/badge_showcase_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../lesson/lesson_screen.dart';
+import 'package:cross_promo_kit/cross_promo_kit.dart'
+    show CrossPromoSection;
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -107,6 +109,14 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
+
+                const SizedBox(height: 32),
+
+                // クロスプロモーション（他アプリ紹介）
+                const CrossPromoSection(
+                  currentAppId: 'com.example.shinshin',
+                  currentCategory: '小学コレ',
                 ),
 
                 const SizedBox(height: 32),
