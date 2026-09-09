@@ -138,6 +138,18 @@ final monthlyRankingProvider =
   },
 );
 
+// Get friends-only monthly ranking (group_value = 自分の child_id が必須)
+final friendsRankingProvider =
+    FutureProvider.autoDispose.family<List<RankingEntry>, String>(
+  (ref, childId) async {
+    final rankingService = ref.watch(rankingServiceProvider);
+    return await rankingService.getMonthlyRanking(
+      RankingGroupType.friends,
+      groupValue: childId,
+    );
+  },
+);
+
 // Parameters for ranking type and limit
 class RankingTypeParams {
   final RankingType type;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/ranking.dart';
+import '../../providers/child_provider.dart';
 import '../../providers/ranking_provider.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
+import '../friend/friend_list_screen.dart';
 
 /// 月間ランキング画面
 /// 4つのグループ化オプション付きランキング表示
@@ -23,6 +25,7 @@ class _MonthlyRankingScreenState extends ConsumerState<MonthlyRankingScreen>
     RankingGroupType.byGrade,
     RankingGroupType.byStartMonth,
     RankingGroupType.combined,
+    RankingGroupType.friends,
   ];
 
   @override
@@ -47,6 +50,8 @@ class _MonthlyRankingScreenState extends ConsumerState<MonthlyRankingScreen>
         return '開始月別';
       case RankingGroupType.combined:
         return '複合';
+      case RankingGroupType.friends:
+        return '友だち';
     }
   }
 
@@ -58,6 +63,17 @@ class _MonthlyRankingScreenState extends ConsumerState<MonthlyRankingScreen>
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF2C2C2C),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.people_outline),
+            tooltip: '友だち管理',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FriendListScreen()),
+              );
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: const Color(0xFF9B59B6),
@@ -90,10 +106,39 @@ class _RankingTabContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 友だちランキングは自分の child_id を group_value として渡す必要があるため、
+    // 選択中の子どもプロフィールを介して別プロバイダーを使用する
+    if (groupType == RankingGroupType.friends) {
+      final childProfileAsync = ref.watch(currentChildProfileProvider);
+      return childProfileAsync.when(
+        data: (child) {
+          if (child == null) {
+            return const Center(
+              child: Text(
+                '子どもプロフィールが選択されていません',
+                style: TextStyle(color: Color(0xFF999999)),
+              ),
+            );
+          }
+          final rankings = ref.watch(friendsRankingProvider(child.id));
+          return _buildRankingList(context, rankings, isFriends: true);
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('エラーが発生しました: $error')),
+      );
+    }
+
     final rankings = ref.watch(
       monthlyRankingProvider(groupType),
     );
+    return _buildRankingList(context, rankings, isFriends: false);
+  }
 
+  Widget _buildRankingList(
+    BuildContext context,
+    AsyncValue<List<RankingEntry>> rankings, {
+    required bool isFriends,
+  }) {
     return rankings.when(
       data: (entries) {
         if (entries.isEmpty) {
@@ -107,9 +152,12 @@ class _RankingTabContent extends ConsumerWidget {
                   color: Color(0xFFDDDDDD),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'ランキング情報がありません',
-                  style: TextStyle(
+                Text(
+                  isFriends
+                      ? 'ランキング情報がありません\n（友だちを追加すると表示されます）'
+                      : 'ランキング情報がありません',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
                     color: Color(0xFF999999),
                     fontSize: 14,
                   ),

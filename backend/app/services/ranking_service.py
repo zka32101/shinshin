@@ -14,6 +14,7 @@ from app.models.ranking import Ranking
 from app.models.child import Child
 from app.models.quiz import QuizSession
 from app.models.story import StoryChoice
+from app.models.friend import Friend
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +117,11 @@ class RankingService:
 
         # 複合ランキング（combined）を計算
         await RankingService._calculate_combined_ranking(
+            session, children, start_date, end_date, ranking_month
+        )
+
+        # 友だちランキング（friends）を計算
+        await RankingService._calculate_friends_ranking(
             session, children, start_date, end_date, ranking_month
         )
 
@@ -314,6 +320,80 @@ class RankingService:
                     ranking_month=ranking_month,
                     group_type="combined",
                     group_value=combined_key,
+                    rank=rank,
+                    total_answers=stats["total_answers"],
+                    total_growth_score=stats["total_growth_score"],
+                )
+                session.add(ranking)
+
+    @staticmethod
+    async def _calculate_friends_ranking(
+        session: AsyncSession,
+        children: List[Child],
+        start_date: date,
+        end_date: date,
+        ranking_month: date,
+    ) -> None:
+        """友だちランキングを計算して保存
+
+        友だち関係は子どもごとに異なる集合（友だちの輪）になるため、
+        子どもごとに「自分 + 友だち」のグループを作り、
+        group_value = str(その輪の持ち主の child_id) として、
+        輪に含まれる全メンバー分の Ranking レコードを保存する。
+        （= by_grade 等と同じ「グループ内のメンバー全員分を保存する」方式。
+        1人の子どもが複数の友だちの輪に所属することもあるため、
+        同じ子どもについて group_value の異なる複数の行が作られ得る）
+
+        自分の友だちランキングを見る場合は
+        group_type="friends", group_value=str(自分の child_id) で参照する。
+        """
+        children_by_id = {child.id: child for child in children}
+
+        # 全ての友だち関係を一括取得して child_id ごとにまとめる
+        friend_result = await session.execute(select(Friend))
+        friend_rows = friend_result.scalars().all()
+
+        friend_ids_by_child: dict = {}
+        for row in friend_rows:
+            friend_ids_by_child.setdefault(row.child_id, []).append(row.friend_child_id)
+
+        # 統計値をキャッシュして重複計算を避ける
+        stats_cache: dict = {}
+
+        async def _get_stats(child_id):
+            if child_id not in stats_cache:
+                stats_cache[child_id] = await RankingService.calculate_child_stats(
+                    session, child_id, start_date, end_date
+                )
+            return stats_cache[child_id]
+
+        for child in children:
+            friend_ids = friend_ids_by_child.get(child.id, [])
+            # 友だちが未登録でも自分だけのランキング（順位1）を作成する
+            group_member_ids = [child.id] + [
+                fid for fid in friend_ids if fid in children_by_id
+            ]
+
+            member_stats = []
+            for member_id in group_member_ids:
+                total_answers, total_growth_score = await _get_stats(member_id)
+                member_stats.append({
+                    "child_id": member_id,
+                    "total_answers": total_answers,
+                    "total_growth_score": total_growth_score,
+                })
+
+            member_stats.sort(
+                key=lambda x: (x["total_growth_score"], x["total_answers"]),
+                reverse=True
+            )
+
+            for rank, stats in enumerate(member_stats, start=1):
+                ranking = Ranking(
+                    child_id=stats["child_id"],
+                    ranking_month=ranking_month,
+                    group_type="friends",
+                    group_value=str(child.id),
                     rank=rank,
                     total_answers=stats["total_answers"],
                     total_growth_score=stats["total_growth_score"],

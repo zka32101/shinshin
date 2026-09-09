@@ -308,7 +308,12 @@ class RankingService {
   }
 
   /// 月間ランキングを取得（API経由）
-  Future<List<RankingEntry>> getMonthlyRanking(RankingGroupType groupType) async {
+  ///
+  /// [groupValue] は group_type="friends" の場合に必須（自分の child_id を指定する）。
+  Future<List<RankingEntry>> getMonthlyRanking(
+    RankingGroupType groupType, {
+    String? groupValue,
+  }) async {
     try {
       final apiService = ApiService();
       _logger.log('Fetching monthly ranking for group type: $groupType');
@@ -320,9 +325,12 @@ class RankingService {
       final groupTypeStr = _getRankingGroupTypeString(groupType);
 
       // バックエンドAPIを呼び出し
-      // GET /api/v1/rankings/month/{ranking_month}?group_type=...
-      final entries =
-          await apiService.getMonthlyRanking(rankingMonth, groupTypeStr);
+      // GET /api/v1/rankings/month/{ranking_month}?group_type=...&group_value=...
+      final entries = await apiService.getMonthlyRanking(
+        rankingMonth,
+        groupTypeStr,
+        groupValue: groupValue,
+      );
 
       _logger.log(
           'Monthly ranking fetched: ${entries.length} entries for $rankingMonth ($groupTypeStr)');
@@ -344,6 +352,8 @@ class RankingService {
         return 'by_start_month';
       case RankingGroupType.combined:
         return 'combined';
+      case RankingGroupType.friends:
+        return 'friends';
     }
   }
 }

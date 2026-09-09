@@ -1,3 +1,5 @@
+import secrets
+import string
 from uuid import UUID
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -9,6 +11,20 @@ from app.schemas.child import ChildCreate, ChildUpdate, ChildResponse
 from app.security import get_current_user_id
 
 router = APIRouter()
+
+_INVITE_CODE_ALPHABET = string.ascii_uppercase + string.digits
+# 紛らわしい文字 (0/O, 1/I) を除外
+_INVITE_CODE_ALPHABET = "".join(c for c in _INVITE_CODE_ALPHABET if c not in "01OI")
+
+
+async def _generate_unique_invite_code(db: AsyncSession) -> str:
+    """8桁の英数字招待コードを、重複しなくなるまで生成する"""
+    for _ in range(10):
+        code = "".join(secrets.choice(_INVITE_CODE_ALPHABET) for _ in range(8))
+        existing = await db.execute(select(Child).where(Child.invite_code == code))
+        if existing.scalar_one_or_none() is None:
+            return code
+    raise HTTPException(status_code=500, detail="招待コードの生成に失敗しました")
 
 
 def _child_to_response(child: Child) -> ChildResponse:
@@ -35,12 +51,14 @@ async def create_child(
     db: AsyncSession = Depends(get_db),
 ):
     """子供プロフィール作成"""
+    invite_code = await _generate_unique_invite_code(db)
     child = Child(
         parent_id=UUID(user_id),
         name=body.name,
         avatar_emoji=body.avatar_emoji,
         grade=body.grade,
         is_name_public=body.is_name_public,
+        invite_code=invite_code,
     )
     db.add(child)
     await db.flush()

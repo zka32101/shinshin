@@ -11,6 +11,9 @@ class ChildProfile {
   final String avatarEmoji; // 絵文字アバター (例: "🌟")
   final DateTime createdAt;
 
+  /// 友だち追加用の招待コード（8文字の英数字）
+  final String? inviteCode;
+
   // 成長データ
   @JsonKey(defaultValue: 1)
   final int level;
@@ -38,6 +41,7 @@ class ChildProfile {
     required this.grade,
     this.avatarEmoji = '🌟',
     required this.createdAt,
+    this.inviteCode,
     this.level = 1,
     this.totalPoints = 0,
     this.kindnessScore = 50.0,
@@ -81,6 +85,7 @@ class ChildProfile {
       grade: (json['grade'] as num?)?.toInt() ?? 3,
       avatarEmoji: json['avatarEmoji'] as String? ?? '🌟',
       createdAt: createdAt,
+      inviteCode: json['inviteCode'] as String?,
       level: (json['level'] as num?)?.toInt() ?? 1,
       totalPoints: (json['totalPoints'] as num?)?.toInt() ?? 0,
       kindnessScore: (scores['kindness'] as num?)?.toDouble() ?? 50.0,
