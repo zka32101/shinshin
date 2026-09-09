@@ -11,6 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Shared Core (FuriganaText widget)
+  shared_core:
+    git:
+      url: https://github.com/org-zka32101/shared_core.git
+      ref: main
+
   # UI & Material Design
   cupertino_icons: ^1.0.8
 
