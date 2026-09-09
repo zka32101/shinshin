@@ -79,6 +79,7 @@ class ChildResponse(BaseModel):
     level: int
     total_points: int
     is_name_public: bool
+    invite_code: Optional[str] = None
     virtue_scores: VirtueScores
     created_at: datetime
 
@@ -93,6 +94,7 @@ class ChildResponse(BaseModel):
             level=child.level,
             total_points=child.total_points,
             is_name_public=child.is_name_public,
+            invite_code=child.invite_code,
             virtue_scores=VirtueScores(
                 kindness=child.kindness_score,
                 honesty=child.honesty_score,

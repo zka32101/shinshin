@@ -33,7 +33,7 @@ def _display_name(child: Child) -> str:
 )
 async def get_monthly_ranking(
     ranking_month: str,
-    group_type: Literal["overall", "by_grade", "by_start_month", "combined"] = Query(
+    group_type: Literal["overall", "by_grade", "by_start_month", "combined", "friends"] = Query(
         "overall", description="グループ化タイプ"
     ),
     group_value: Optional[str] = Query(
@@ -54,6 +54,17 @@ async def get_monthly_ranking(
         RankingListResponse
     """
     try:
+        # 友だちランキングは group_value = 輪の持ち主の child_id であり、
+        # 個人の交友関係を含むため、自分の子どもの輪以外は閲覧不可にする
+        if group_type == "friends":
+            if not group_value:
+                raise HTTPException(status_code=400, detail="友だちランキングには group_value（child_id）が必要です")
+            owner_result = await db.execute(
+                select(Child).where(Child.id == UUID(group_value), Child.parent_id == UUID(user_id))
+            )
+            if owner_result.scalar_one_or_none() is None:
+                raise HTTPException(status_code=403, detail="権限がありません")
+
         # Parse date string to date object
         ranking_month_date = date.fromisoformat(ranking_month)
 
@@ -91,6 +102,8 @@ async def get_monthly_ranking(
             rankings=ranking_details,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -101,7 +114,7 @@ async def get_monthly_ranking(
 )
 async def get_child_current_ranking(
     child_id: UUID,
-    group_type: Literal["overall", "by_grade", "by_start_month", "combined"] = Query(
+    group_type: Literal["overall", "by_grade", "by_start_month", "combined", "friends"] = Query(
         "overall", description="グループ化タイプ"
     ),
     user_id: str = Depends(get_current_user_id),
@@ -138,6 +151,8 @@ async def get_child_current_ranking(
             group_value = child.created_at.strftime("%Y-%m")
         elif group_type == "combined":
             group_value = f"{child.grade}_{child.created_at.strftime('%Y-%m')}"
+        elif group_type == "friends":
+            group_value = str(child.id)
 
         # ランキングを取得
         conditions = [

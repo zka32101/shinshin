@@ -69,6 +69,9 @@ enum RankingGroupType {
 
   /// 複合（学年 + 開始月）ランキング
   combined,
+
+  /// 友だちランキング
+  friends,
 }
 
 /// ランキングタイプ

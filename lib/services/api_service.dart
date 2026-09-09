@@ -6,6 +6,7 @@ import '../models/kindness_mission.dart';
 import '../models/ai_features.dart';
 import '../models/ranking.dart';
 import '../models/child_profile.dart';
+import '../models/friend.dart';
 import '../models/progress.dart';
 import '../models/report.dart';
 import 'logger_service.dart';
@@ -546,6 +547,101 @@ class ApiService {
       _logger.logError('Failed to fetch monthly ranking for $month', error: e);
       throw ApiException(
         'Failed to fetch monthly ranking: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 友だち一覧を取得
+  Future<List<Friend>> getFriends(String childId) async {
+    try {
+      _validateParam(childId, 'childId');
+
+      final response = await _retryRequest(
+        () => _dio.get(
+          '/friends',
+          queryParameters: {'child_id': childId},
+        ),
+      );
+
+      final data = response.data;
+      if (data is! List) {
+        throw ApiException('Invalid response structure for friends list');
+      }
+
+      _logger.log('Friends fetched: ${data.length} entries for child: $childId');
+      return data
+          .map((item) => Friend.fromApiJson(item as Map<String, dynamic>))
+          .toList();
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to fetch friends for child: $childId', error: e);
+      throw ApiException(
+        'Failed to fetch friends: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 招待コードを使って友だちを追加
+  Future<Friend> addFriend(String childId, String inviteCode) async {
+    try {
+      _validateParam(childId, 'childId');
+      _validateParam(inviteCode, 'inviteCode');
+
+      final response = await _retryRequest(
+        () => _dio.post(
+          '/friends',
+          data: {
+            'childId': childId,
+            'inviteCode': inviteCode,
+          },
+        ),
+      );
+
+      if (!_isValidResponse(response.data)) {
+        throw ApiException('Invalid response structure for add friend');
+      }
+
+      _logger.log('Friend added for child: $childId');
+      return Friend.fromApiJson(response.data as Map<String, dynamic>);
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to add friend for child: $childId', error: e);
+      throw ApiException(
+        e.response?.data is Map && (e.response?.data as Map)['detail'] != null
+            ? (e.response!.data as Map)['detail'].toString()
+            : 'Failed to add friend: ${e.message}',
+        statusCode: e.response?.statusCode,
+        originalError: e,
+      );
+    }
+  }
+
+  /// 友だちを削除
+  Future<void> removeFriend(String friendId, String childId) async {
+    try {
+      _validateParam(friendId, 'friendId');
+      _validateParam(childId, 'childId');
+
+      await _retryRequest(
+        () => _dio.delete(
+          '/friends/$friendId',
+          queryParameters: {'child_id': childId},
+        ),
+      );
+
+      _logger.log('Friend removed: $friendId for child: $childId');
+    } on ApiException {
+      rethrow;
+    } on DioException catch (e) {
+      _logger.logError('Failed to remove friend: $friendId', error: e);
+      throw ApiException(
+        'Failed to remove friend: ${e.message}',
         statusCode: e.response?.statusCode,
         originalError: e,
       );

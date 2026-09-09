@@ -18,6 +18,8 @@ class Child(Base):
     level = Column(Integer, default=1, nullable=False)
     # ランキングで実名を公表するか（COPPA対応: デフォルトは非公表＝匿名）
     is_name_public = Column(Boolean, default=False, server_default="false", nullable=False)
+    # 友だち追加用の招待コード（8文字の英数字、ユニーク）
+    invite_code = Column(String(16), unique=True, nullable=True, index=True)
     total_points = Column(Integer, default=0, nullable=False)
     # 徳目スコア (moral virtue scores 0-100)
     kindness_score = Column(Float, default=50.0)      # 思いやり
@@ -35,6 +37,12 @@ class Child(Base):
     progress_records = relationship("Progress", back_populates="child", cascade="all, delete-orphan")
     monthly_reports = relationship("MonthlyReport", back_populates="child", cascade="all, delete-orphan")
     rankings = relationship("Ranking", back_populates="child", cascade="all, delete-orphan")
+    friends = relationship(
+        "Friend",
+        foreign_keys="Friend.child_id",
+        back_populates="child",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return f"<Child id={self.id} name={self.name} grade={self.grade}>"

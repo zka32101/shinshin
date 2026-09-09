@@ -8,7 +8,7 @@ class RankingBase(BaseModel):
     """ランキング基本スキーマ"""
     child_id: UUID
     ranking_month: date
-    group_type: Literal["overall", "by_grade", "by_start_month", "combined"]
+    group_type: Literal["overall", "by_grade", "by_start_month", "combined", "friends"]
     group_value: str | None = None
     rank: int
     total_answers: int
@@ -44,6 +44,6 @@ class RankingDetailResponse(BaseModel):
 class RankingListResponse(BaseModel):
     """ランキング一覧応答スキーマ"""
     ranking_month: date
-    group_type: Literal["overall", "by_grade", "by_start_month", "combined"]
+    group_type: Literal["overall", "by_grade", "by_start_month", "combined", "friends"]
     group_value: str | None = None
     rankings: List[RankingDetailResponse]
