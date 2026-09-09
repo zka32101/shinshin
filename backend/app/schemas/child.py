@@ -11,6 +11,7 @@ class ChildCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     avatar_emoji: str = Field(default="🌟", max_length=2)  # Emoji + ZWJ joiner
     grade: int = Field(ge=3, le=4)  # 3年生または4年生
+    is_name_public: bool = Field(default=False)  # ランキングで実名を公表するか
 
     @field_validator('name')
     @classmethod
@@ -35,6 +36,7 @@ class ChildUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=100)
     avatar_emoji: Optional[str] = Field(default=None, max_length=2)
     grade: Optional[int] = Field(default=None, ge=3, le=4)
+    is_name_public: Optional[bool] = Field(default=None)  # ランキングで実名を公表するか
 
     @field_validator('name')
     @classmethod
@@ -76,6 +78,7 @@ class ChildResponse(BaseModel):
     grade: int
     level: int
     total_points: int
+    is_name_public: bool
     virtue_scores: VirtueScores
     created_at: datetime
 
@@ -89,6 +92,7 @@ class ChildResponse(BaseModel):
             grade=child.grade,
             level=child.level,
             total_points=child.total_points,
+            is_name_public=child.is_name_public,
             virtue_scores=VirtueScores(
                 kindness=child.kindness_score,
                 honesty=child.honesty_score,
