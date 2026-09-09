@@ -7,6 +7,7 @@ import '../../providers/notification_provider.dart';
 import '../../providers/offline_sync_provider.dart';
 import '../../providers/offline_provider.dart';
 import '../../services/hive_service.dart';
+import '../feedback/feedback_form_screen.dart';
 import '../profile/profile_management_screen.dart';
 import '../ranking/ranking_settings_screen.dart';
 import 'help_screen.dart';
@@ -286,6 +287,19 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+              );
+            },
+          ),
+          const Divider(height: 0),
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined, color: Color(0xFF9B59B6)),
+            title: const Text('バグ報告・ご意見'),
+            subtitle: const Text('不具合や改善要望をお寄せください'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FeedbackFormScreen()),
               );
             },
           ),
