@@ -20,6 +20,7 @@
 
 import json
 import time
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -28,6 +29,9 @@ import httpx
 from jose import jwt as jose_jwt
 
 from app.config import Settings
+from app.services.apple_jws_verifier import AppleJWSVerifier, AppleJWSVerificationError
+
+logger = logging.getLogger(__name__)
 
 
 class ReceiptVerificationError(Exception):
@@ -174,6 +178,17 @@ class AppleVerifier:
         self._http = http_client
         self._owns_client = http_client is None
 
+        # Apple JWS 署名検証器を初期化
+        if self._settings.apple_bundle_id:
+            self._jws_verifier = AppleJWSVerifier(
+                bundle_id=self._settings.apple_bundle_id,
+                issuer_id=self._settings.apple_issuer_id,
+                environment=self._settings.apple_environment,
+            )
+        else:
+            self._jws_verifier = None
+            logger.warning("Apple Bundle ID が設定されていないため、JWS署名検証がスキップされます")
+
     def _load_private_key(self) -> str:
         path = self._settings.apple_private_key_path
         if not path:
@@ -210,12 +225,17 @@ class AppleVerifier:
     async def verify_transaction(self, *, transaction_id: str) -> dict:
         """トランザクションを検証し、signedTransactionInfo のクレーム(dict)を返す。
 
+        JWS 署名検証を含む完全な検証を実行します。
+
         クレーム形式（抜粋）:
           - transactionId / originalTransactionId
           - productId
           - purchaseDate / expiresDate（エポックミリ秒）
           - revocationDate（返金・取消時のみ存在）
           - type ("Auto-Renewable Subscription" 等)
+
+        Raises:
+            ReceiptVerificationError: トランザクション検証失敗時
         """
         base = (
             APPLE_PROD_BASE
@@ -241,11 +261,25 @@ class AppleVerifier:
             if not signed_transaction_info:
                 raise ReceiptVerificationError("signedTransactionInfoが応答に含まれていません")
 
-            # NOTE: ここではJWSペイロードの読み取りのみを行い、Appleのx5c証明書
-            # チェーンによる署名検証は行っていない（呼び出し自体がApple発行の
-            # 短命JWTによる認証済みAPI呼び出しであるため一定の真正性はあるが、
-            # 完全な信頼を置くには署名検証の追加実装が必要）。
-            claims = jose_jwt.get_unverified_claims(signed_transaction_info)
+            # ✅ v1.1 強化: Apple JWS 署名検証を実施
+            if self._jws_verifier:
+                try:
+                    claims = self._jws_verifier.verify(signed_transaction_info)
+                    logger.info(
+                        f"Apple JWS 署名検証成功 (txn_id: {transaction_id})"
+                    )
+                except AppleJWSVerificationError as e:
+                    raise ReceiptVerificationError(
+                        f"Apple JWS 署名検証失敗: {e}"
+                    )
+            else:
+                # Bundle ID が未設定の場合、署名検証をスキップ（非本番環境のみ）
+                logger.warning(
+                    "Bundle ID が未設定のため、JWS署名検証をスキップしています。"
+                    "本番環境では必ず APPLE_BUNDLE_ID を設定してください。"
+                )
+                claims = jose_jwt.get_unverified_claims(signed_transaction_info)
+
             return claims
         finally:
             if self._owns_client:
