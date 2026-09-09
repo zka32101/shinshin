@@ -35,45 +35,10 @@ final userProfileProvider = FutureProvider.autoDispose.family<User?, String>(
   },
 );
 
-// Email/password sign in provider
-final emailSignInProvider = FutureProvider.autoDispose
-    .family<firebase_auth.User?, ({String email, String password})>(
-  (ref, params) async {
+// Anonymous sign-in provider (小学コレシリーズ共通: メール認証は使用しない)
+final anonymousSignInProvider = FutureProvider.autoDispose<firebase_auth.User?>(
+  (ref) async {
     final firebaseService = ref.watch(firebaseServiceProvider);
-    return firebaseService.signInWithEmailPassword(
-      params.email,
-      params.password,
-    );
+    return firebaseService.signInAnonymously();
   },
 );
-
-// Email registration provider
-final emailRegisterProvider = FutureProvider.autoDispose.family<
-    firebase_auth.User?,
-    ({String email, String password, String displayName})>(
-  (ref, params) async {
-    final firebaseService = ref.watch(firebaseServiceProvider);
-    final user = await firebaseService.registerWithEmailPassword(
-      params.email,
-      params.password,
-      params.displayName,
-    );
-
-    if (user != null) {
-      await firebaseService.saveUserProfile(
-        user.uid,
-        user.email ?? '',
-        params.displayName,
-        [],
-      );
-    }
-
-    return user;
-  },
-);
-
-// Sign out provider
-final signOutProvider = FutureProvider.autoDispose<void>((ref) async {
-  final firebaseService = ref.watch(firebaseServiceProvider);
-  await firebaseService.signOut();
-});

@@ -50,74 +50,26 @@ class FirebaseService {
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
-  Future<User?> signInWithEmailPassword(String email, String password) async {
-    // Validate input
-    final emailError = validateEmail(email);
-    if (emailError != null) {
-      throw ValidationException(emailError);
+  /// 匿名認証でサインインする（小学コレシリーズ共通方式）
+  ///
+  /// 既にサインイン済みの場合はそのユーザーをそのまま返す。
+  Future<User?> signInAnonymously() async {
+    if (_auth.currentUser != null) {
+      return _auth.currentUser;
     }
 
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      _logger.log('User signed in: $email');
+      final credential = await _auth.signInAnonymously();
+      _logger.log('Anonymous sign-in successful: ${credential.user?.uid}');
       return credential.user;
     } on FirebaseAuthException catch (e) {
-      _logger.logError('Sign in failed for email: $email', error: e);
+      _logger.logError('Anonymous sign-in failed', error: e);
       throw AuthException(
-        'Sign in failed: ${e.message}',
+        'Anonymous sign-in failed: ${e.message}',
         e.code,
       );
     } catch (e) {
-      _logger.logError('Unexpected error during sign in', error: e);
-      rethrow;
-    }
-  }
-
-  Future<User?> registerWithEmailPassword(
-    String email,
-    String password,
-    String displayName,
-  ) async {
-    // Validate input
-    final emailError = validateEmail(email);
-    if (emailError != null) {
-      throw ValidationException(emailError);
-    }
-
-    final passwordError = validatePassword(password);
-    if (passwordError != null) {
-      throw ValidationException(passwordError);
-    }
-
-    final displayNameError = validateDisplayName(displayName);
-    if (displayNameError != null) {
-      throw ValidationException(displayNameError);
-    }
-
-    try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      if (credential.user == null) {
-        throw AuthException('User creation returned null');
-      }
-
-      await credential.user!.updateDisplayName(displayName);
-      _logger.log('User registered successfully: $email');
-      return credential.user;
-    } on FirebaseAuthException catch (e) {
-      _logger.logError('Registration failed for email: $email', error: e);
-      throw AuthException(
-        'Registration failed: ${e.message}',
-        e.code,
-      );
-    } catch (e) {
-      _logger.logError('Unexpected error during registration', error: e);
+      _logger.logError('Unexpected error during anonymous sign-in', error: e);
       rethrow;
     }
   }
@@ -134,17 +86,6 @@ class FirebaseService {
     String displayName,
     List<String> childrenIds,
   ) async {
-    // Validate input
-    final emailError = validateEmail(email);
-    if (emailError != null) {
-      throw ValidationException(emailError);
-    }
-
-    final displayNameError = validateDisplayName(displayName);
-    if (displayNameError != null) {
-      throw ValidationException(displayNameError);
-    }
-
     try {
       await _firestore.collection('users').doc(uid).set({
         'email': email,
@@ -421,53 +362,6 @@ class FirebaseService {
     } catch (e) {
       rethrow;
     }
-  }
-
-  // ========================================================
-  // Validation Functions
-  // ========================================================
-
-  /// Validates email format
-  String? validateEmail(String email) {
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    if (email.isEmpty) {
-      return 'Email cannot be empty';
-    }
-    if (!emailRegex.hasMatch(email)) {
-      return 'Invalid email format';
-    }
-    return null;
-  }
-
-  /// Validates password strength
-  String? validatePassword(String password) {
-    if (password.isEmpty) {
-      return 'Password cannot be empty';
-    }
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    if (!password.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!password.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least one number';
-    }
-    return null;
-  }
-
-  /// Validates display name
-  String? validateDisplayName(String displayName) {
-    if (displayName.isEmpty) {
-      return 'Display name cannot be empty';
-    }
-    if (displayName.length < 2) {
-      return 'Display name must be at least 2 characters';
-    }
-    if (displayName.length > 100) {
-      return 'Display name must be less than 100 characters';
-    }
-    return null;
   }
 
   // ========================================================

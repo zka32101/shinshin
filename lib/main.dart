@@ -10,7 +10,6 @@ import 'screens/settings/avatar_selection_screen.dart';
 import 'screens/settings/avatar_shop_screen.dart';
 import 'screens/ranking/ranking_screen.dart';
 import 'screens/splash_screen.dart';
-import 'screens/auth/login_screen.dart';
 import 'screens/auth/child_registration_screen.dart';
 import 'screens/learning/piano_learning_screen.dart';
 import 'screens/learning/drawing_screen.dart';
@@ -178,7 +177,6 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
       themeMode: _themeModeToBrightness(brightness),
       home: const SplashScreen(),
       routes: {
-        '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
         '/child-registration': (context) => const ChildRegistrationScreen(),
         '/trial_status': (context) => const TrialStatusScreen(),
