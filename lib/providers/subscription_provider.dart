@@ -1,205 +1,171 @@
+// Subscription Provider
+// Phase 4.2: RevenueCat-based subscription state management
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-import '../services/subscription_service.dart';
-import '../services/payment_service.dart';
-import '../models/user.dart';
-import '../providers/auth_provider.dart';
-import 'story_provider.dart' show apiServiceProvider;
+import 'package:purchases_flutter/purchases_flutter.dart';
+import '../services/revenue_cat_service.dart';
+import '../utils/constants.dart';
 
-// Service providers
-// バックエンドでの購入検証には認証済みJWTが必要なため、Firebaseログイン後に
-// setAuthToken() が呼ばれる共有の apiServiceProvider インスタンスを注入する
-// （個別に ApiService() を生成すると未認証のままリクエストされてしまう）。
-final subscriptionServiceProvider = Provider((ref) {
-  return SubscriptionService(apiService: ref.watch(apiServiceProvider));
-});
+// ─── Subscription Status Provider ───────────────────────────────────────────
+// Notifier for subscription state
 
-final paymentServiceProvider = Provider((ref) {
-  return PaymentService(subscriptionService: ref.watch(subscriptionServiceProvider));
-});
+class SubscriptionNotifier extends StateNotifier<AsyncValue<bool>> {
+  final RevenueCatService _revenueCat;
 
-// Get subscription info stream for current user
-final subscriptionInfoProvider = StreamProvider.autoDispose((ref) async* {
-  final auth = ref.watch(userAuthStateProvider);
-  final subscriptionService = ref.watch(subscriptionServiceProvider);
-
-  final userId = auth.maybeWhen(
-    data: (user) => user?.uid,
-    orElse: () => null,
-  );
-
-  if (userId == null) {
-    yield null;
-    return;
+  SubscriptionNotifier(this._revenueCat) : super(const AsyncValue.loading()) {
+    _initialize();
   }
 
-  yield* subscriptionService.subscriptionInfoStream(userId);
-});
-
-// Check if IAP is available
-final iapAvailableProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  return await paymentService.isAvailable();
-});
-
-// Get product details for monthly subscription
-final monthlyProductProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  final response = await paymentService
-      .getProductDetails([PaymentService.monthlyProductId]);
-  if (response.productDetails.isNotEmpty) {
-    return response.productDetails.first;
-  }
-  return null;
-});
-
-// Get product details for yearly subscription
-final yearlyProductProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  final response = await paymentService
-      .getProductDetails([PaymentService.yearlyProductId]);
-  if (response.productDetails.isNotEmpty) {
-    return response.productDetails.first;
-  }
-  return null;
-});
-
-// Check if has active trial
-final isInTrialProvider = FutureProvider.autoDispose((ref) async {
-  final subscription = await ref.watch(subscriptionInfoProvider.future);
-  return subscription?.isInTrial ?? false;
-});
-
-// Check if has active subscription
-final hasActiveSubscriptionProvider = FutureProvider.autoDispose((ref) async {
-  final subscription = await ref.watch(subscriptionInfoProvider.future);
-  return subscription?.hasActiveSubscription ?? false;
-});
-
-// Check if has access (either trial or subscription)
-final hasAccessProvider = FutureProvider.autoDispose((ref) async {
-  final subscription = await ref.watch(subscriptionInfoProvider.future);
-  return subscription?.hasAccess ?? false;
-});
-
-// Get days remaining in trial
-final daysRemainingInTrialProvider = FutureProvider.autoDispose((ref) async {
-  final subscription = await ref.watch(subscriptionInfoProvider.future);
-  return subscription?.daysRemainingInTrial;
-});
-
-// Purchase monthly subscription
-final purchaseMonthlyProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(userAuthStateProvider);
-  final paymentService = ref.watch(paymentServiceProvider);
-
-  final userId = auth.maybeWhen(
-    data: (user) => user?.uid,
-    orElse: () => null,
-  );
-
-  if (userId == null) {
-    throw Exception('User not authenticated');
+  Future<void> _initialize() async {
+    try {
+      await _revenueCat.initialize();
+      final isSubscribed = await _revenueCat.isSubscribed();
+      state = AsyncValue.data(isSubscribed);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 
-  try {
-    await paymentService.purchaseMonthly(userId);
-    // Invalidate subscription info to refresh
-    ref.invalidate(subscriptionInfoProvider);
-    return true;
-  } catch (e) {
-    rethrow;
-  }
-});
+  /// Purchase subscription
+  Future<void> purchaseSubscription() async {
+    try {
+      final offerings = await _revenueCat.getOfferings();
+      if (offerings == null || offerings.isEmpty) {
+        throw Exception('No offerings available');
+      }
 
-// Purchase yearly subscription
-final purchaseYearlyProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(userAuthStateProvider);
-  final paymentService = ref.watch(paymentServiceProvider);
+      // Get the monthly package (adjust logic if multiple packages)
+      final monthlyPackage = offerings.firstWhere(
+        (pkg) =>
+            pkg.identifier.contains(AppConstants.subscriptionProductId) ||
+            pkg.packageType == PackageType.monthly,
+        orElse: () => offerings.first,
+      );
 
-  final userId = auth.maybeWhen(
-    data: (user) => user?.uid,
-    orElse: () => null,
-  );
+      state = const AsyncValue.loading();
+      final success = await _revenueCat.purchaseSubscription(
+        package: monthlyPackage,
+      );
 
-  if (userId == null) {
-    throw Exception('User not authenticated');
-  }
-
-  try {
-    await paymentService.purchaseYearly(userId);
-    // Invalidate subscription info to refresh
-    ref.invalidate(subscriptionInfoProvider);
-    return true;
-  } catch (e) {
-    rethrow;
-  }
-});
-
-// Cancel subscription
-final cancelSubscriptionProvider = FutureProvider.autoDispose((ref) async {
-  final auth = ref.watch(userAuthStateProvider);
-  final subscriptionService = ref.watch(subscriptionServiceProvider);
-
-  final userId = auth.maybeWhen(
-    data: (user) => user?.uid,
-    orElse: () => null,
-  );
-
-  if (userId == null) {
-    throw Exception('User not authenticated');
+      if (success) {
+        state = const AsyncValue.data(true);
+      } else {
+        throw Exception('Purchase failed');
+      }
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
   }
 
-  try {
-    await subscriptionService.cancelSubscription(userId);
-    // Invalidate subscription info to refresh
-    ref.invalidate(subscriptionInfoProvider);
-    return true;
-  } catch (e) {
-    rethrow;
-  }
-});
-
-// Listen to purchase updates
-final purchaseUpdateStreamProvider = StreamProvider.autoDispose((ref) {
-  final paymentService = ref.watch(paymentServiceProvider);
-  return paymentService.getPurchaseUpdates();
-});
-
-// Check if monthly product is purchased
-final isMonthlyPurchasedProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  return await paymentService.isProductPurchased(
-      PaymentService.monthlyProductId);
-});
-
-// Check if yearly product is purchased
-final isYearlyPurchasedProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  return await paymentService.isProductPurchased(
-      PaymentService.yearlyProductId);
-});
-
-// Restore purchases
-final restorePurchasesProvider = FutureProvider.autoDispose((ref) async {
-  final paymentService = ref.watch(paymentServiceProvider);
-  final auth = ref.watch(userAuthStateProvider);
-
-  final userId = auth.maybeWhen(
-    data: (user) => user?.uid,
-    orElse: () => null,
-  );
-
-  if (userId == null) {
-    throw Exception('User not authenticated');
+  /// Restore previous purchases
+  Future<void> restorePurchases() async {
+    try {
+      state = const AsyncValue.loading();
+      final success = await _revenueCat.restorePurchases();
+      state = AsyncValue.data(success);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
   }
 
-  try {
-    await paymentService.restorePurchases();
-    // Invalidate subscription info to refresh
-    ref.invalidate(subscriptionInfoProvider);
-    return true;
-  } catch (e) {
-    rethrow;
+  /// Refresh subscription status
+  Future<void> refreshSubscriptionStatus() async {
+    try {
+      final isSubscribed = await _revenueCat.isSubscribed();
+      state = AsyncValue.data(isSubscribed);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
+}
+
+/// Subscription status provider (watch this in UI)
+final subscriptionProvider =
+    StateNotifierProvider<SubscriptionNotifier, AsyncValue<bool>>((ref) {
+  final revenueCat = RevenueCatService();
+  return SubscriptionNotifier(revenueCat);
 });
+
+// ─── Subscription Details Provider ─────────────────────────────────────────
+
+class SubscriptionDetailsNotifier
+    extends StateNotifier<AsyncValue<SubscriptionDetails>> {
+  final RevenueCatService _revenueCat;
+
+  SubscriptionDetailsNotifier(this._revenueCat)
+      : super(const AsyncValue.loading()) {
+    _loadDetails();
+  }
+
+  Future<void> _loadDetails() async {
+    try {
+      final offerings = await _revenueCat.getOfferings();
+      if (offerings == null || offerings.isEmpty) {
+        throw Exception('No offerings available');
+      }
+
+      final monthlyPackage = offerings.firstWhere(
+        (pkg) => pkg.packageType == PackageType.monthly,
+        orElse: () => offerings.first,
+      );
+
+      final expirationDate = await _revenueCat.getSubscriptionExpirationDate();
+      final isSubscribed = await _revenueCat.isSubscribed();
+
+      state = AsyncValue.data(
+        SubscriptionDetails(
+          packageId: monthlyPackage.identifier,
+          price: monthlyPackage.storeProduct.priceString,
+          localizedPrice: monthlyPackage.storeProduct.priceString,
+          currencyCode: monthlyPackage.storeProduct.currencyCode ?? 'JPY',
+          expirationDate: expirationDate,
+          isActive: isSubscribed,
+        ),
+      );
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> refresh() => _loadDetails();
+}
+
+/// Subscription details provider
+final subscriptionDetailsProvider = StateNotifierProvider<
+    SubscriptionDetailsNotifier,
+    AsyncValue<SubscriptionDetails>>((ref) {
+  final revenueCat = RevenueCatService();
+  return SubscriptionDetailsNotifier(revenueCat);
+});
+
+// ─── Models ────────────────────────────────────────────────────────────────
+
+class SubscriptionDetails {
+  final String packageId;
+  final String price;
+  final String localizedPrice;
+  final String currencyCode;
+  final DateTime? expirationDate;
+  final bool isActive;
+
+  SubscriptionDetails({
+    required this.packageId,
+    required this.price,
+    required this.localizedPrice,
+    required this.currencyCode,
+    required this.expirationDate,
+    required this.isActive,
+  });
+
+  bool get isExpired {
+    if (expirationDate == null) return false;
+    return DateTime.now().isAfter(expirationDate!);
+  }
+
+  String get expirationText {
+    if (expirationDate == null) return '未取得';
+    return '${expirationDate!.year}年${expirationDate!.month}月${expirationDate!.day}日';
+  }
+}
