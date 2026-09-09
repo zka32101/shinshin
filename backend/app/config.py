@@ -74,11 +74,20 @@ class Settings(BaseSettings):
     apple_team_id: Optional[str] = None
     apple_key_id: Optional[str] = None
     apple_issuer_id: Optional[str] = None
+    # App Store Server API 用: バンドルID（例: jp.petitworks.shougaku_kore_doutoku）
+    apple_bundle_id: Optional[str] = None
+    # App Store Server API 用: .p8 秘密鍵ファイルへのパス（PEM形式, ES256署名用）
+    apple_private_key_path: Optional[str] = None
+    # "production" または "sandbox"（TestFlight/開発中は sandbox）
+    apple_environment: str = "production"
 
     # ========================================================================
     # Google Play設定
     # ========================================================================
+    # サービスアカウントJSON鍵ファイルへのパス（Play Developer API用）
     google_play_credentials_path: Optional[str] = None
+    # Androidアプリのパッケージ名（例: jp.petitworks.shougaku_kore_doutoku）
+    google_play_package_name: Optional[str] = None
 
     class Config:
         env_file = ".env"

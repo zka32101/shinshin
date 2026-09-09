@@ -17,9 +17,9 @@ class PaymentService {
 
   bool _isAvailable = false;
 
-  PaymentService() {
+  PaymentService({SubscriptionService? subscriptionService}) {
     _iap = InAppPurchase.instance;
-    _subscriptionService = SubscriptionService();
+    _subscriptionService = subscriptionService ?? SubscriptionService();
     _logger = LoggerService();
 
     _initializeInAppPurchase();
@@ -83,7 +83,7 @@ class PaymentService {
       final response = await getProductDetails([productId]);
 
       if (response.productDetails.isEmpty) {
-        throw Exception('Product not found: $productId');
+        throw Exception('Product not found: ${purchaseDetails.productID}');
       }
 
       final product = response.productDetails.first;
@@ -91,10 +91,10 @@ class PaymentService {
       final purchaseParam = PurchaseParam(productDetails: product);
       await _iap.buyNonConsumable(purchaseParam: purchaseParam);
 
-      _logger.log('Purchase initiated for product: $productId');
+      _logger.log('Purchase initiated for product: ${purchaseDetails.productID}');
       return true;
     } catch (e) {
-      _logger.logError('Failed to purchase product: $productId', error: e);
+      _logger.logError('Failed to purchase product: ${purchaseDetails.productID}', error: e);
       rethrow;
     }
   }
@@ -112,18 +112,23 @@ class PaymentService {
     try {
       if (purchaseDetails.status == PurchaseStatus.purchased ||
           purchaseDetails.status == PurchaseStatus.restored) {
-        // Determine plan type from product ID
-        final planType = purchaseDetails.productID == monthlyProductId
-            ? 'monthly'
-            : 'yearly';
-
-        // Verify receipt
+        // Verify receipt with the backend (Google Play Developer API /
+        // App Store Server API). The backend is the source of truth: it
+        // verifies the purchase server-side and only then activates
+        // premium — the client never grants premium on its own.
         bool verified = false;
         if (Platform.isIOS) {
-          verified = await _subscriptionService.verifyAppleReceipt(
-            userId: userId,
-            receipt: purchaseDetails.verificationData.localVerificationData,
-          );
+          final transactionId = purchaseDetails.purchaseID;
+          if (transactionId == null) {
+            _logger.logError(
+                'Missing transaction ID for iOS purchase: ${purchaseDetails.productID}');
+          } else {
+            verified = await _subscriptionService.verifyAppleReceipt(
+              userId: userId,
+              productId: purchaseDetails.productID,
+              transactionId: transactionId,
+            );
+          }
         } else if (Platform.isAndroid) {
           verified = await _subscriptionService.verifyGooglePlayReceipt(
             userId: userId,
@@ -133,15 +138,14 @@ class PaymentService {
           );
         }
 
-        if (verified && purchaseDetails.purchaseID != null) {
-          // Update subscription in Firestore
-          await _subscriptionService.activateSubscription(
-            userId: userId,
-            planType: planType,
-            transactionId: purchaseDetails.purchaseID!,
-          );
-
+        if (verified) {
+          // Subscription state (plan/expiry) has already been written to
+          // Firestore by SubscriptionService using the backend-verified
+          // response — nothing further to do here.
           _logger.log('Purchase completed and verified for user: $userId');
+        } else {
+          _logger.logError(
+              'Purchase could not be verified by backend for user: $userId, product: ${purchaseDetails.productID}');
         }
       } else if (purchaseDetails.status == PurchaseStatus.error) {
         _logger.logError(

@@ -10,6 +10,7 @@ from app.models.ranking import Ranking
 from app.models.coppa_compliance import COPPAConsent, COPPAPrivacyPolicy
 from app.models.friend import Friend
 from app.models.challenge import DilemmaChallenge
+from app.models.purchase import Purchase
 
 __all__ = [
     "User", "Child",
@@ -24,4 +25,5 @@ __all__ = [
     "COPPAPrivacyPolicy",
     "Friend",
     "DilemmaChallenge",
+    "Purchase",
 ]
