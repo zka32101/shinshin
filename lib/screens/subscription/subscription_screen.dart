@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/subscription_provider.dart';
 import '../../services/analytics_service.dart';
+import '../../utils/parental_gate_helper.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({Key? key}) : super(key: key);
@@ -309,6 +310,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _buyMonthly() async {
+    // 課金操作の前に保護者ゲートを表示し、子どもが誤って課金しないようにする
+    final passedGate = await requireParentalGate(
+      context,
+      description: 'これはアプリ内課金の操作です。\n下の計算の答えを入力してください。',
+    );
+    if (!passedGate || !mounted) return;
+
     setState(() => _isProcessing = true);
     try {
       final result = await ref.read(purchaseMonthlyProvider.future);
@@ -338,6 +346,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _buyYearly() async {
+    // 課金操作の前に保護者ゲートを表示し、子どもが誤って課金しないようにする
+    final passedGate = await requireParentalGate(
+      context,
+      description: 'これはアプリ内課金の操作です。\n下の計算の答えを入力してください。',
+    );
+    if (!passedGate || !mounted) return;
+
     setState(() => _isProcessing = true);
     try {
       final result = await ref.read(purchaseYearlyProvider.future);
