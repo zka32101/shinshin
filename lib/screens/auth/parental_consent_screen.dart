@@ -9,6 +9,7 @@
 // ========================================================
 
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/parental_consent.dart';
@@ -177,9 +178,9 @@ class _ParentalConsentScreenState
                   ),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
+                AppButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('戻る'),
+                  label: '戻る',
                 ),
               ],
             ),
@@ -307,10 +308,8 @@ class _ParentalConsentScreenState
                 // 送信ボタン
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: formState.allAgreed ? _submitConsent : null,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Colors.green,
                       disabledBackgroundColor: Colors.grey.shade300,
                     ),
@@ -333,7 +332,7 @@ class _ParentalConsentScreenState
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('キャンセル'),
+                    label: 'キャンセル',
                   ),
                 ),
                 const SizedBox(height: 24),

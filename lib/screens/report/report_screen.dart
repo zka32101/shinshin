@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../providers/report_provider.dart';
@@ -1492,17 +1493,13 @@ class _EmptyReportCard extends ConsumerWidget {
           const Text('ストーリーを学習するとレポートが生成されます',
               style: TextStyle(fontSize: 13, color: _textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 20),
-          ElevatedButton(
+          AppButton(
             onPressed: () {
               final key = (childId: childId, year: year, month: month);
               ref.invalidate(monthlyReportProvider(key));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            }),
             ),
-            child: const Text('レポートを確認する'),
+            label: 'レポートを確認する',
           ),
           const SizedBox(height: 12),
           OutlinedButton(
@@ -1516,7 +1513,7 @@ class _EmptyReportCard extends ConsumerWidget {
               side: const BorderSide(color: _primaryColor),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('AIレポートを生成する'),
+            label: 'AIレポートを生成する',
           ),
         ],
       ),

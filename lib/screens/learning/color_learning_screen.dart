@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'dart:math';
 
 /// 色選び学習画面
@@ -118,7 +119,7 @@ class _ColorLearningScreenState extends State<ColorLearningScreen> {
                 _showResults();
               }
             },
-            child: const Text('次へ'),
+            label: '次へ',
           ),
         ],
       ),
@@ -143,7 +144,7 @@ class _ColorLearningScreenState extends State<ColorLearningScreen> {
                 _showResults();
               }
             },
-            child: const Text('次へ'),
+            label: '次へ',
           ),
         ],
       ),
@@ -166,7 +167,7 @@ class _ColorLearningScreenState extends State<ColorLearningScreen> {
                 _generateQuestions();
               });
             },
-            child: const Text('もう一度'),
+            label: 'もう一度',
           ),
         ],
       ),
@@ -195,24 +196,19 @@ class _ColorLearningScreenState extends State<ColorLearningScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: () => setState(() => _currentMode = 0),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9B59B6),
                     ),
                     child: const Text('色学習', style: TextStyle(color: Colors.white)),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: () {
                       setState(() => _currentMode = 1);
                       _generateQuestions();
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                    ),
                     child: const Text('ゲーム', style: TextStyle(color: Colors.white)),
                   ),
                 ),
@@ -273,20 +269,15 @@ class _ColorLearningScreenState extends State<ColorLearningScreen> {
           child: Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: AppButton(
                   onPressed: () => setState(() => _currentMode = 0),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                  ),
                   child: const Text('色学習', style: TextStyle(color: Colors.white)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ElevatedButton(
+                child: AppButton(
                   onPressed: () => setState(() => _currentMode = 1),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9B59B6),
                   ),
                   child: const Text('ゲーム', style: TextStyle(color: Colors.white)),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/story.dart';
 import '../../models/badge.dart';
@@ -401,10 +402,8 @@ class _ResultActionButtonState extends State<_ResultActionButton>
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        child: ElevatedButton(
+        child: AppButton(
           onPressed: null,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: widget.backgroundColor,
             foregroundColor: widget.foregroundColor,
             shape: RoundedRectangleBorder(

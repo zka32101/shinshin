@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 
 /// プライバシーポリシー画面
 class PrivacyPolicyScreen extends StatelessWidget {

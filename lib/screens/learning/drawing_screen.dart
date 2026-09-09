@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 
 /// 絵描き学習画面
 /// 自由に描画して創意表現を学ぶ

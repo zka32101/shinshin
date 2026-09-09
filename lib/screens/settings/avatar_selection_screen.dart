@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/avatar.dart';
 import '../../providers/avatar_provider.dart';
@@ -126,7 +127,7 @@ class AvatarSelectionScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ElevatedButton.icon(
+                      AppButton(
                         onPressed: () {
                           Navigator.of(context).pushNamed('/avatar_shop');
                         },

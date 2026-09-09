@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/avatar.dart';
 import '../../providers/avatar_provider.dart';
@@ -144,7 +145,7 @@ class AvatarShopScreen extends ConsumerWidget {
                   ),
                 ),
                 if (!isPurchased)
-                  ElevatedButton(
+                  AppButton(
                     onPressed: () {
                       _showPurchaseConfirmation(
                         context,
@@ -152,12 +153,12 @@ class AvatarShopScreen extends ConsumerWidget {
                         avatar,
                       );
                     },
-                    child: const Text('購入する'),
+                    label: '購入する',
                   )
                 else
-                  ElevatedButton(
+                  AppButton(
                     onPressed: null,
-                    child: const Text('購入済み'),
+                    label: '購入済み',
                   ),
               ],
             ),
@@ -191,14 +192,14 @@ class AvatarShopScreen extends ConsumerWidget {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('キャンセル'),
+              label: 'キャンセル',
             ),
-            ElevatedButton(
+            AppButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _performPurchase(context, ref, avatar);
               },
-              child: const Text('購入する'),
+              label: '購入する',
             ),
           ],
         );

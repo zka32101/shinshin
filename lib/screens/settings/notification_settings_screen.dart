@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../models/notification_preferences.dart';
@@ -373,11 +374,8 @@ class _NotificationSettingsScreenState
             const SizedBox(height: 24),
 
             // 保存ボタン
-            ElevatedButton(
+            AppButton(
               onPressed: _savePreferences,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(
                 '💾 保存',

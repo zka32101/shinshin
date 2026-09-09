@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/feedback_report.dart';
@@ -120,7 +121,7 @@ class _FeedbackFormScreenState extends ConsumerState<FeedbackFormScreen> {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: AppButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9B59B6),
                   foregroundColor: Colors.white,

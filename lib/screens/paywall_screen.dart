@@ -2,6 +2,7 @@
 // Phase 4.2: RevenueCat subscription UI
 
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/subscription_provider.dart';
 import '../utils/constants.dart';
@@ -155,11 +156,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: _isLoading ? null : _handlePurchase,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -189,7 +187,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   width: double.infinity,
                   child: TextButton(
                     onPressed: _isLoading ? null : _handleRestore,
-                    child: const Text('以前の購入を復元'),
+                    label: '以前の購入を復元',
                   ),
                 ),
               ],
@@ -216,14 +214,14 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                       onPressed: () {
                         // Open terms
                       },
-                      child: const Text('利用規約'),
+                      label: '利用規約',
                     ),
                     const Text('・'),
                     TextButton(
                       onPressed: () {
                         // Open privacy policy
                       },
-                      child: const Text('プライバシーポリシー'),
+                      label: 'プライバシーポリシー',
                     ),
                   ],
                 ),

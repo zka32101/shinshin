@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/child_profile.dart';
 import '../../providers/child_provider.dart';
@@ -127,7 +128,7 @@ class ProfileManagementScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
+            label: 'キャンセル',
           ),
           TextButton(
             onPressed: () {
@@ -363,10 +364,8 @@ class _AddProfileButtonState extends State<_AddProfileButton>
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        child: ElevatedButton(
+        child: AppButton(
           onPressed: null,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(

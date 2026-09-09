@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/audio_provider.dart';
 import '../../providers/locale_provider.dart';
@@ -58,7 +59,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () => ref.read(offlineSyncProvider.notifier).syncPendingItems(),
-                    child: const Text('今すぐ同期'),
+                    label: '今すぐ同期',
                   ),
                 ],
               ),
@@ -385,7 +386,7 @@ class SettingsScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
+            label: 'キャンセル',
           ),
           TextButton(
             onPressed: () async {

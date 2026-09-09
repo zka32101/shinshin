@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/subscription_provider.dart';
 import '../../services/analytics_service.dart';
@@ -130,7 +131,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               // Restore button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: AppButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -278,7 +279,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: AppButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isSelected ? Colors.blue : Colors.grey[400],
                   padding: const EdgeInsets.symmetric(vertical: 12),

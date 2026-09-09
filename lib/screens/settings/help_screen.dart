@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 
 /// ヘルプ画面 — よくある質問（FAQ）と使い方ガイド
 /// 商用利用OK画像を多数統合

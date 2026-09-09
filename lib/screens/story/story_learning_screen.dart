@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_core/widgets/furigana_text.dart';
@@ -394,7 +395,7 @@ class _StoryLearningScreenState extends ConsumerState<StoryLearningScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('続ける'),
+            label: '続ける',
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -1073,13 +1074,8 @@ class _NavigationBar extends StatelessWidget {
           // 次へボタン
           Expanded(
             flex: 2,
-            child: ElevatedButton(
+            child: AppButton(
               onPressed: onNext,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    isNearEnd ? AppColors.error : AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(AppStyles.radiusMedium)),
@@ -1202,12 +1198,8 @@ class _StoryActionButtonState extends State<_StoryActionButton>
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        child: ElevatedButton(
+        child: AppButton(
           onPressed: null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppStyles.radiusMedium),
             ),

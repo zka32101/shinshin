@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/friend.dart';
@@ -252,10 +253,8 @@ class _AddFriendCardState extends ConsumerState<_AddFriendCard> {
                 ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(
+              AppButton(
                 onPressed: _isSubmitting ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9B59B6),
                   foregroundColor: Colors.white,
                 ),
                 child: _isSubmitting
@@ -293,7 +292,7 @@ class _FriendTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
+            label: 'キャンセル',
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),

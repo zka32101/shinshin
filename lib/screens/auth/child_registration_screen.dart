@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_core/widgets/components/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/child_provider.dart';
 import '../../utils/animation_constants.dart';
@@ -371,10 +372,8 @@ class _AnimatedCompleteButtonState extends State<_AnimatedCompleteButton>
           child: SizedBox(
             width: double.infinity,
             height: 52,
-            child: ElevatedButton(
+            child: AppButton(
               onPressed: null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9B59B6),
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.grey.shade300,
                 shape: RoundedRectangleBorder(
