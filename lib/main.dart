@@ -21,6 +21,8 @@ import 'services/logger_service.dart';
 import 'utils/image_cache_utils.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
+import 'package:cross_promo_kit/cross_promo_kit.dart'
+    show CrossPromoService;
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -48,6 +50,14 @@ void main() async {
     );
 
     LoggerService().log('Firebase initialized successfully');
+
+    // クロスプロモーション初期化
+    try {
+      await CrossPromoService.init();
+    } catch (e) {
+      LoggerService().log('CrossPromo initialization skipped: $e');
+    }
+
     LoggerService().log('App initialization time: ${stopwatch.elapsedMilliseconds}ms');
   } catch (e, stackTrace) {
     LoggerService().logError('Firebase initialization error', error: e, stackTrace: stackTrace);
