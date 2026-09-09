@@ -7,11 +7,13 @@ import '../../providers/notification_provider.dart';
 import '../../providers/offline_sync_provider.dart';
 import '../../providers/offline_provider.dart';
 import '../../services/hive_service.dart';
+import '../../utils/parental_gate_helper.dart';
 import '../feedback/feedback_form_screen.dart';
 import '../profile/profile_management_screen.dart';
 import '../ranking/ranking_settings_screen.dart';
 import 'help_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'screen_time_settings_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -154,6 +156,24 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
+
+          // ─── 利用時間制限セクション ───
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '利用時間',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: const Icon(Icons.hourglass_bottom, color: Color(0xFF9B59B6)),
+            title: const Text('利用時間制限'),
+            subtitle: const Text('1日の利用時間の上限を設定（保護者向け）'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => _openScreenTimeSettings(context),
+          ),
 
           // 音声設定セクション
           const SizedBox(height: 24),
@@ -319,6 +339,20 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Future<void> _openScreenTimeSettings(BuildContext context) async {
+    // 利用時間制限の変更は保護者向け操作のため、ゲートを通してから遷移する
+    final passedGate = await requireParentalGate(
+      context,
+      description: 'これは利用時間の設定です。\n下の計算の答えを入力してください。',
+    );
+    if (!passedGate || !context.mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ScreenTimeSettingsScreen()),
     );
   }
 

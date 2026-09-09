@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
+import '../../providers/screen_time_provider.dart';
 import '../../widgets/avatar_display_widget.dart';
 import '../../widgets/offline_banner.dart';
+import '../../widgets/screen_time_limit_widget.dart';
 import '../../utils/sound_effects_utils.dart';
 import '../../utils/accessibility_utils.dart';
 import '../../utils/animation_constants.dart';
@@ -26,6 +28,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isLimitReached =
+        ref.watch(screenTimeProvider.select((s) => s.isLimitReached));
+    if (isLimitReached) {
+      return const ScreenTimeLimitReachedWidget();
+    }
+
     final menuItems = [
       (icon: '📖', title: 'ストーリー', subtitle: '道徳の学習', screen: const LibraryScreen()),
       (icon: '📘', title: '学ぶ', subtitle: '道徳の解説記事', screen: const LessonScreen()),
