@@ -14,8 +14,8 @@ async def test_get_monthly_ranking_empty(client: AsyncClient, auth_headers: dict
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["ranking_month"] == "2026-09-01"
-    assert data["group_type"] == "overall"
+    assert data["rankingMonth"] == "2026-09-01"
+    assert data["groupType"] == "overall"
     assert data["rankings"] == []
 
 
@@ -34,7 +34,7 @@ async def test_get_monthly_ranking_by_group_type(
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["group_type"] == group_type
+        assert data["groupType"] == group_type
 
 
 @pytest.mark.asyncio
@@ -86,8 +86,10 @@ async def test_monthly_ranking_anonymizes_name_by_default(
         headers=auth_headers,
     )
     data = response.json()
-    assert data["rankings"][0]["child_name"] == "ユーザー"
-    assert data["rankings"][0]["child_name"] != child.name
+    assert data["rankings"][0]["childName"] == "ユーザー"
+    assert data["rankings"][0]["childName"] != child.name
+    assert data["rankings"][0]["isNamePublic"] is False
+    assert "updatedAt" in data["rankings"][0]
 
 
 @pytest.mark.asyncio
@@ -123,4 +125,5 @@ async def test_monthly_ranking_shows_name_when_public(
         headers=auth_headers,
     )
     data = response.json()
-    assert data["rankings"][0]["child_name"] == child.name
+    assert data["rankings"][0]["childName"] == child.name
+    assert data["rankings"][0]["isNamePublic"] is True

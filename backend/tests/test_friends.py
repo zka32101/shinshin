@@ -202,9 +202,9 @@ async def test_friends_ranking_calculation(client: AsyncClient, auth_headers: di
     rankings = ranking_resp.json()["rankings"]
     assert len(rankings) == 2
     # 友だちの方がポイントが高いので1位
-    assert rankings[0]["child_id"] == str(friend_child_id)
+    assert rankings[0]["childId"] == str(friend_child_id)
     assert rankings[0]["rank"] == 1
-    assert rankings[1]["child_id"] == str(child_id)
+    assert rankings[1]["childId"] == str(child_id)
     assert rankings[1]["rank"] == 2
 
 

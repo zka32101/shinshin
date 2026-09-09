@@ -30,6 +30,7 @@ def _display_name(child: Child) -> str:
 @router.get(
     "/month/{ranking_month}",
     response_model=RankingListResponse,
+    response_model_by_alias=True,
 )
 async def get_monthly_ranking(
     ranking_month: str,
@@ -92,6 +93,8 @@ async def get_monthly_ranking(
                         avatar_emoji=child.avatar_emoji,
                         total_answers=ranking.total_answers,
                         total_growth_score=ranking.total_growth_score,
+                        updated_at=ranking.updated_at,
+                        is_name_public=child.is_name_public,
                     )
                 )
 
@@ -111,6 +114,7 @@ async def get_monthly_ranking(
 @router.get(
     "/child/{child_id}/current",
     response_model=Optional[RankingDetailResponse],
+    response_model_by_alias=True,
 )
 async def get_child_current_ranking(
     child_id: UUID,
@@ -176,6 +180,8 @@ async def get_child_current_ranking(
 
         # 自分の子どものランキング情報なので、実名をそのまま返す
         # （isNamePublic は「他ユーザーへの公開ランキング」にのみ適用される）
+        # is_name_public=True にして、フロント側の getDisplayName() でも
+        # 実名（child_name）がそのまま表示されるようにする
         return RankingDetailResponse(
             rank=ranking.rank,
             child_id=ranking.child_id,
@@ -183,6 +189,8 @@ async def get_child_current_ranking(
             avatar_emoji=child.avatar_emoji,
             total_answers=ranking.total_answers,
             total_growth_score=ranking.total_growth_score,
+            updated_at=ranking.updated_at,
+            is_name_public=True,
         )
 
     except HTTPException:
