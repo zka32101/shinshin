@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_constants.dart';
+import '../../constants/app_styles.dart';
+import '../../constants/virtue_constants.dart';
 import '../../models/badge.dart';
+import '../../providers/badge_provider.dart';
 import '../../providers/child_provider.dart';
 import '../../providers/progress_provider.dart';
-import '../../providers/badge_provider.dart';
-import '../../constants/app_colors.dart';
-import '../../constants/app_styles.dart';
-import '../../constants/app_constants.dart';
-import '../../constants/virtue_constants.dart';
-import '../../widgets/common_states.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
+import '../../widgets/common_states.dart';
 
 /// ダッシュボード画面 — 子どもの学習進捗を視覚的に表示
 /// 統計情報、バッジ、アクティビティ、成長トレンドを表示

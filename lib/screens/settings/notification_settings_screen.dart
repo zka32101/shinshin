@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../models/notification_preferences.dart';
-import '../../providers/notification_preferences_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/notification_preferences_provider.dart';
 
 const _primaryColor = Color(0xFF9B59B6);
 const _bgColor = Color(0xFFF5F5F5);

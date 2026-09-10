@@ -1,11 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../providers/audio_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
-import '../../providers/offline_sync_provider.dart';
 import '../../providers/offline_provider.dart';
+import '../../providers/offline_sync_provider.dart';
 import '../../services/hive_service.dart';
 import '../../utils/parental_gate_helper.dart';
 import '../feedback/feedback_form_screen.dart';

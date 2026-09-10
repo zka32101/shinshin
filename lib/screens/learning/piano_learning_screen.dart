@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/material.dart';
 
 /// ピアノ学習画面
 /// 鍵盤をタッチして音を学ぶ
