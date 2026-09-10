@@ -24,6 +24,7 @@ import 'providers/theme_provider.dart';
 import 'package:cross_promo_kit/cross_promo_kit.dart'
     show CrossPromoService;
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
+import 'services/revenue_cat_service.dart';
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -57,6 +58,13 @@ void main() async {
       await CrossPromoService.init();
     } catch (e) {
       LoggerService().log('CrossPromo initialization skipped: $e');
+    }
+
+    // RevenueCat初期化（サブスクリプション管理）
+    try {
+      await RevenueCatService().initialize();
+    } catch (e) {
+      LoggerService().log('RevenueCat initialization skipped: $e');
     }
 
     LoggerService().log('App initialization time: ${stopwatch.elapsedMilliseconds}ms');
