@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderContainer, UncontrolledProviderScope;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_core/shared_core.dart'
+    show badgeProvider, unifiedBadges, BadgeNotifier;
 import 'firebase_options.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/settings/avatar_selection_screen.dart';
@@ -78,11 +80,21 @@ void main() async {
     return;
   }
 
+  final container = ProviderContainer(
+    overrides: [
+      // 統一バッジシステム（Phase 4.1）: 道徳コレ用バッジを主題タグで初期化
+      badgeProvider.overrideWith(() => BadgeNotifier()),
+      // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
+      lessonProvider.overrideWith(LessonNotifier.new),
+    ],
+  );
+
+  // バッジシステム初期化: 統一バッジを主題タグで初期化
+  container.read(badgeProvider.notifier).setBadgeDefinitions(unifiedBadges, subject: 'morality');
+
   runApp(
-    ProviderScope(
-      overrides: [
-        lessonProvider.overrideWith(LessonNotifier.new),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const ShougakuKoreDoutokuApp(),
     ),
   );
