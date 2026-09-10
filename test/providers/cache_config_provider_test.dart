@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shinshin/providers/cache_config_provider.dart';
+import 'package:shougaku_kore_doutoku/providers/cache_config_provider.dart';
 
 void main() {
   group('Cache Config Provider Tests', () {

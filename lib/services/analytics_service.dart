@@ -213,7 +213,14 @@ class AnalyticsService {
     required String name,
     Map<String, Object?>? parameters,
   }) async {
-    await _analytics.logEvent(name: name, parameters: parameters);
+    final cleanParameters = parameters == null
+        ? null
+        : Map<String, Object>.fromEntries(
+            parameters.entries
+                .where((e) => e.value != null)
+                .map((e) => MapEntry(e.key, e.value!)),
+          );
+    await _analytics.logEvent(name: name, parameters: cleanParameters);
     _log(name, parameters ?? {});
   }
 

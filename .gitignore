@@ -36,6 +36,7 @@ ios/Flutter/Generated.xcconfig
 # Generated files
 *.g.dart
 *.config.dart
+*.freezed.dart
 
 # Environment
 .env

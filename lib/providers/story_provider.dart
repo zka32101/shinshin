@@ -70,11 +70,14 @@ final storiesProvider = FutureProvider.autoDispose
     final apiService = ref.watch(apiServiceProvider);
     final hive = ref.read(hiveServiceProvider);
     try {
-      final stories = await apiService.fetchStories(
+      final rawStories = await apiService.fetchStories(
         theme: filters.theme,
         gradeLevel: filters.gradeLevel,
-        isPremium: filters.isPremium,
       );
+      var stories = rawStories.map(Story.fromJson).toList();
+      if (filters.isPremium != null) {
+        stories = stories.where((s) => s.isPremium == filters.isPremium).toList();
+      }
       // キャッシュ更新（ブロックしない）
       unawaited(hive.cacheStories(stories));
       return stories;
@@ -95,7 +98,11 @@ final storiesProvider = FutureProvider.autoDispose
 final weeklyThemeProvider = FutureProvider.autoDispose.family<List<Story>, int>(
   (ref, weekNumber) async {
     final apiService = ref.watch(apiServiceProvider);
-    return apiService.fetchWeeklyTheme(weekNumber);
+    final result = await apiService.fetchWeeklyTheme();
+    final rawStories = result['stories'] as List<dynamic>? ?? [];
+    return rawStories
+        .map((e) => Story.fromJson(e as Map<String, dynamic>))
+        .toList();
   },
 );
 
@@ -105,7 +112,8 @@ final storyDetailProvider = FutureProvider.autoDispose
   final apiService = ref.watch(apiServiceProvider);
   final hive = ref.read(hiveServiceProvider);
   try {
-    final story = await apiService.fetchStoryDetail(storyId);
+    final rawStory = await apiService.fetchStoryDetail(storyId);
+    final story = Story.fromJson(rawStory);
     // 詳細（content 含む）をキャッシュ更新
     unawaited(hive.cacheStories([story]));
     return story;

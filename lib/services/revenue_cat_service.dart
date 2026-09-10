@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import '../utils/constants.dart';
 
 class RevenueCatService {
@@ -85,8 +86,8 @@ class RevenueCatService {
     required Package package,
   }) async {
     try {
-      final customerInfo = await Purchases.purchasePackage(package);
-      final isActive = customerInfo.entitlements.active
+      final result = await Purchases.purchasePackage(package);
+      final isActive = result.customerInfo.entitlements.active
           .containsKey(AppConstants.premiumEntitlementId);
 
       if (kDebugMode) {
@@ -95,9 +96,10 @@ class RevenueCatService {
 
       _subscriptionStatusController.add(isActive);
       return isActive;
-    } on PurchaseException catch (e) {
+    } on PlatformException catch (e) {
       if (kDebugMode) {
-        print('[RevenueCat] Purchase error: ${e.message}');
+        final errorCode = PurchasesErrorHelper.getErrorCode(e);
+        print('[RevenueCat] Purchase error: $errorCode (${e.message})');
       }
       return false;
     }
@@ -128,11 +130,13 @@ class RevenueCatService {
   Future<DateTime?> getSubscriptionExpirationDate() async {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
-      final expirationDate = customerInfo.entitlements.active
+      final expirationDateString = customerInfo.entitlements.active
           .values
           .firstOrNull
           ?.expirationDate;
-      return expirationDate;
+      return expirationDateString != null
+          ? DateTime.tryParse(expirationDateString)
+          : null;
     } catch (e) {
       if (kDebugMode) {
         print('[RevenueCat] Error fetching expiration date: $e');

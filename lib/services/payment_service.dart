@@ -83,7 +83,7 @@ class PaymentService {
       final response = await getProductDetails([productId]);
 
       if (response.productDetails.isEmpty) {
-        throw Exception('Product not found: ${purchaseDetails.productID}');
+        throw Exception('Product not found: $productId');
       }
 
       final product = response.productDetails.first;
@@ -91,10 +91,10 @@ class PaymentService {
       final purchaseParam = PurchaseParam(productDetails: product);
       await _iap.buyNonConsumable(purchaseParam: purchaseParam);
 
-      _logger.log('Purchase initiated for product: ${purchaseDetails.productID}');
+      _logger.log('Purchase initiated for product: ${product.id}');
       return true;
     } catch (e) {
-      _logger.logError('Failed to purchase product: ${purchaseDetails.productID}', error: e);
+      _logger.logError('Failed to purchase product: $productId', error: e);
       rethrow;
     }
   }

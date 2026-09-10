@@ -23,12 +23,12 @@ class _FakeApiService extends ApiService {
   int completeCalls = 0;
 
   @override
-  Future<String> startQuizSession({
+  Future<Map<String, dynamic>> startQuizSession({
     required String childId,
     required String storyId,
   }) async {
     if (startShouldFail) throw Exception('API error');
-    return startReturnId ?? 'session-123';
+    return {'id': startReturnId ?? 'session-123'};
   }
 
   @override

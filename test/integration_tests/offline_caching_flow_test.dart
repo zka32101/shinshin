@@ -66,8 +66,8 @@ void main() {
       (WidgetTester tester) async {
         final childId = 'test-child-1';
         final badges = [
-          const EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
-          const EarnedBadge(badgeId: 'honesty_1', earnedAt: DateTime(2024, 1, 15)),
+          EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
+          EarnedBadge(badgeId: 'honesty_1', earnedAt: DateTime(2024, 1, 15)),
         ];
 
         // バッジデータをキャッシュに保存
@@ -163,7 +163,7 @@ void main() {
         // キャッシュにテストバッジを保存
         final childId = 'badge-test-child';
         final testBadges = [
-          const EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
+          EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
         ];
         await hiveService.cacheBadgeData(childId, testBadges);
 
@@ -214,12 +214,12 @@ void main() {
         final child2 = 'child-2';
 
         final badges1 = [
-          const EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
+          EarnedBadge(badgeId: 'kindness_1', earnedAt: DateTime(2024, 1, 1)),
         ];
 
         final badges2 = [
-          const EarnedBadge(badgeId: 'honesty_1', earnedAt: DateTime(2024, 1, 15)),
-          const EarnedBadge(badgeId: 'courage_1', earnedAt: DateTime(2024, 2, 1)),
+          EarnedBadge(badgeId: 'honesty_1', earnedAt: DateTime(2024, 1, 15)),
+          EarnedBadge(badgeId: 'courage_1', earnedAt: DateTime(2024, 2, 1)),
         ];
 
         // 複数の子どもについてバッジをキャッシュ

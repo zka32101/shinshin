@@ -855,7 +855,7 @@ class ApiService {
     throw UnimplementedError('fetchProgress: Endpoint not yet implemented');
   }
 
-  Future<String> startQuizSession({
+  Future<Map<String, dynamic>> startQuizSession({
     required String childId,
     required String storyId,
   }) async {
