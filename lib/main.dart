@@ -21,6 +21,7 @@ import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'package:cross_promo_kit/cross_promo_kit.dart'
     show CrossPromoService;
+import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -78,8 +79,11 @@ void main() async {
   }
 
   runApp(
-    const ProviderScope(
-      child: ShougakuKoreDoutokuApp(),
+    ProviderScope(
+      overrides: [
+        lessonProvider.overrideWith(LessonNotifier.new),
+      ],
+      child: const ShougakuKoreDoutokuApp(),
     ),
   );
 }

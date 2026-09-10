@@ -1,59 +1,97 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/lesson_data.dart';
-import '../models/lesson.dart';
+import 'package:shared_core/shared_core.dart' show LessonContent;
 
-const _readKeyPrefix = 'lesson_read_';
+const _readPrefix = 'shinshin_lesson_read_';
+const _favoritePrefix = 'shinshin_lesson_favorite_';
 
-/// 「学ぶ」記事の既読状態プロバイダー。
-/// バッジ（earnedBadgesProvider）と違い、記事の既読は端末ローカルの
-/// 好みに過ぎないため Firestore ではなく SharedPreferences に保存する
-/// （locale_provider.dart と同じ方式）。
-final lessonProvider =
-    StateNotifierProvider<LessonNotifier, Set<String>>((ref) {
-  return LessonNotifier();
-});
+class LessonState {
+  final List<LessonContent> lessons;
+  final Set<String> readIds;
+  final Set<String> favoriteIds;
 
-/// 記事一覧プロバイダー（アプリバンドル内の静的データをそのまま返す）
-final allLessonsProvider = Provider<List<Lesson>>((ref) => kDoutokuLessons);
+  const LessonState({
+    required this.lessons,
+    required this.readIds,
+    required this.favoriteIds,
+  });
 
-/// 既読数プロバイダー（一覧画面のヘッダー表示用）
-final lessonReadCountProvider = Provider<int>((ref) {
-  return ref.watch(lessonProvider).length;
-});
+  static const empty = LessonState(lessons: [], readIds: {}, favoriteIds: {});
 
-/// 既読管理 Notifier。起動時に SharedPreferences から既読 ID 一覧を読み込む。
-class LessonNotifier extends StateNotifier<Set<String>> {
-  LessonNotifier() : super(const {}) {
-    _loadReadIds();
+  LessonState copyWith({
+    List<LessonContent>? lessons,
+    Set<String>? readIds,
+    Set<String>? favoriteIds,
+  }) =>
+      LessonState(
+        lessons: lessons ?? this.lessons,
+        readIds: readIds ?? this.readIds,
+        favoriteIds: favoriteIds ?? this.favoriteIds,
+      );
+
+  bool isRead(String id) => readIds.contains(id);
+  bool isFavorite(String id) => favoriteIds.contains(id);
+  int get readCount => readIds.length;
+}
+
+class LessonNotifier extends Notifier<LessonState> {
+  // 各アプリが定義した解説記事一覧をセット
+  List<LessonContent> _appLessons = [];
+
+  void setLessons(List<LessonContent> lessons) {
+    _appLessons = lessons;
   }
 
-  Future<void> _loadReadIds() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final readIds = <String>{
-        for (final lesson in kDoutokuLessons)
-          if (prefs.getBool('$_readKeyPrefix${lesson.id}') ?? false) lesson.id,
-      };
-      state = readIds;
-    } catch (e) {
-      // 読み込みに失敗しても既読なしの状態で継続
-      debugPrint('Failed to load lesson read status: $e');
+  @override
+  LessonState build() => LessonState.empty;
+
+  Future<void> load(List<LessonContent> lessons) async {
+    _appLessons = lessons;
+    final prefs = await SharedPreferences.getInstance();
+    final read = <String>{};
+    final favorite = <String>{};
+    for (final lesson in _appLessons) {
+      if (prefs.getBool('$_readPrefix${lesson.id}') ?? false) {
+        read.add(lesson.id);
+      }
+      if (prefs.getBool('$_favoritePrefix${lesson.id}') ?? false) {
+        favorite.add(lesson.id);
+      }
     }
+    state = LessonState(lessons: _appLessons, readIds: read, favoriteIds: favorite);
   }
 
-  bool isRead(String lessonId) => state.contains(lessonId);
-
-  /// 記事を既読にする（すでに既読なら何もしない）
   Future<void> markAsRead(String lessonId) async {
-    if (state.contains(lessonId)) return;
-    state = {...state, lessonId};
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('$_readKeyPrefix$lessonId', true);
-    } catch (e) {
-      debugPrint('Failed to save lesson read status: $e');
+    if (state.readIds.contains(lessonId)) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('$_readPrefix$lessonId', true);
+    state = state.copyWith(readIds: {...state.readIds, lessonId});
+  }
+
+  Future<void> toggleFavorite(String lessonId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final next = {...state.favoriteIds};
+    if (next.contains(lessonId)) {
+      next.remove(lessonId);
+      await prefs.remove('$_favoritePrefix$lessonId');
+    } else {
+      next.add(lessonId);
+      await prefs.setBool('$_favoritePrefix$lessonId', true);
     }
+    state = state.copyWith(favoriteIds: next);
+  }
+
+  Future<void> reset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keysToRemove = prefs
+        .getKeys()
+        .where((k) => k.startsWith(_readPrefix) || k.startsWith(_favoritePrefix))
+        .toList();
+    for (final k in keysToRemove) {
+      await prefs.remove(k);
+    }
+    state = state.copyWith(readIds: {}, favoriteIds: {});
   }
 }
+
+final lessonProvider = NotifierProvider<LessonNotifier, LessonState>(LessonNotifier.new);
