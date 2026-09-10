@@ -43,7 +43,33 @@ class LessonNotifier extends Notifier<LessonState> {
   }
 
   @override
-  LessonState build() => LessonState.empty;
+  LessonState build() {
+    // Load read/favorite state from SharedPreferences on initialization
+    _loadAsync();
+    return LessonState.empty;
+  }
+
+  Future<void> _loadAsync() async {
+    // Async loading happens in background after build completes
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final read = <String>{};
+      final favorite = <String>{};
+      for (final lesson in _appLessons) {
+        if (prefs.getBool('$_readPrefix${lesson.id}') ?? false) {
+          read.add(lesson.id);
+        }
+        if (prefs.getBool('$_favoritePrefix${lesson.id}') ?? false) {
+          favorite.add(lesson.id);
+        }
+      }
+      if (read.isNotEmpty || favorite.isNotEmpty) {
+        state = LessonState(lessons: _appLessons, readIds: read, favoriteIds: favorite);
+      }
+    } catch (e) {
+      // Silently fail if loading doesn't work
+    }
+  }
 
   Future<void> load(List<LessonContent> lessons) async {
     _appLessons = lessons;
