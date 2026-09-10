@@ -17,6 +17,12 @@ dependencies:
       url: https://github.com/org-zka32101/shared_core.git
       ref: main
 
+  # Cross Promo Kit (クロスプロモーション)
+  cross_promo_kit:
+    git:
+      url: https://github.com/zka32101/cross_promo_kit.git
+      ref: main
+
   # UI & Material Design
   cupertino_icons: ^1.0.8
 
