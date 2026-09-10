@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../providers/report_provider.dart';
-import '../../providers/child_provider.dart';
-import '../../providers/badge_provider.dart';
-import '../../models/report.dart';
-import '../../models/badge.dart';
+
 import '../../constants/virtue_constants.dart';
+import '../../models/badge.dart';
+import '../../models/report.dart';
+import '../../providers/badge_provider.dart';
+import '../../providers/child_provider.dart';
+import '../../providers/report_provider.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 
