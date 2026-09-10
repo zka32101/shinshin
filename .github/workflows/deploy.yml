@@ -1,44 +1,83 @@
-﻿name: Build and Deploy APK
+﻿name: Build Signed Android App Bundle
 
+# タグプッシュ (v*) または workflow_dispatch でトリガー
+# GitHub Secrets から署名キーストアを復元して、署名付き AAB/APK をビルド
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
-      
+          flutter-version: '3.47.3'
+          channel: stable
+
       - name: Get dependencies
         run: flutter pub get
-      
-      - name: Build APK
-        run: flutter build apk --release
-      
-      - name: Upload APK
-        run: echo "APK built and ready for deployment"
 
-  emulator-test:
-    needs: build
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Restore Android signing keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 が設定されていません。docs/ANDROID_RELEASE_SETUP.md を参照して GitHub Secrets を登録してください"
+            exit 1
+          fi
+          echo -n "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload-keystore.jks"
+          cat > android/key.properties << EOF
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=$RUNNER_TEMP/upload-keystore.jks
+          EOF
+
+      - name: Build signed App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: Build signed APK
+        run: flutter build apk --release
+
+      - name: Upload AAB as workflow artifact
+        uses: actions/upload-artifact@v4
         with:
-          flutter-version: '3.x'
-      
-      - name: Run Android Emulator Tests
-        uses: zka32101/yourwish/.github/workflows/android-emulator-test.yml@main
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
         with:
-          app-path: '.'
-          test-command: 'flutter test'
+          name: app-release-apk
+          path: build/app/outputs/apk/release/app-release.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## 小学コレ！道徳 ${{ github.ref_name }}
+
+            ### ビルドアーティファクト
+            - **AAB**: Google Play Console へのアップロード用
+            - **APK**: 直接インストール用
+
+            詳細は Actions タブで確認してください。
+          draft: true
+          prerelease: false
