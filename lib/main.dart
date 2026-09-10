@@ -1,30 +1,32 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderContainer, UncontrolledProviderScope;
+
+import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoService;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
     show badgeProvider, unifiedBadges, BadgeNotifier;
+
 import 'firebase_options.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/settings/avatar_selection_screen.dart';
-import 'screens/settings/avatar_shop_screen.dart';
-import 'screens/ranking/ranking_screen.dart';
-import 'screens/splash_screen.dart';
+import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
+import 'providers/theme_provider.dart';
 import 'screens/auth/child_registration_screen.dart';
-import 'screens/learning/piano_learning_screen.dart';
-import 'screens/learning/drawing_screen.dart';
-import 'screens/learning/physical_education_screen.dart';
-import 'screens/learning/color_learning_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/learning/color_learning_screen.dart';
+import 'screens/learning/drawing_screen.dart';
+import 'screens/learning/physical_education_screen.dart';
+import 'screens/learning/piano_learning_screen.dart';
+import 'screens/ranking/ranking_screen.dart';
+import 'screens/settings/avatar_selection_screen.dart';
+import 'screens/settings/avatar_shop_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/logger_service.dart';
-import 'utils/image_cache_utils.dart';
-import 'theme/app_theme.dart';
-import 'providers/theme_provider.dart';
-import 'package:cross_promo_kit/cross_promo_kit.dart'
-    show CrossPromoService;
-import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
 import 'services/revenue_cat_service.dart';
+import 'theme/app_theme.dart';
+import 'utils/image_cache_utils.dart';
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
 final navigatorKey = GlobalKey<NavigatorState>();
