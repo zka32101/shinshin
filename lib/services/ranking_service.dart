@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../models/ranking.dart';
-import 'logger_service.dart';
 import 'api_service.dart';
+import 'logger_service.dart';
 
 /// ランキングサービス
 /// ユーザーのランキング情報とプライバシー設定を管理

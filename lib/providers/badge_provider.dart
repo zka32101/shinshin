@@ -1,9 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/badge.dart';
 import '../models/story.dart';
-import 'progress_provider.dart';
-import 'story_provider.dart';
 
 /// Cached badge computation result (internal use)
 class _BadgeComputationCache {

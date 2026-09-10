@@ -1,7 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../utils/validation_utils.dart';
-import 'story_provider.dart' show apiServiceProvider, hiveServiceProvider;
 
 /// クイズ完了結果
 class QuizCompleteResult {

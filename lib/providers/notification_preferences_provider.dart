@@ -1,7 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/notification_preferences.dart';
-import 'firestore_provider.dart';
 
 // 親向け通知設定の取得（キャッシュ付き）
 final notificationPreferencesProvider =

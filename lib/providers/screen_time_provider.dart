@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/screen_time.dart';
 import '../services/hive_service.dart';
 

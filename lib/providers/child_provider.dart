@@ -1,10 +1,12 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/child_profile.dart';
 import '../services/hive_service.dart';
-import 'story_provider.dart' show apiServiceProvider;
 import 'firestore_provider.dart';
+import 'story_provider.dart' show apiServiceProvider;
 
 // ── 選択中の子どもID を Hive に永続化するノティファイアー ──────────────
 class ChildIdNotifier extends StateNotifier<String?> {

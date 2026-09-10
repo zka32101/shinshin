@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../services/firestore_service.dart';
-import 'auth_provider.dart';
 
 /// FirestoreService のシングルトン Provider
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {

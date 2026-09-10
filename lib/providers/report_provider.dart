@@ -1,7 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/report.dart';
-import 'story_provider.dart'; // apiServiceProvider / hiveServiceProvider を再利用
 
 // Named record型でmonthlyReportProviderのキーを定義
 typedef MonthlyReportKey = ({String childId, int year, int month});

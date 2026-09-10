@@ -1,13 +1,15 @@
-import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
 import 'dart:developer' as developer;
-import '../models/story.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../models/badge.dart';
+import '../models/cached_badge.dart';
+import '../models/cached_report.dart';
+import '../models/cached_story.dart';
 import '../models/progress.dart';
 import '../models/report.dart';
-import '../models/badge.dart';
-import '../models/cached_story.dart';
-import '../models/cached_report.dart';
-import '../models/cached_badge.dart';
+import '../models/story.dart';
 import 'logger_service.dart';
 
 /// Cache TTL configuration (in days)

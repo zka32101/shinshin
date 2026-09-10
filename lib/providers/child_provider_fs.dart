@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/child_profile.dart';
-import 'child_provider.dart' show currentChildIdProvider;
-import 'firestore_provider.dart';
 
 /// Firestore から子どものリストをリアルタイムで監視する StreamProvider
 final childrenStreamProvider =

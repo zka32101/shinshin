@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/story.dart';
-import 'firestore_provider.dart';
 
 /// Firestore からストーリー一覧を取得する (Firestore 版)
 ///
