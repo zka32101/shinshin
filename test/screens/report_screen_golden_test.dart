@@ -83,7 +83,7 @@ void main() {
     testWidgets(
       'golden: report screen no report state',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -102,7 +102,7 @@ void main() {
     testWidgets(
       'golden: report screen with full data',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -133,7 +133,7 @@ void main() {
     testWidgets(
       'golden: report screen with low scores',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -166,7 +166,7 @@ void main() {
     testWidgets(
       'golden: report screen with high scores',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -199,7 +199,7 @@ void main() {
     testWidgets(
       'golden: report screen with month comparison',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -242,7 +242,7 @@ void main() {
     testWidgets(
       'golden: report screen with parent message',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -268,7 +268,7 @@ void main() {
     testWidgets(
       'golden: report screen scrolled down',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
@@ -296,7 +296,7 @@ void main() {
     testWidgets(
       'golden: report screen unbalanced scores',
       (WidgetTester tester) async {
-        await tester.binding.window.physicalSizeTestValue =
+        tester.binding.window.physicalSizeTestValue =
             const Size(540, 960);
         addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 

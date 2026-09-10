@@ -167,8 +167,6 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade800,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

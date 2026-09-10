@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shinshin/utils/performance_utils.dart';
+import 'package:matcher/expect.dart' show greaterThan, greaterThanOrEqualTo;
+import 'package:shougaku_kore_doutoku/utils/performance_utils.dart';
 
 void main() {
   group('PerformanceUtils Tests', () {
@@ -26,7 +27,7 @@ void main() {
       }
 
       final elapsed = utils.stopTiming('test_operation');
-      expect(elapsed, isGreaterThanOrEqualTo(0));
+      expect(elapsed, greaterThanOrEqualTo(0));
     });
 
     test('stopTiming returns 0 for non-existent operation', () {
@@ -45,7 +46,7 @@ void main() {
       utils.stopTiming('avg_test');
 
       final average = utils.getAverageTiming('avg_test');
-      expect(average, isGreaterThan(0));
+      expect(average, greaterThan(0));
     });
 
     test('getAverageTiming returns 0 for non-existent metric', () {
@@ -62,7 +63,7 @@ void main() {
 
       final max = utils.getMaxTiming('max_test');
       expect(max, isNotNull);
-      expect(max, isGreaterThanOrEqualTo(0));
+      expect(max, greaterThanOrEqualTo(0));
     });
 
     test('getMinTiming returns minimum elapsed time', () {
@@ -74,7 +75,7 @@ void main() {
 
       final min = utils.getMinTiming('min_test');
       expect(min, isNotNull);
-      expect(min, isGreaterThanOrEqualTo(0));
+      expect(min, greaterThanOrEqualTo(0));
     });
 
     test('getAllTimings returns statistics for all metrics', () {
@@ -126,7 +127,7 @@ void main() {
       }
 
       tracker.end();
-      expect(tracker.elapsedMilliseconds, isGreaterThanOrEqualTo(0));
+      expect(tracker.elapsedMilliseconds, greaterThanOrEqualTo(0));
     });
 
     test('PerformanceTracker name extension works correctly', () {
@@ -183,7 +184,7 @@ void main() {
       final max = utils.getMaxTiming('stats_test');
       final min = utils.getMinTiming('stats_test');
 
-      expect(average, isGreaterThanOrEqualTo(0));
+      expect(average, greaterThanOrEqualTo(0));
       expect(max, isNotNull);
       expect(min, isNotNull);
       expect(max, greaterThanOrEqualTo(min!));

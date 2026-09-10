@@ -41,7 +41,7 @@ ThemeData lightTheme() {
     ),
 
     // Card Theme
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: colorScheme.surface,
       elevation: 1,
       margin: const EdgeInsets.all(8),
@@ -51,7 +51,7 @@ ThemeData lightTheme() {
     ),
 
     // Dialog Theme
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: colorScheme.surface,
       elevation: 24,
       shape: RoundedRectangleBorder(
@@ -193,7 +193,7 @@ ThemeData darkTheme() {
     ),
 
     // Card Theme
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: colorScheme.surface,
       elevation: 1,
       margin: const EdgeInsets.all(8),
@@ -203,7 +203,7 @@ ThemeData darkTheme() {
     ),
 
     // Dialog Theme
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: colorScheme.surface,
       elevation: 24,
       shape: RoundedRectangleBorder(

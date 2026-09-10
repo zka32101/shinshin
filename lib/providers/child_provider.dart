@@ -7,8 +7,8 @@ import 'story_provider.dart' show apiServiceProvider;
 import 'firestore_provider.dart';
 
 // ── 選択中の子どもID を Hive に永続化するノティファイアー ──────────────
-class _ChildIdNotifier extends StateNotifier<String?> {
-  _ChildIdNotifier() : super(null) {
+class ChildIdNotifier extends StateNotifier<String?> {
+  ChildIdNotifier() : super(null) {
     // Don't call async operations in constructor
     // State updates will happen immediately when mount is complete
   }
@@ -42,9 +42,9 @@ class _ChildIdNotifier extends StateNotifier<String?> {
 
 /// 現在選択されている子ども ID プロバイダー（アプリ再起動後も復元）
 final currentChildIdProvider =
-    StateNotifierProvider<_ChildIdNotifier, String?>(
+    StateNotifierProvider<ChildIdNotifier, String?>(
   (ref) {
-    final notifier = _ChildIdNotifier();
+    final notifier = ChildIdNotifier();
     // Load from persistent storage without blocking
     unawaited(notifier.loadFromPersistentStorage());
     return notifier;

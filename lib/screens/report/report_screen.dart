@@ -301,7 +301,7 @@ class _ReportContent extends StatelessWidget {
         AnimatedSlideIn(
           direction: SlideDirection.fromBottom,
           duration: AnimationDurations.medium,
-          delay: const Duration(milliseconds: previousReport != null ? 400 : 350),
+          delay: Duration(milliseconds: previousReport != null ? 400 : 350),
           child: _ReportRadarCard(
             report: report,
             previousReport: previousReport,
@@ -311,7 +311,7 @@ class _ReportContent extends StatelessWidget {
         AnimatedSlideIn(
           direction: SlideDirection.fromBottom,
           duration: AnimationDurations.medium,
-          delay: const Duration(milliseconds: previousReport != null ? 500 : 450),
+          delay: Duration(milliseconds: previousReport != null ? 500 : 450),
           child: _VirtueScoreTrends(report: report),
         ),
         const SizedBox(height: 16),
@@ -319,7 +319,7 @@ class _ReportContent extends StatelessWidget {
           AnimatedSlideIn(
             direction: SlideDirection.fromBottom,
             duration: AnimationDurations.medium,
-            delay: const Duration(milliseconds: previousReport != null ? 600 : 550),
+            delay: Duration(milliseconds: previousReport != null ? 600 : 550),
             child: _ParentMessageCard(message: report.parentMessage!),
           ),
         const SizedBox(height: 32),
