@@ -66,7 +66,7 @@ class LessonNotifier extends Notifier<LessonState> {
       if (read.isNotEmpty || favorite.isNotEmpty) {
         state = LessonState(lessons: _appLessons, readIds: read, favoriteIds: favorite);
       }
-    } catch (e) {
+    } catch (_) {
       // Silently fail if loading doesn't work
     }
   }
