@@ -21,6 +21,8 @@ import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'package:cross_promo_kit/cross_promo_kit.dart'
     show CrossPromoService;
+import 'package:shared_core/shared_core.dart'
+    show badgeProvider, unifiedBadges, BadgeNotifier;
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
@@ -82,6 +84,12 @@ void main() async {
     ProviderScope(
       overrides: [
         lessonProvider.overrideWith(LessonNotifier.new),
+        // 統一バッジシステム（Phase 4.1）: 道徳コレ用バッジを主題タグで初期化
+        badgeProvider.overrideWith((ref) {
+          final notifier = BadgeNotifier();
+          notifier.setBadgeDefinitions(unifiedBadges, subject: 'doutoku');
+          return notifier;
+        }),
       ],
       child: const ShougakuKoreDoutokuApp(),
     ),
