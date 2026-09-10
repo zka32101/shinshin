@@ -8,13 +8,14 @@ import 'firestore_provider.dart';
 
 // ── 選択中の子どもID を Hive に永続化するノティファイアー ──────────────
 class ChildIdNotifier extends StateNotifier<String?> {
-  ChildIdNotifier() : super(null) {
+  ChildIdNotifier({HiveService? hiveService}) : super(null) {
     // Don't call async operations in constructor
     // State updates will happen immediately when mount is complete
+    _hive = hiveService ?? HiveService();
   }
 
   static const _key = 'selected_child_id';
-  final _hive = HiveService();
+  late final HiveService _hive;
 
   /// Load the selected child ID from persistent storage
   /// This should be called after the notifier is mounted
