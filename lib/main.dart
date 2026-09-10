@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, friendProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -23,6 +23,8 @@ import 'screens/ranking/ranking_screen.dart';
 import 'screens/settings/avatar_selection_screen.dart';
 import 'screens/settings/avatar_shop_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/firestore_friend_service.dart';
+import 'services/firestore_ranking_service.dart';
 import 'services/logger_service.dart';
 import 'services/revenue_cat_service.dart';
 import 'theme/app_theme.dart';
@@ -101,6 +103,16 @@ void main() async {
 
   // バッジシステム初期化: 統一バッジを主題タグで初期化
   container.read(badgeProvider.notifier).setBadgeDefinitions(unifiedBadges, subject: 'morality');
+
+  // Phase 4.3: マルチアプリランキング・フレンド機能（Firestore連携）
+  final rankingService = FirestoreRankingService();
+  final friendService = FirestoreFriendService();
+
+  container.read(rankingProvider.notifier).setFetchHandler(rankingService.fetchRankings);
+  container.read(friendProvider.notifier)
+    ..setFetchHandler(friendService.fetchFriends)
+    ..setAddFriendHandler(friendService.addFriend)
+    ..setRemoveFriendHandler(friendService.removeFriend);
 
   runApp(
     UncontrolledProviderScope(
