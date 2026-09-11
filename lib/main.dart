@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, friendProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -19,6 +19,7 @@ import 'screens/learning/color_learning_screen.dart';
 import 'screens/learning/drawing_screen.dart';
 import 'screens/learning/physical_education_screen.dart';
 import 'screens/learning/piano_learning_screen.dart';
+import 'screens/mission/mission_screen.dart';
 import 'screens/ranking/ranking_screen.dart';
 import 'screens/settings/avatar_selection_screen.dart';
 import 'screens/settings/avatar_shop_screen.dart';
@@ -231,6 +232,7 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
         '/ranking': (context) => const RankingScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/badge_showcase': (context) => const BadgeShowcaseScreen(),
+        '/mission': (context) => const MissionScreen(),
         '/piano': (context) => const PianoLearningScreen(),
         '/drawing': (context) => const DrawingScreen(),
         '/physical_education': (context) => const PhysicalEducationScreen(),
