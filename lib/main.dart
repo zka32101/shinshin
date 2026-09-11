@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -67,8 +67,9 @@ void main() async {
     }
 
     // RevenueCat初期化（サブスクリプション管理）
+    final revenueCatService = RevenueCatService();
     try {
-      await RevenueCatService().initialize();
+      await revenueCatService.initialize();
     } catch (e) {
       LoggerService().log('RevenueCat initialization skipped: $e');
     }
@@ -100,6 +101,8 @@ void main() async {
       badgeProvider.overrideWith(() => BadgeNotifier()),
       // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
       lessonProvider.overrideWith(LessonNotifier.new),
+      // Phase 4.7: 統一サブスクリプション管理（PremiumProvider）
+      premiumProvider.overrideWith(PremiumNotifier.new),
     ],
   );
 
@@ -123,6 +126,14 @@ void main() async {
   final currentUserId = missionService.getCurrentUserId();
   if (currentUserId != null) {
     unawaited(container.read(missionProvider.notifier).initializeMissions(currentUserId));
+  }
+
+  // Phase 4.7: 統一サブスクリプション初期化
+  if (currentUserId != null) {
+    container.read(premiumProvider.notifier)
+      ..setCheckHandler((userId) => revenueCatService.isSubscribed(userId))
+      ..setExpiryHandler((userId) => revenueCatService.getSubscriptionExpirationDate(userId));
+    unawaited(container.read(premiumProvider.notifier).checkSubscription(currentUserId));
   }
 
   runApp(
