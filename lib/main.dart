@@ -103,7 +103,7 @@ void main() async {
   );
 
   // バッジシステム初期化: 統一バッジを主題タグで初期化
-  container.read(badgeProvider.notifier).setBadgeDefinitions(unifiedBadges, subject: 'morality');
+  container.read(badgeProvider.notifier).setBadgeDefinitions(unifiedBadges, subject: 'doutoku');
 
   // Phase 4.3: マルチアプリランキング・フレンド機能（Firestore連携）
   final rankingService = FirestoreRankingService();
