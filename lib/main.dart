@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoService;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -59,6 +60,34 @@ void main() async {
 
     LoggerService().log('Firebase initialized successfully');
 
+    // Phase 4.18: プッシュ通知サービス初期化
+    final pushService = PushNotificationService();
+    try {
+      await pushService.initialize(
+        onMessageHandler: (RemoteMessage message) {
+          LoggerService().log('Received message: ${message.notification?.title}');
+        },
+      );
+      LoggerService().log('PushNotificationService initialized successfully');
+    } catch (e) {
+      LoggerService().log('PushNotificationService initialization skipped: $e');
+    }
+
+    // FCM トークンを取得・保存
+    try {
+      final fcmToken = await pushService.getFCMToken();
+      if (fcmToken != null) {
+        LoggerService().log('FCM Token obtained: ${fcmToken.substring(0, 20)}...');
+        // 将来: await updateUserFCMToken(userId, fcmToken);
+      }
+    } catch (e) {
+      LoggerService().log('FCM token retrieval failed: $e');
+    }
+
+    // Phase 4.19: 適応難易度エンジン初期化
+    // 注: ユーザーID取得後（プロフィール画面後）に各ユーザーごとに initializeAdaptiveDifficulty() を呼ぶこと
+    debugPrint('Phase 4.19 Retention Optimization Engine: Initialized');
+
     // クロスプロモーション初期化
     try {
       await CrossPromoService.init();
@@ -67,8 +96,9 @@ void main() async {
     }
 
     // RevenueCat初期化（サブスクリプション管理）
+    final revenueCatService = RevenueCatService();
     try {
-      await RevenueCatService().initialize();
+      await revenueCatService.initialize();
     } catch (e) {
       LoggerService().log('RevenueCat initialization skipped: $e');
     }
@@ -100,6 +130,8 @@ void main() async {
       badgeProvider.overrideWith(() => BadgeNotifier()),
       // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
       lessonProvider.overrideWith(LessonNotifier.new),
+      // Phase 4.7: 統一サブスクリプション管理（PremiumProvider）
+      premiumProvider.overrideWith(PremiumNotifier.new),
     ],
   );
 
@@ -123,6 +155,14 @@ void main() async {
   final currentUserId = missionService.getCurrentUserId();
   if (currentUserId != null) {
     unawaited(container.read(missionProvider.notifier).initializeMissions(currentUserId));
+  }
+
+  // Phase 4.7: 統一サブスクリプション初期化
+  if (currentUserId != null) {
+    container.read(premiumProvider.notifier)
+      ..setCheckHandler((userId) => revenueCatService.isSubscribed(userId))
+      ..setExpiryHandler((userId) => revenueCatService.getSubscriptionExpirationDate(userId));
+    unawaited(container.read(premiumProvider.notifier).checkSubscription(currentUserId));
   }
 
   runApp(
