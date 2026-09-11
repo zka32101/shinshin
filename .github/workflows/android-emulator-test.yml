@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.lock') }}
+          key: gradle-${{ runner.os }}-${{ hashFiles('*/pubspec.lock') }}-${{ github.run_number }}
           restore-keys: |
             gradle-${{ runner.os }}-
 
@@ -54,7 +54,7 @@ jobs:
           path: |
             ~/.pub-cache
             ~/.flutter
-          key: flutter-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          key: flutter-${{ runner.os }}-${{ hashFiles('*/pubspec.lock') }}-${{ github.run_number }}
           restore-keys: |
             flutter-${{ runner.os }}-
 
