@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, dailyMissionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -155,6 +155,12 @@ void main() async {
   final currentUserId = missionService.getCurrentUserId();
   if (currentUserId != null) {
     unawaited(container.read(missionProvider.notifier).initializeMissions(currentUserId));
+  }
+
+  // Phase 4.20: デイリーミッション統一実装
+  // 日次ミッション初期化: 現在のユーザー ID とアプリ ID で初期化
+  if (currentUserId != null) {
+    unawaited(container.read(dailyMissionProvider.notifier).initializeDailyMissions(currentUserId, 'doutoku'));
   }
 
   // Phase 4.7: 統一サブスクリプション初期化
