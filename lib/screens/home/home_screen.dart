@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoSection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_core/shared_core.dart' show FriendsListPage;
+import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage;
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
@@ -59,6 +59,21 @@ class HomeScreen extends ConsumerWidget {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.assignment),
+            tooltip: 'デイリーミッション',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DailyMissionPage(
+                    primaryColor: AppColors.bgSecondary,
+                    appTitle: '小学コレ！道徳',
+                    filterSubject: 'morality',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.people),
             tooltip: 'フレンド',
