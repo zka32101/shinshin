@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_core/models/ranking_model.dart';
+import 'package:shared_core/models/global_ranking_model.dart';
 
 /// shinshin（道徳）用の Firestore ランキング取得サービス。
 ///
@@ -10,6 +11,53 @@ class FirestoreRankingService {
 
   FirestoreRankingService({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Phase 4.3: グローバルランキング取得（globalRankingProvider用）
+  ///
+  /// subject が null の場合はグローバルランキング、
+  /// 'doutoku' の場合は教科別ランキングを返す。
+  Future<List<GlobalRankingEntry>> fetchGlobalRankings({
+    required int limit,
+    required String? subject,
+  }) async {
+    try {
+      if (subject == null) {
+        // グローバルランキング（全教科統合）
+        final snapshot = await _firestore
+            .collection('global_rankings')
+            .orderBy('totalScore', descending: true)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs.map((doc) {
+          return GlobalRankingEntry.fromJson(doc.data());
+        }).toList();
+      } else {
+        // 教科別ランキング（shinshin は 'doutoku' のみ）
+        final snapshot = await _firestore
+            .collection('subject_rankings')
+            .doc(subject)
+            .collection('users')
+            .orderBy('score', descending: true)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs.map((doc) {
+          final data = doc.data();
+          return GlobalRankingEntry(
+            userId: doc.id,
+            username: data['username'] as String? ?? 'Player',
+            totalScore: data['score'] as int? ?? 0,
+            globalRank: (data['rank'] as int?) ?? 0,
+            percentile: (data['percentile'] as double?) ?? 0.0,
+            lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          );
+        }).toList();
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch global ranking: $e');
+    }
+  }
 
   /// ランキングデータを Firestore から取得・ソート。
   ///

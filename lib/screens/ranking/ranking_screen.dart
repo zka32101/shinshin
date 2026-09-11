@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_core/shared_core.dart' show globalRankingProvider, subjectRankingStreamProvider;
 
 import '../../models/ranking.dart';
 import '../../providers/auth_provider.dart';
@@ -63,30 +64,63 @@ class _GlobalRankingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final globalRanking = ref.watch(monthlyRankingProvider(RankingGroupType.overall));
+    ref.watch(globalRankingProvider); // 初期読み込み時に自動取得
 
-    return globalRanking.when(
-      data: (entries) => _buildRankingList(entries),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(
-        child: Text('エラー: $err'),
-      ),
+    return FutureBuilder<void>(
+      future: ref.read(globalRankingProvider.notifier).fetchGlobalRanking(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final state = ref.watch(globalRankingProvider);
+        if (state.error != null) {
+          return Center(child: Text('エラー: ${state.error}'));
+        }
+
+        if (state.entries.isEmpty) {
+          return const Center(child: Text('ランキングデータがありません'));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: state.entries.length,
+          itemBuilder: (context, index) {
+            final entry = state.entries[index];
+            final rank = index + 1;
+            return _GlobalRankEntryCard(rank: rank, entry: entry);
+          },
+        );
+      },
     );
   }
 }
 
 /// 道徳ランキングタブ（教科別）
 ///
-/// 本アプリは道徳のみを扱うため、教科別ランキングは全体ランキングと同一データを表示する。
+/// Phase 4.3: subjectRankingStreamProvider('doutoku') でリアルタイム教科別ランキングを表示
 class _MoralityRankingTab extends ConsumerWidget {
   const _MoralityRankingTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final subjectRanking = ref.watch(monthlyRankingProvider(RankingGroupType.overall));
+    final subjectRanking = ref.watch(subjectRankingStreamProvider('doutoku'));
 
     return subjectRanking.when(
-      data: (entries) => _buildRankingList(entries),
+      data: (entries) {
+        if (entries.isEmpty) {
+          return const Center(child: Text('教科別ランキングデータがありません'));
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: entries.length,
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            final rank = index + 1;
+            return _SubjectRankEntryCard(rank: rank, entry: entry);
+          },
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(
         child: Text('エラー: $err'),
@@ -135,48 +169,12 @@ class _FriendRankingTab extends ConsumerWidget {
   }
 }
 
-/// グローバルランキングリストをビルド
-Widget _buildRankingList(List<RankingEntry> entries) {
-  if (entries.isEmpty) {
-    return const Center(child: Text('ランキングデータがありません'));
-  }
-
-  return ListView.builder(
-    padding: const EdgeInsets.all(16),
-    itemCount: entries.length,
-    itemBuilder: (context, index) {
-      final entry = entries[index];
-      final rank = index + 1;
-      return _RankEntryCard(
-        rank: rank,
-        entry: entry,
-      );
-    },
-  );
-}
-
-/// フレンドランキングリストをビルド
-Widget _buildFriendRankingList(List<RankingEntry> entries) {
-  return ListView.builder(
-    padding: const EdgeInsets.all(16),
-    itemCount: entries.length,
-    itemBuilder: (context, index) {
-      final entry = entries[index];
-      final rank = index + 1;
-      return _FriendRankCard(
-        rank: rank,
-        entry: entry,
-      );
-    },
-  );
-}
-
-/// グローバルランキングエントリカード
-class _RankEntryCard extends StatelessWidget {
+/// グローバルランキングエントリカード（Phase 4.3）
+class _GlobalRankEntryCard extends StatelessWidget {
   final int rank;
-  final RankingEntry entry;
+  final dynamic entry; // GlobalRankingEntry
 
-  const _RankEntryCard({
+  const _GlobalRankEntryCard({
     required this.rank,
     required this.entry,
   });
@@ -230,7 +228,7 @@ class _RankEntryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    entry.getDisplayName(),
+                    entry.username ?? 'Player',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -239,7 +237,7 @@ class _RankEntryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${entry.score} pt',
+                    '${entry.totalScore} pt',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF999999),
@@ -255,7 +253,7 @@ class _RankEntryCard extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Text(
-                '${entry.score}',
+                '${entry.totalScore}',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -270,12 +268,12 @@ class _RankEntryCard extends StatelessWidget {
   }
 }
 
-/// フレンドランキングカード
-class _FriendRankCard extends StatelessWidget {
+/// 教科別ランキングエントリカード（Phase 4.3）
+class _SubjectRankEntryCard extends StatelessWidget {
   final int rank;
-  final RankingEntry entry;
+  final dynamic entry; // SubjectRankingEntry
 
-  const _FriendRankCard({
+  const _SubjectRankEntryCard({
     required this.rank,
     required this.entry,
   });
@@ -329,7 +327,7 @@ class _FriendRankCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    entry.getDisplayName(),
+                    entry.username ?? 'Player',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

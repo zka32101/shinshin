@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, friendProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, friendProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -109,6 +109,7 @@ void main() async {
   final friendService = FirestoreFriendService();
 
   container.read(rankingProvider.notifier).setFetchHandler(rankingService.fetchRankings);
+  container.read(globalRankingProvider.notifier).setFetchHandler(rankingService.fetchGlobalRankings);
   container.read(friendProvider.notifier)
     ..setFetchHandler(friendService.fetchFriends)
     ..setAddFriendHandler(friendService.addFriend)
