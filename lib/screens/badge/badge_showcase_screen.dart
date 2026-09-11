@@ -1,16 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/badge.dart';
-import '../../providers/progress_provider.dart';
-import '../../providers/child_provider.dart';
-import '../../providers/badge_provider.dart';
-import '../../utils/sound_effects_utils.dart';
-import '../../utils/animation_constants.dart';
+
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
-import '../../widgets/common_states.dart';
+import '../../models/badge.dart';
+import '../../providers/badge_provider.dart';
+import '../../providers/child_provider.dart';
+import '../../providers/progress_provider.dart';
+import '../../utils/animation_constants.dart';
+import '../../utils/sound_effects_utils.dart';
 import '../../widgets/animations/index.dart';
+import '../../widgets/common_states.dart';
 
 /// バッジ図鑑画面 — 獲得可能なすべてのバッジと進捗を表示
 class BadgeShowcaseScreen extends ConsumerWidget {

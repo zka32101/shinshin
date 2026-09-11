@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.5.0
 
 dependencies:
   flutter:
@@ -14,17 +14,24 @@ dependencies:
   # Shared Core (FuriganaText widget)
   shared_core:
     git:
-      url: https://github.com/org-zka32101/shared_core.git
+      url: https://github.com/zka32101/shared_core.git
+      ref: main
+
+  # Cross Promo Kit (クロスプロモーション)
+  cross_promo_kit:
+    git:
+      url: https://github.com/zka32101/cross_promo_kit.git
       ref: main
 
   # UI & Material Design
   cupertino_icons: ^1.0.8
 
   # State Management
-  flutter_riverpod: ^2.4.0
+  flutter_riverpod: ^2.6.1
 
   # Firebase
   firebase_core: ^3.15.2
+  firebase_remote_config: ^5.0.0
   cloud_firestore: ^5.6.12
   purchases_flutter: ^10.11.0  # Phase 4.2: RevenueCat SDK
   firebase_auth: ^5.7.0
@@ -81,7 +88,7 @@ dev_dependencies:
 
   # Code Generation
   build_runner: ^2.16.1
-  freezed: ^4.0.1
+  freezed: ^4.0.0
 
   # Test helpers
   path_provider_platform_interface: ^2.1.0

@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../models/child_profile.dart';
 import '../models/progress.dart';
-import '../models/user.dart' as app_models;
-import '../models/story.dart';
 import '../models/question.dart';
 import '../models/quiz_session.dart';
-import '../models/child_profile.dart';
-import 'subscription_service.dart';
+import '../models/story.dart';
+import '../models/user.dart' as app_models;
 import 'logger_service.dart';
+import 'subscription_service.dart';
 
 /// Custom exceptions for Firebase operations
 class AuthException implements Exception {

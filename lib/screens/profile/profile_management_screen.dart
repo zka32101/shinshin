@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/virtue_constants.dart';
 import '../../models/child_profile.dart';
 import '../../providers/child_provider.dart';
-import '../../constants/virtue_constants.dart';
-import '../../constants/app_colors.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 import 'profile_edit_screen.dart';

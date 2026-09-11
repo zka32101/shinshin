@@ -1,27 +1,31 @@
 import 'dart:async';
+
+import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoSection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage;
+
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
 import '../../providers/screen_time_provider.dart';
+import '../../utils/accessibility_utils.dart';
+import '../../utils/animation_constants.dart';
+import '../../utils/sound_effects_utils.dart';
+import '../../widgets/animations/index.dart';
 import '../../widgets/avatar_display_widget.dart';
 import '../../widgets/offline_banner.dart';
 import '../../widgets/screen_time_limit_widget.dart';
-import '../../utils/sound_effects_utils.dart';
-import '../../utils/accessibility_utils.dart';
-import '../../utils/animation_constants.dart';
-import '../../widgets/animations/index.dart';
-import '../ranking/ranking_screen.dart';
-import '../settings/settings_screen.dart';
-import '../library/library_screen.dart';
-import '../report/report_screen.dart';
-import '../learning/piano_learning_screen.dart';
-import '../learning/drawing_screen.dart';
-import '../learning/physical_education_screen.dart';
-import '../learning/color_learning_screen.dart';
 import '../badge/badge_showcase_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../learning/color_learning_screen.dart';
+import '../learning/drawing_screen.dart';
+import '../learning/physical_education_screen.dart';
+import '../learning/piano_learning_screen.dart';
 import '../lesson/lesson_screen.dart';
+import '../library/library_screen.dart';
+import '../ranking/ranking_screen.dart';
+import '../report/report_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -54,6 +58,32 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppColors.bgSecondary,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.assignment),
+            tooltip: 'デイリーミッション',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DailyMissionPage(
+                    primaryColor: AppColors.bgSecondary,
+                    appTitle: '小学コレ！道徳',
+                    filterSubject: 'morality',
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.people),
+            tooltip: 'フレンド',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FriendsListPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -107,6 +137,14 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
+
+                const SizedBox(height: 32),
+
+                // クロスプロモーション（他アプリ紹介）
+                const CrossPromoSection(
+                  currentAppId: 'com.example.shinshin',
+                  currentCategory: '小学コレ',
                 ),
 
                 const SizedBox(height: 32),

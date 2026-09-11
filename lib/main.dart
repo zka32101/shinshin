@@ -1,24 +1,36 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoService;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show ProviderContainer, UncontrolledProviderScope;
+import 'package:shared_core/shared_core.dart'
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider;
+
 import 'firebase_options.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/settings/avatar_selection_screen.dart';
-import 'screens/settings/avatar_shop_screen.dart';
-import 'screens/ranking/ranking_screen.dart';
-import 'screens/splash_screen.dart';
+import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
+import 'providers/theme_provider.dart';
 import 'screens/auth/child_registration_screen.dart';
-import 'screens/learning/piano_learning_screen.dart';
-import 'screens/learning/drawing_screen.dart';
-import 'screens/learning/physical_education_screen.dart';
-import 'screens/learning/color_learning_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/learning/color_learning_screen.dart';
+import 'screens/learning/drawing_screen.dart';
+import 'screens/learning/physical_education_screen.dart';
+import 'screens/learning/piano_learning_screen.dart';
+import 'screens/mission/mission_screen.dart';
+import 'screens/ranking/ranking_screen.dart';
+import 'screens/settings/avatar_selection_screen.dart';
+import 'screens/settings/avatar_shop_screen.dart';
+import 'screens/splash_screen.dart';
+import 'services/firestore_friend_service.dart';
+import 'services/firestore_mission_service.dart';
+import 'services/firestore_ranking_service.dart';
 import 'services/logger_service.dart';
-import 'utils/image_cache_utils.dart';
+import 'services/revenue_cat_service.dart';
 import 'theme/app_theme.dart';
-import 'providers/theme_provider.dart';
+import 'utils/image_cache_utils.dart';
 
 // Global navigator key for navigation from services (e.g., FCM notifications)
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -46,6 +58,21 @@ void main() async {
     );
 
     LoggerService().log('Firebase initialized successfully');
+
+    // クロスプロモーション初期化
+    try {
+      await CrossPromoService.init();
+    } catch (e) {
+      LoggerService().log('CrossPromo initialization skipped: $e');
+    }
+
+    // RevenueCat初期化（サブスクリプション管理）
+    try {
+      await RevenueCatService().initialize();
+    } catch (e) {
+      LoggerService().log('RevenueCat initialization skipped: $e');
+    }
+
     LoggerService().log('App initialization time: ${stopwatch.elapsedMilliseconds}ms');
   } catch (e, stackTrace) {
     LoggerService().logError('Firebase initialization error', error: e, stackTrace: stackTrace);
@@ -67,9 +94,41 @@ void main() async {
     return;
   }
 
+  final container = ProviderContainer(
+    overrides: [
+      // 統一バッジシステム（Phase 4.1）: 道徳コレ用バッジを主題タグで初期化
+      badgeProvider.overrideWith(() => BadgeNotifier()),
+      // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
+      lessonProvider.overrideWith(LessonNotifier.new),
+    ],
+  );
+
+  // バッジシステム初期化: 統一バッジを主題タグで初期化
+  container.read(badgeProvider.notifier).setBadgeDefinitions(unifiedBadges, subject: 'doutoku');
+
+  // Phase 4.3: マルチアプリランキング・フレンド機能（Firestore連携）
+  final rankingService = FirestoreRankingService();
+  final friendService = FirestoreFriendService();
+  final missionService = FirestoreMissionService();
+
+  container.read(rankingProvider.notifier).setFetchHandler(rankingService.fetchRankings);
+  container.read(globalRankingProvider.notifier).setFetchHandler(rankingService.fetchGlobalRankings);
+  container.read(friendProvider.notifier)
+    ..setFetchHandler(friendService.fetchFriends)
+    ..setAddFriendHandler(friendService.addFriend)
+    ..setRemoveFriendHandler(friendService.removeFriend);
+
+  // Phase 4.5: デイリーミッション統一
+  // ミッション初期化: 現在のユーザー ID で初期化
+  final currentUserId = missionService.getCurrentUserId();
+  if (currentUserId != null) {
+    unawaited(container.read(missionProvider.notifier).initializeMissions(currentUserId));
+  }
+
   runApp(
-    const ProviderScope(
-      child: ShougakuKoreDoutokuApp(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const ShougakuKoreDoutokuApp(),
     ),
   );
 }
@@ -182,6 +241,7 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
         '/ranking': (context) => const RankingScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/badge_showcase': (context) => const BadgeShowcaseScreen(),
+        '/mission': (context) => const MissionScreen(),
         '/piano': (context) => const PianoLearningScreen(),
         '/drawing': (context) => const DrawingScreen(),
         '/physical_education': (context) => const PhysicalEducationScreen(),

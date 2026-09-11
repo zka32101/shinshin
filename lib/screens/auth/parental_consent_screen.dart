@@ -12,8 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/parental_consent.dart';
-import '../../services/logger_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/logger_service.dart';
 
 /// 親向け同意確認画面のプロバイダー
 final parentalConsentNotifierProvider = StateNotifierProvider<

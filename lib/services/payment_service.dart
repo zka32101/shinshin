@@ -1,9 +1,11 @@
 import 'dart:io';
+
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
-import 'subscription_service.dart';
+
 import 'logger_service.dart';
+import 'subscription_service.dart';
 
 class PaymentService {
   static const String monthlyProductId =

@@ -1,5 +1,7 @@
 import 'dart:developer' as developer;
+
 import 'package:firebase_messaging/firebase_messaging.dart';
+
 import '../main.dart' show navigatorKey;
 
 /// Firebase Cloud Messaging サービス (FCM のみ)

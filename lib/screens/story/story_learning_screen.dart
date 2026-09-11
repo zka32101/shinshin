@@ -1,25 +1,27 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_core/widgets/furigana_text.dart';
+
+import '../../constants/app_colors.dart';
+import '../../constants/app_constants.dart';
+import '../../constants/app_styles.dart';
+import '../../constants/virtue_constants.dart';
 import '../../models/story.dart';
-import '../../providers/story_provider.dart';
 import '../../providers/audio_provider.dart';
 import '../../providers/child_provider.dart';
+import '../../providers/firestore_provider.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/quiz_completion_provider.dart';
-import '../../providers/firestore_provider.dart';
+import '../../providers/story_provider.dart';
 import '../../services/analytics_service.dart';
-import '../../utils/sound_effects_utils.dart';
 import '../../utils/animation_constants.dart';
-import '../../widgets/animations/index.dart';
-import '../../constants/virtue_constants.dart';
-import '../../constants/app_colors.dart';
-import '../../constants/app_styles.dart';
-import '../../constants/app_constants.dart';
-import 'story_result_screen.dart';
+import '../../utils/sound_effects_utils.dart';
 import '../../widgets/animated_option_card.dart';
+import '../../widgets/animations/index.dart';
+import 'story_result_screen.dart';
 
 /// ストーリー読解画面
 /// 読む → 選択 → 結果の3フェーズ

@@ -2,9 +2,11 @@
 // Phase 4.2: Subscription & In-App Purchase Management
 
 import 'dart:async';
-import 'package:purchases_flutter/purchases_flutter.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
+import 'package:purchases_flutter/purchases_flutter.dart';
+
 import '../utils/constants.dart';
 
 class RevenueCatService {

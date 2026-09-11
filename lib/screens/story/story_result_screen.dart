@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/story.dart';
-import '../../models/badge.dart';
-import '../../providers/badge_provider.dart';
+
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
+import '../../models/badge.dart';
+import '../../models/story.dart';
+import '../../providers/badge_provider.dart';
 import '../../utils/animation_constants.dart';
 import '../../widgets/animations/index.dart';
 

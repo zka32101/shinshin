@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/progress.dart';
-import 'firestore_provider.dart';
 
 /// Firestore からクエスト（ストーリー）完了履歴を取得する (Firestore 版)
 final questHistoryFsProvider =

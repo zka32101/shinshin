@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/ranking_service.dart';
+
 import '../models/ranking.dart';
 import '../providers/auth_provider.dart';
+import '../services/ranking_service.dart';
 
 // Service provider
 final rankingServiceProvider = Provider((ref) {
