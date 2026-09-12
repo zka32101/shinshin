@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoService;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider, screenTimeProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider, screenTimeProvider, weeklyBonusProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -161,8 +162,28 @@ void main() async {
     ..setProgressHandler(missionService.updateProgress)
     ..setCompleteHandler(missionService.completeMission);
 
-  // ミッション初期化: 現在のユーザー ID で初期化
+  // Phase 4.20: 週次ボーナスシステム Firestore 永続化
   final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  if (currentUserId != null) {
+    final weeklyBonusRef = FirebaseFirestore.instance.collection('users').doc(currentUserId).collection('bonuses').doc('weekly');
+    container.read(weeklyBonusProvider.notifier).setPersistHandler(
+      (userId, bonusState) async {
+        try {
+          await weeklyBonusRef.set({
+            'consecutiveDays': bonusState.consecutiveDays,
+            'lastClaimedDate': bonusState.lastClaimedDate?.toIso8601String(),
+            'weeklyResetDate': bonusState.weeklyResetDate?.toIso8601String(),
+            'totalCoinsEarned': bonusState.totalCoinsEarned,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        } catch (e) {
+          LoggerService().logError('Error persisting weekly bonus', error: e);
+        }
+      },
+    );
+  }
+
+  // ミッション初期化: 現在のユーザー ID で初期化
   if (currentUserId != null) {
     unawaited(container.read(missionProvider.notifier).initializeDailyMissions(currentUserId, 'shinshin'));
   }

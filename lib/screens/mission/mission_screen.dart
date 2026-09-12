@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_core/shared_core.dart' show missionProvider, coinProvider, RewardType;
+import 'package:shared_core/shared_core.dart' show missionProvider, coinProvider, RewardType, weeklyBonusProvider;
 
 /// デイリーミッション一覧画面（Phase 4.5）
 ///
@@ -279,6 +279,9 @@ class _MissionTile extends ConsumerWidget {
     if (rewards.containsKey('coins')) {
       ref.read(coinProvider.notifier).addCoins(rewards['coins']!);
     }
+
+    // Phase 4.20: デイリーミッション完了時に週次ボーナス連続日数を記録
+    await ref.read(weeklyBonusProvider.notifier).recordDailyCompletion();
 
     // ユーザーにフィードバック
     ScaffoldMessenger.of(ref.context).showSnackBar(
