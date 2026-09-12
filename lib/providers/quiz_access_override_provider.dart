@@ -40,7 +40,7 @@ final quizAccessOverrideProvider = FutureProvider<
   final registeredAt =
       await ref.watch(userRegisteredAtOverrideProvider.future);
   final isSubscribed =
-      await ref.watch(subscriptionStatusOverrideProvider.future);
+      ref.watch(subscriptionStatusOverrideProvider);
 
   // quiz_access_provider で定義されている QuizAccessLogic を使用
   // (shared_core から import)
@@ -59,7 +59,7 @@ final canAccessShinShinStoriesProvider = FutureProvider<bool>((ref) async {
   final registeredAt =
       await ref.watch(userRegisteredAtOverrideProvider.future);
   final isSubscribed =
-      await ref.watch(subscriptionStatusOverrideProvider.future);
+      ref.watch(subscriptionStatusOverrideProvider);
 
   // サブスク購読者は常にアクセス可
   if (isSubscribed) return true;
