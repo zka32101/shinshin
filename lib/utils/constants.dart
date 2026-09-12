@@ -1,22 +1,19 @@
 // Application Constants
 // Phase 4.2: RevenueCat Configuration
+// Phase 4.7: Unified RevenueCat Configuration via shared_core
 
 class AppConstants {
-  // RevenueCat Configuration
-  static const String revenueCatApiKey = String.fromEnvironment(
-    'REVENUE_CAT_API_KEY',
-    defaultValue: 'appl_MoralityKoreDevelopment',
-  );
-
-  static const String subscriptionProductId = 'doutoku_premium_monthly';
-  static const String premiumEntitlementId = 'premium_access';
+  // RevenueCat Configuration (Phase 4.7: Moved to shared_core SubscriptionConfig)
+  // - revenueCatApiKey: Use SubscriptionConfig.apiKey
+  // - subscriptionProductId: Use SubscriptionConfig.monthlyProductId / annualProductId
+  // - premiumEntitlementId: Use SubscriptionConfig.premiumEntitlementId
 
   // Feature Flags
   static const bool adsFreeWithSubscription = true;
   static const bool unlimitedQuizzesWithSubscription = true;
 
-  // Pricing (for display)
-  static const String monthlyPrice = '¥120';
+  // Pricing (for display - matches SubscriptionConfig.monthlyPrice)
+  static const String monthlyPrice = '¥300';
   static const int trialDays = 7;
 
   // App info

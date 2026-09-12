@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoSection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage;
+import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage, WeeklyBonusWidget, coinProvider;
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
@@ -106,6 +106,20 @@ class HomeScreen extends ConsumerWidget {
                   child: const AvatarPanel(
                     userName: 'ユーザー',
                   ),
+                ),
+                const SizedBox(height: 24),
+
+                // Phase 4.20: 週次ボーナスウィジェット
+                WeeklyBonusWidget(
+                  onBonusClaimed: (coins) {
+                    ref.read(coinProvider.notifier).addCoins(coins);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('週次ボーナス獲得！ $coins コイン'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 32),
 
