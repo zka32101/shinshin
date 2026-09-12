@@ -130,6 +130,11 @@ ThemeData lightTheme() {
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
+      titleMedium: GoogleFonts.notoSansJp(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: colorScheme.onBackground,
+      ),
       bodyLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -280,6 +285,11 @@ ThemeData darkTheme() {
       titleLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w600,
+        color: colorScheme.onBackground,
+      ),
+      titleMedium: GoogleFonts.notoSansJp(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
         color: colorScheme.onBackground,
       ),
       bodyLarge: GoogleFonts.notoSansJp(
