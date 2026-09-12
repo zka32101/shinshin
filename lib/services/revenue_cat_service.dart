@@ -1,13 +1,13 @@
 // RevenueCat Integration Service
 // Phase 4.2: Subscription & In-App Purchase Management
+// Phase 4.7: Unified RevenueCat Configuration
 
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:purchases_flutter/purchases_flutter.dart';
-
-import '../utils/constants.dart';
+import 'package:shared_core/shared_core.dart' show SubscriptionConfig;
 
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
@@ -29,9 +29,9 @@ class RevenueCatService {
     if (_isInitialized) return;
 
     try {
-      // Set API key
+      // Set API key (Phase 4.7: Unified via SubscriptionConfig)
       await Purchases.configure(
-        PurchasesConfiguration(AppConstants.revenueCatApiKey),
+        PurchasesConfiguration(SubscriptionConfig.apiKey),
       );
 
       _isInitialized = true;
@@ -55,7 +55,7 @@ class RevenueCatService {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
       final isActive = customerInfo.entitlements.active
-          .containsKey(AppConstants.premiumEntitlementId);
+          .containsKey(SubscriptionConfig.premiumEntitlementId);
 
       if (kDebugMode) {
         print('[RevenueCat] Subscription check: $isActive');
@@ -90,7 +90,7 @@ class RevenueCatService {
     try {
       final result = await Purchases.purchasePackage(package);
       final isActive = result.customerInfo.entitlements.active
-          .containsKey(AppConstants.premiumEntitlementId);
+          .containsKey(SubscriptionConfig.premiumEntitlementId);
 
       if (kDebugMode) {
         print('[RevenueCat] Purchase successful. Active: $isActive');
@@ -112,7 +112,7 @@ class RevenueCatService {
     try {
       final customerInfo = await Purchases.restorePurchases();
       final isActive = customerInfo.entitlements.active
-          .containsKey(AppConstants.premiumEntitlementId);
+          .containsKey(SubscriptionConfig.premiumEntitlementId);
 
       if (kDebugMode) {
         print('[RevenueCat] Restore successful. Active: $isActive');
@@ -150,7 +150,7 @@ class RevenueCatService {
   /// Listen to customer info updates (subscription changes, etc.)
   void _onCustomerInfoUpdate(CustomerInfo customerInfo) {
     final isActive = customerInfo.entitlements.active
-        .containsKey(AppConstants.premiumEntitlementId);
+        .containsKey(SubscriptionConfig.premiumEntitlementId);
     _subscriptionStatusController.add(isActive);
 
     if (kDebugMode) {
