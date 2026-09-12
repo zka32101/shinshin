@@ -25,8 +25,8 @@ final userRegisteredAtOverrideProvider =
 
 /// shinshin 用：サブスク購読状態プロバイダー
 final subscriptionStatusOverrideProvider =
-    FutureProvider<bool>((ref) async {
-  final subscriptionState = await ref.watch(subscriptionProvider);
+    Provider<bool>((ref) {
+  final subscriptionState = ref.watch(subscriptionProvider);
   return subscriptionState.isSubscribed;
 });
 
