@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/theme_colors.dart';
 
 /// Light theme definition for the app
@@ -17,7 +18,7 @@ ThemeData lightTheme() {
       backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.onSurface,
       iconTheme: IconThemeData(color: colorScheme.onSurface),
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.notoSansJp(
         color: colorScheme.onSurface,
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -99,52 +100,52 @@ ThemeData lightTheme() {
 
     // Text Theme
     textTheme: TextTheme(
-      displayLarge: TextStyle(
+      displayLarge: GoogleFonts.notoSansJp(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: colorScheme.onBackground,
       ),
-      displayMedium: TextStyle(
+      displayMedium: GoogleFonts.notoSansJp(
         fontSize: 28,
         fontWeight: FontWeight.bold,
         color: colorScheme.onBackground,
       ),
-      displaySmall: TextStyle(
+      displaySmall: GoogleFonts.notoSansJp(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      headlineMedium: TextStyle(
+      headlineMedium: GoogleFonts.notoSansJp(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      headlineSmall: TextStyle(
+      headlineSmall: GoogleFonts.notoSansJp(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      titleLarge: TextStyle(
+      titleLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      bodyLarge: TextStyle(
+      bodyLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: colorScheme.onBackground,
       ),
-      bodyMedium: TextStyle(
+      bodyMedium: GoogleFonts.notoSansJp(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: colorScheme.onBackground,
       ),
-      bodySmall: TextStyle(
+      bodySmall: GoogleFonts.notoSansJp(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: colorScheme.onSurfaceVariant,
       ),
-      labelLarge: TextStyle(
+      labelLarge: GoogleFonts.notoSansJp(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: colorScheme.primary,
@@ -169,7 +170,7 @@ ThemeData darkTheme() {
       backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.onSurface,
       iconTheme: IconThemeData(color: colorScheme.onSurface),
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.notoSansJp(
         color: colorScheme.onSurface,
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -251,52 +252,52 @@ ThemeData darkTheme() {
 
     // Text Theme
     textTheme: TextTheme(
-      displayLarge: TextStyle(
+      displayLarge: GoogleFonts.notoSansJp(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         color: colorScheme.onBackground,
       ),
-      displayMedium: TextStyle(
+      displayMedium: GoogleFonts.notoSansJp(
         fontSize: 28,
         fontWeight: FontWeight.bold,
         color: colorScheme.onBackground,
       ),
-      displaySmall: TextStyle(
+      displaySmall: GoogleFonts.notoSansJp(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      headlineMedium: TextStyle(
+      headlineMedium: GoogleFonts.notoSansJp(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      headlineSmall: TextStyle(
+      headlineSmall: GoogleFonts.notoSansJp(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      titleLarge: TextStyle(
+      titleLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: colorScheme.onBackground,
       ),
-      bodyLarge: TextStyle(
+      bodyLarge: GoogleFonts.notoSansJp(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: colorScheme.onBackground,
       ),
-      bodyMedium: TextStyle(
+      bodyMedium: GoogleFonts.notoSansJp(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: colorScheme.onBackground,
       ),
-      bodySmall: TextStyle(
+      bodySmall: GoogleFonts.notoSansJp(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: colorScheme.onSurfaceVariant,
       ),
-      labelLarge: TextStyle(
+      labelLarge: GoogleFonts.notoSansJp(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: colorScheme.primary,
