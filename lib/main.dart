@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider, screenTimeProvider, weeklyBonusProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider, screenTimeProvider, weeklyBonusProvider, ReminderService, NotificationBadge, notificationProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
@@ -87,6 +87,13 @@ void main() async {
     } catch (e) {
       LoggerService().log('FCM token retrieval failed: $e');
     }
+
+    // Phase 4.23: ローカル通知・リマインダーシステム初期化
+    final reminderService = ReminderService.instance;
+    // 通知コールバック設定（オプション）
+    reminderService.setNotificationCallback((notification) {
+      debugPrint('Reminder notification: ${notification.title}');
+    });
 
     // Phase 4.19: 適応難易度エンジン初期化
     // 注: ユーザーID取得後（プロフィール画面後）に各ユーザーごとに initializeAdaptiveDifficulty() を呼ぶこと
