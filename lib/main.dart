@@ -8,10 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ProviderContainer, UncontrolledProviderScope;
 import 'package:shared_core/shared_core.dart'
-    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider;
+    show badgeProvider, unifiedBadges, BadgeNotifier, rankingProvider, globalRankingProvider, missionProvider, friendProvider, premiumProvider, PremiumNotifier, PushNotificationService, adaptiveDifficultyNotifierProvider, screenTimeProvider;
 
 import 'firebase_options.dart';
 import 'providers/lesson_provider.dart' show LessonNotifier, lessonProvider;
+import 'providers/screen_time_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth/child_registration_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
@@ -131,6 +132,8 @@ void main() async {
       badgeProvider.overrideWith(() => BadgeNotifier()),
       // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
       lessonProvider.overrideWith(LessonNotifier.new),
+      // Phase 4.6: スクリーンタイム制限（ScreenTimeNotifier）
+      screenTimeProvider.overrideWith(ScreenTimeNotifier.new),
       // Phase 4.7: 統一サブスクリプション管理（PremiumProvider）
       premiumProvider.overrideWith(PremiumNotifier.new),
     ],
