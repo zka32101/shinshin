@@ -25,6 +25,7 @@ dependencies:
 
   # UI & Material Design
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1  # Phase 4.21: Material Design 3 テーマで使用
 
   # State Management
   flutter_riverpod: ^2.6.1
