@@ -16,6 +16,7 @@ import '../../widgets/avatar_display_widget.dart';
 import '../../widgets/offline_banner.dart';
 import '../../widgets/screen_time_limit_widget.dart';
 import '../badge/badge_showcase_screen.dart';
+import '../coaching/widgets/ai_coaching_card.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../learning/color_learning_screen.dart';
 import '../learning/drawing_screen.dart';
@@ -121,6 +122,10 @@ class HomeScreen extends ConsumerWidget {
                     );
                   },
                 ),
+                const SizedBox(height: 32),
+
+                // Phase 4.24: AI コーチング
+                const AiCoachingCard(),
                 const SizedBox(height: 32),
 
                 // Main menu grid

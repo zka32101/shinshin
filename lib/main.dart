@@ -17,6 +17,7 @@ import 'providers/screen_time_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth/child_registration_screen.dart';
 import 'screens/badge/badge_showcase_screen.dart';
+import 'screens/coaching/views/ai_coaching_dashboard_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/learning/color_learning_screen.dart';
@@ -313,6 +314,7 @@ class ShougakuKoreDoutokuApp extends ConsumerWidget {
         '/dashboard': (context) => const DashboardScreen(),
         '/badge_showcase': (context) => const BadgeShowcaseScreen(),
         '/mission': (context) => const MissionScreen(),
+        '/ai-coaching': (context) => const AiCoachingDashboardScreen(),
         '/piano': (context) => const PianoLearningScreen(),
         '/drawing': (context) => const DrawingScreen(),
         '/physical_education': (context) => const PhysicalEducationScreen(),
