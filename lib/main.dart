@@ -133,7 +133,7 @@ void main() async {
       // 道徳コレの学習コンテンツ（解説記事）ノティファイアを注入
       lessonProvider.overrideWith(LessonNotifier.new),
       // Phase 4.6: スクリーンタイム制限（ScreenTimeNotifier）
-      screenTimeProvider.overrideWith(ScreenTimeNotifier.new),
+      screenTimeProvider.overrideWith(() => ScreenTimeNotifier()),
       // Phase 4.7: 統一サブスクリプション管理（PremiumProvider）
       premiumProvider.overrideWith(PremiumNotifier.new),
     ],
