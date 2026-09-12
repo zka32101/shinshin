@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_core/shared_core.dart'
-    show NotificationSettingsPage, RetentionDashboard;
+    show AddFriendDialog, NotificationSettingsPage, RetentionDashboard;
 
 import '../../providers/audio_provider.dart';
 import '../../providers/locale_provider.dart';
@@ -161,6 +161,29 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
+
+          // ─── ソーシャル・フレンドセクション ───
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '👥 ソーシャル',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: const Icon(Icons.person_add, color: Color(0xFF9B59B6)),
+            title: const Text('フレンドを探す'),
+            subtitle: const Text('ユーザーを検索してフレンド申請する'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => const AddFriendDialog(),
+              );
+            },
+          ),
 
           // ─── 利用時間制限セクション ───
           const SizedBox(height: 24),
