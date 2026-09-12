@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_core/models/daily_mission_model.dart';
+import 'package:shared_core/models/reward_model.dart';
 
 /// Firestore ベースのデイリーミッション管理サービス
 /// Phase 4.5: ゲーミフィケーション統一工事（ミッション機能）
