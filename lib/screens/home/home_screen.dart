@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cross_promo_kit/cross_promo_kit.dart' show CrossPromoSection;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage, WeeklyBonusWidget, coinProvider;
+import 'package:shared_core/shared_core.dart' show FriendsListPage, DailyMissionPage, WeeklyBonusWidget, coinProvider, NotificationBadge, notificationProvider;
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_styles.dart';
@@ -81,6 +81,23 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const FriendsListPage()),
+              );
+            },
+          ),
+          // Phase 4.23: ローカル通知・リマインダーシステム
+          Builder(
+            builder: (context) {
+              final notifications = ref.watch(notificationProvider);
+              return NotificationBadge(
+                notificationCount: notifications.length,
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('通知: ${notifications.length}件'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
               );
             },
           ),
