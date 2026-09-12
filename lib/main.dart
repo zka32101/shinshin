@@ -196,6 +196,12 @@ void main() async {
     unawaited(container.read(missionProvider.notifier).initializeDailyMissions(currentUserId, 'shinshin'));
   }
 
+  // Phase 4.20: デイリーミッション統一実装
+  // 日次ミッション初期化: 現在のユーザー ID とアプリ ID で初期化
+  if (currentUserId != null) {
+    unawaited(container.read(dailyMissionProvider.notifier).initializeDailyMissions(currentUserId, 'doutoku'));
+  }
+
   // Phase 4.7: 統一サブスクリプション初期化
   if (currentUserId != null) {
     container.read(premiumProvider.notifier)
