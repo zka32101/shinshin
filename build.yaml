@@ -1,0 +1,9 @@
+targets:
+  $default:
+    sources:
+      exclude:
+        # integration_test/app_test.dart uses newer Dart syntax
+        # (dot-shorthand property access) that this project's pinned
+        # `analyzer` version can't parse, crashing build_runner entirely.
+        # It isn't needed for code generation or the release build.
+        - integration_test/**
