@@ -15,7 +15,13 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.x'
-      
+
+      - name: Clean dependencies and cache
+        run: |
+          flutter clean
+          rm -f pubspec.lock
+          rm -rf .dart_tool/
+
       - name: Get dependencies
         run: flutter pub get
       

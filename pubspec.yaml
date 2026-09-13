@@ -4,8 +4,9 @@ publish_to: 'none'
 
 version: 1.0.0+1
 
+# Build trigger for shared_core APK integration - 2026-09-13 10:29
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.9.0
 
 dependencies:
   flutter:
@@ -20,7 +21,9 @@ dependencies:
 
   # Shared Core (小学コレシリーズ共通)
   shared_core:
-    path: ../shared_core
+    git:
+      url: https://github.com/zka32101/shared_core.git
+      ref: main
 
   # Firebase
   firebase_core: ^2.13.0
