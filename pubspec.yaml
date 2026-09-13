@@ -20,7 +20,9 @@ dependencies:
 
   # Shared Core (小学コレシリーズ共通)
   shared_core:
-    path: ../shared_core
+    git:
+      url: https://github.com/zka32101/shared_core.git
+      ref: main
 
   # Firebase
   firebase_core: ^2.13.0
