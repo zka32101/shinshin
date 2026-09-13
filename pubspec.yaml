@@ -82,6 +82,8 @@ dev_dependencies:
   # Code Generation
   build_runner: ^2.4.0
   riverpod_generator: ^2.3.0
+  freezed: ^2.4.0
+  json_serializable: ^6.7.0
 
   # Test helpers
   path_provider_platform_interface: ^2.1.0
