@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_core/shared_core.dart' show AnalyticsDashboardWidget, DailyActivityData, AccuracyTrendData;
 import '../../providers/audio_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -10,11 +11,30 @@ import '../ranking/ranking_settings_screen.dart';
 import 'help_screen.dart';
 import 'privacy_policy_screen.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final soundEnabled = ref.watch(isSoundEnabledProvider);
     final narrationEnabled = ref.watch(isNarrationEnabledProvider);
     final volumeLevel = ref.watch(volumeLevelProvider);
@@ -28,8 +48,18 @@ class SettingsScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: const Color(0xFF9B59B6),
         foregroundColor: Colors.white,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '設定'),
+            Tab(text: '学習分析'),
+          ],
+        ),
       ),
-      body: ListView(
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          ListView(
         children: [
           // ─── オフライン同期状態 ───
           if (syncState.pendingCount > 0)
@@ -296,8 +326,42 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
         ],
+          // Tab 2: 学習分析
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: AnalyticsDashboardWidget(
+              userName: 'ユーザー',
+              totalQuestions: 0,
+              averageAccuracy: 0.0,
+              totalTimeSpent: 0,
+              dailyActivity: _generateDailyActivity(),
+              accuracyTrend: _generateAccuracyTrend(),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  List<DailyActivityData> _generateDailyActivity() {
+    return [
+      DailyActivityData(day: '月', count: 0),
+      DailyActivityData(day: '火', count: 0),
+      DailyActivityData(day: '水', count: 0),
+      DailyActivityData(day: '木', count: 0),
+      DailyActivityData(day: '金', count: 0),
+      DailyActivityData(day: '土', count: 0),
+      DailyActivityData(day: '日', count: 0),
+    ];
+  }
+
+  List<AccuracyTrendData> _generateAccuracyTrend() {
+    return [
+      AccuracyTrendData(week: 'W1', accuracy: 0.0),
+      AccuracyTrendData(week: 'W2', accuracy: 0.0),
+      AccuracyTrendData(week: 'W3', accuracy: 0.0),
+      AccuracyTrendData(week: 'W4', accuracy: 0.0),
+    ];
   }
 
   Future<void> _pickReminderTime(
