@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'analytics_model.freezed.dart';
 part 'analytics_model.g.dart';
 
+@JsonSerializable()
 @freezed
 class DailyStats with _$DailyStats {
   const factory DailyStats({
@@ -19,6 +20,7 @@ class DailyStats with _$DailyStats {
       _$DailyStatsFromJson(json);
 }
 
+@JsonSerializable()
 @freezed
 class MonthlyStats with _$MonthlyStats {
   const factory MonthlyStats({
