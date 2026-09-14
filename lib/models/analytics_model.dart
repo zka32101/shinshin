@@ -35,6 +35,8 @@ class MonthlyStats with _$MonthlyStats {
     required Map<String, dynamic> categoryStats, // {categoryId: {correct, total, accuracy}}
   }) = _MonthlyStats;
 
+  const MonthlyStats._();
+
   factory MonthlyStats.fromJson(Map<String, dynamic> json) =>
       _$MonthlyStatsFromJson(json);
 
