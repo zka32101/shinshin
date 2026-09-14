@@ -27,6 +27,18 @@ jobs:
       
       - name: Build APK
         run: flutter build apk --release
-      
+
+      - name: Build AAB
+        run: flutter build appbundle --release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            build/app/outputs/apk/release/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
       - name: Upload APK
-        run: echo "APK built and ready for deployment"
+        run: echo "APK and AAB built and ready for deployment"
